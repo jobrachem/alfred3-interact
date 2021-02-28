@@ -6,23 +6,23 @@ with open("README.md", "r") as fh:
 # Parse version from _version.py in package directory
 # See https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version
 version = {}
-with open("src/alfred3-interact/_version.py") as f:
+with open("src/alfred3_interact/_version.py") as f:
     exec(f.read(), version)
 
 setuptools.setup(
-    name="alfred3-interact",
+    name="alfred3_interact",
     version=version["__version__"],
     author="Johannes Brachem, Christian Treffenstädt",
     author_email="brachem@psych.uni-goettingen.de",
     description="Components for interactive experiments in the alfred3 framework.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    # url="https://github.com/ctreffe/alfred",
+    url="https://github.com/jobrachem/alfred3-interact",
     packages=setuptools.find_packages("src"),
     package_data={},
     package_dir={"": "src"},
     install_requires=[
-        "alfred3>=2.0",
+        # "alfred3>=2.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

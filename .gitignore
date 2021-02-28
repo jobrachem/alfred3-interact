@@ -126,3 +126,4 @@ dmypy.json
 
 # Local settings
 .vscode/
+tests/exp/
