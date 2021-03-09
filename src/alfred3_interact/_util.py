@@ -15,3 +15,6 @@ class MatchingTimeout(Exception):
 
 class MatchingError(Exception):
     pass
+
+class BusyGroup(Exception):
+    pass

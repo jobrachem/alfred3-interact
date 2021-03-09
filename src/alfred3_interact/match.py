@@ -1,385 +1,435 @@
-import copy
-import json
-import random
+
 import time
-from dataclasses import asdict, dataclass, field
-from pathlib import Path
-from typing import Iterator, List
-from uuid import uuid4
+import json
+import copy
+import string
+from dataclasses import asdict
 
+from pymongo.collection import ReturnDocument
+from alfred3.page import Page
 from alfred3.alfredlog import QueuedLoggingInterface
-from alfred3.data_manager import DataManager as dm
+from alfred3.experiment import ExperimentSession
 
-from ._util import MatchingError, MatchingTimeout, saving_method
-from .data import SharedGroupData
-from .group import Group, GroupMember
+from .group import Group
+from .member import GroupMember
+from .manager import MemberManager
+from .manager import GroupManager
+from .data import MatchMakerData
+from ._util import saving_method
+from ._util import MatchingError
+from ._util import BusyGroup
+from ._util import MatchingTimeout
 
-
-class MemberList:
-    def __init__(self, exp, match_maker_name: str, timeout: int = None):
-        self.exp = exp
-        self.timeout = timeout
-        p = self.exp.config.get("interact", "path", fallback="save/interact")
-        self.path = self.exp.subpath(p) / "members"
-        self.path.mkdir(exist_ok=True, parents=True)
-        self.match_maker_name = match_maker_name
-
-    def members(self, exp_version: str) -> Iterator[GroupMember]:
-        if saving_method(self.exp) == "local":
-            return self._local_members(exp_version)
-        elif saving_method(self.exp) == "mongo":
-            return self._mongo_members(exp_version)
-        else:
-            raise MatchingError("No saving method found. Try defining a saving agent.")
-
-    def _local_members(self, exp_version: str):
-        for member in self.path.iterdir():
-            if member.is_dir():
-                continue
-
-            with open(member, "r") as f:
-                d = json.load(f)
-                if self._data_fits(d, exp_version):
-                    yield GroupMember(data=d, exp=self.exp)
-
-    def _mongo_members(self, exp_version: str):
-        query = {"exp_id": self.exp.exp_id, "type": "match_member"}
-        if exp_version:
-            query["exp_version"] = exp_version
-
-        for d in self.exp.db_misc.find(query):
-            if self._data_fits(d, exp_version):
-                d.pop("_id", None)
-                yield GroupMember(data=d, exp=self.exp)
-
-    def _data_fits(self, d: dict, exp_version: str) -> bool:
-        c1 = d["type"] == "match_member"
-        c2 = d["match_maker_name"] == self.match_maker_name
-        c3 = d["exp_version"] == exp_version or not exp_version
-        c4 = time.time() - d["timestamp"] < self.timeout
-        c5 = d["member_active"]
-        return all((c1, c2, c3, c4, c5))
-
-    def matched(self, exp_version: str) -> Iterator[GroupMember]:
-        return (m for m in self.members(exp_version) if m.match_group is not None)
-
-    def unmatched(self, exp_version: str) -> Iterator[GroupMember]:
-        return (m for m in self.members(exp_version) if m.match_group is None)
-
-    def ready(self, exp_version: str) -> Iterator[GroupMember]:
-        return (m for m in self.unmatched(exp_version) if not m.assignment_ongoing)
-
-    def waiting(self, exp_version: str) -> Iterator[GroupMember]:
-        return (m for m in self.unmatched(exp_version) if m.assignment_ongoing)
-
-
-class GroupList:
-    def __init__(self, exp, match_maker_name: str):
-        self.exp = exp
-        p = self.exp.config.get("interact", "path", fallback="save/interact")
-        self.path = self.exp.subpath(p)
+class MatchMakerIO:
+    def __init__(self, matchmaker):
+        self.mm = matchmaker
         self.path.parent.mkdir(exist_ok=True, parents=True)
-        self.match_maker_name = match_maker_name
 
-    def groups(self, exp_version: str):
-        if saving_method(self.exp) == "local":
-            return self._local_groups(exp_version)
-        elif saving_method(self.exp) == "mongo":
-            return self._mongo_groups(exp_version)
+    @property
+    def db(self):
+        return self.mm.exp.db_misc
+
+    @property
+    def path(self):
+        p = self.mm.exp.config.get("interact", "path", fallback="save/interact")
+        name = f"{self.mm.matchmaker_id}{self.mm.exp_version}.json"
+        return self.mm.exp.subpath(p) / name
+
+    @property
+    def query(self):
+        q = {}
+        q["type"] = self.mm.DATA_TYPE
+        q["exp_id"] = self.mm.exp.exp_id
+        q["exp_version"] = self.mm.exp_version
+        q["matchmaker_id"] = self.mm.matchmaker_id
+        return q
+
+    def save(self, data: MatchMakerData):
+        if saving_method(self.mm.exp) == "mongo":
+            self._save_mongo(data)
+        elif saving_method(self.mm.exp) == "local":
+            self._save_local(data)
         else:
             raise MatchingError("No saving method found. Try defining a saving agent.")
 
-    def full(self, exp_version: str):
-        if exp_version:
-            return (g for g in self.groups(exp_version) if g.full)
+    def load(self) -> MatchMakerData:
+        """
+        Loads MatchMakerData. If there is none, creates a MatchMakerData
+        document.
+        """
+        if saving_method(self.mm.exp) == "mongo":
+            return self._load_mongo()
+        elif saving_method(self.mm.exp) == "local":
+            return self._load_local()
+
+    def load_markbusy(self) -> MatchMakerData:
+        """
+        Loads MatchMakerData and marks it as busy, if it is not busy
+        already. In the latter case, returns None.
+        """
+        self.mm.busy = True
+        if saving_method(self.mm.exp) == "mongo":
+            return self._load_markbusy_mongo()
+        elif saving_method(self.mm.exp) == "local":
+            return self._load_markbusy_local()
+
+    def release(self) -> MatchMakerData:
+        """
+        Releases MatchMakerData from a 'busy' state.
+        Happens only in groupwise matching, so there is only a mongoDB
+        version of this one.
+        """
+        q = copy.copy(self.query)
+        q["busy"] = True
+        self.db.find_one_and_update(q, {"$set": {"busy": False}})
+
+    def _save_mongo(self, data: MatchMakerData):
+        self.db.find_one_and_replace(self.query, asdict(data))
+
+    def _save_local(self, data: MatchMakerData):
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(asdict(data), f, sort_keys=True, indent=4)
+
+    def _load_mongo(self):
+
+        insert = MatchMakerData(
+            exp_id=self.mm.exp.exp_id,
+            exp_version=self.mm.exp_version,
+            matchmaker_id=self.mm.matchmaker_id,
+        )
+
+        data = self.db.find_one_and_update(
+            self.query,
+            {"$setOnInsert": asdict(insert)},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+        data.pop("_id", None)
+        return MatchMakerData(**data)
+
+    def _load_local(self) -> MatchMakerData:
+        """
+        If there is a matchmaker json file, this returns the data from
+        that file. Otherwise, it inserts the needed json file and then
+        returns the corresponding data.
+        """
+        if self.path.exists() and self.path.is_file():
+            with open(self.path, "r", encoding="utf-8") as f:
+                return MatchMakerData(**json.load(f))
         else:
-            return (g for g in self.groups(exp_version) if g.full)
+            data = MatchMakerData(
+                exp_id=self.mm.exp.exp_id,
+                exp_version=self.mm.exp_version,
+                matchmaker_id=self.mm.matchmaker_id,
+            )
 
-    def notfull(self, exp_version: str):
-        if exp_version:
-            return (g for g in self.groups(exp_version) if not g.full)
+            with open(self.path, "w", encoding="utf-8") as f:
+                json.dump(asdict(data), f, sort_keys=True, indent=4)
+            return data
+
+    def _load_markbusy_local(self):
+        data = self._load_local()
+        if not data.busy:
+            data.busy = True
+            self._save_local(data)
+            return MatchMakerData(**data)
         else:
-            return (g for g in self.groups(exp_version) if not g.full)
+            return None
 
-    def ready(self, exp_version: str):
-        for group in self.notfull(exp_version):
-            if not group.assignment_ongoing:
-                group._set_assignment_status(status=True)
-                yield group
-
-    def waiting(self, exp_version: str):
-        return (g for g in self.notfull(exp_version) if g.assignment_ongoing)
-
-    def _local_groups(self, exp_version: str):
-        for group in self.path.iterdir():
-            if group.is_dir():
-                continue
-
-            with open(group, "r") as f:
-                d = json.load(f)
-                if self._group_fits(d, exp_version):
-                    yield Group(data=d, exp=self.exp)
-
-    def _mongo_groups(self, exp_version: str):
-        query = {"exp_id": self.exp.exp_id, "type": "match_group"}
-        if exp_version:
-            query["exp_version"] = exp_version
-
-        for d in self.exp.db_misc.find(query):
-            if self._group_fits(d, exp_version):
-                d.pop("_id", None)
-                yield Group(data=d, exp=self.exp)
-
-    def _group_fits(self, d: dict, exp_version: str) -> bool:
-        c1 = d["type"] == "match_group"
-        c2 = d["match_maker_name"] == self.match_maker_name
-        c3 = d["exp_version"] == exp_version or not exp_version
-        c4 = not d["expired"]
-        return all((c1, c2, c3, c4))
+    def _load_markbusy_mongo(self):
+        q = self.query
+        q["busy"] = False
+        data = self.db.find_one_and_update(q, {"$set": {"busy": True}})
+        if data is not None:
+            data.pop("_id", None)
+            data["busy"] = True
+            return MatchMakerData(**data)
+        else:
+            return None
 
 
 class MatchMaker:
-    """
-    Args:
-        name (str): The matchmaker name MUST be the same for all sessions
-            that should be part of the matchmaking process.
-    """
-
     TIMEOUT_MSG = "MatchMaking timeout"
+    DATA_TYPE = "match_maker"
 
     def __init__(
         self,
         *roles,
-        exp,
-        name: str = "matchmaker",
+        exp: ExperimentSession,
+        id: str = "matchmaker",
         member_timeout: int = None,
-        group_timeout: int = 60 * 60,
-        match_timeout: int = 60 * 15,
-        timeout_page=None,
+        group_timeout: int = 60 * 60,  # one hour
+        match_timeout: int = 60 * 15,  # 15 minutes
+        timeout_page: Page = None,
         raise_exception: bool = False,
         shuffle_roles: bool = False,
         respect_version: bool = True,
     ):
         self.exp = exp
+        self.exp_version = self.exp.version if respect_version else ""
         self.log = QueuedLoggingInterface(base_logger="alfred3")
         self.log.add_queue_logger(self, __name__)
-        self.exp_version = self.exp.version if respect_version else ""
-        self.shuffle_roles = shuffle_roles
 
-        self.member_timeout = member_timeout if member_timeout is not None else self.exp.session_timeout
+        self.shuffle_roles = shuffle_roles
+        self.member_timeout = (
+            member_timeout if member_timeout is not None else self.exp.session_timeout
+        )
+
+        # if a single operation in a group takes longer than this, the group
+        # is marked as inactive
         self.group_timeout = group_timeout
+
+        # if
         self.match_timeout = match_timeout
+
+        # for groupwise matching - only members with active ping are considered
+        self.ping_timeout = 100
         self.timeout_page = timeout_page
         self.raise_exception = raise_exception
 
         self.roles = roles
-        self.size = len(roles)
-        self.name = name
-        self.member = GroupMember._from_exp(
-            self.exp, match_size=self.size, match_maker_name=self.name
-        )
-        self.member._save()
-        self.group = None
+        self.matchmaker_id = id
+        self.io = MatchMakerIO(self)
 
-        self.memberlist = MemberList(self.exp, self.name, self.member_timeout)
-        self.grouplist = GroupList(self.exp, self.name)
+        self._data = self.io.load()
+
+        self.member_manager = MemberManager(self)
+        self.group_manager = GroupManager(self)
+        self.member = None
+        self.group = None
 
         self.exp.abort_functions.append(self._deactivate)
 
-        self.log.info("MatchMaker initialized.")
-    
-    def _deactivate(self, exp):
-        self.member.deactivate()
-        if self.group:
-            self.group.data.expired = True
-            self.group._save()
+    @classmethod
+    def from_size(cls, nroles: int, **kwargs):
+        roles = []
+        for i in range(nroles):
+            letter = string.ascii_letters[i]
+            while letter in roles:
+                letter = letter + string.ascii_letters[i]
+            roles.append(letter)
+        
+        return cls(*roles, **kwargs)
 
-    def match_stepwise(self, assignment_timeout: int = 60, wait: bool = False):
-        """
-        Raises:
-            MatchingError
-        """
+    @property
+    def data(self):
+        self._data.members[self.member.session_id] = asdict(self.member.data)
+        return self._data
+
+    def match_stepwise(self, wait: bool = False) -> Group:
         if wait and saving_method(self.exp) == "local":
             raise MatchingError("Can't wait for full group in local experiment.")
 
-        if any(self.grouplist.notfull(self.exp_version)):
+        self.member = GroupMember(self)
+        self.member._save()
+
+        if any(self.group_manager.notfull()):
             try:
-                group = self._match_next_group()
-                if wait:
-                    group = self._wait_until_full(group)
-                return group
-            except StopIteration:
-                return self._wait(secs=0.5, wait_max=assignment_timeout)
-        else:
-            group = self._start_group_and_assign()
+                self.group = self._match_next_group()
+            except BusyGroup:
+                # TODO: Assignment timeout?
+                self.group = self._wait_until_free(self.match_timeout)
             if wait:
-                group = self._wait_until_full(group)
-            return group
+                self.group = self._wait_until_full(self.group)
+
+            return self.group
+
+        else:
+            roles = {role: None for role in self.roles}
+            with Group(self, roles=roles) as group:
+                self.log.info(f"Starting new group: {group}.")
+
+                if self.shuffle_roles:
+                    group._shuffle_roles()
+
+                group += self.member
+                group._assign_next_role(to_member=self.member)
+                self.member._save()
+                self.group = group
+                self.log.info(f"Session matched to role '{self.member.role}' in {group}.")
+
+            if wait:
+                self.group = self._wait_until_full(self.group)
+
+            return self.group
 
     def match_groupwise(self) -> Group:
-        """
-        Raises:
-            MatchingError
-        """
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
+
+        self.member = GroupMember(self)
+        self.member._save()
 
         start = time.time()
         expired = (time.time() - start) > self.match_timeout
 
-        group = None
         i = 0
-        while not group:
-            group = self._do_match_groupwise()
-            self.group = group
-            
-            expired = (time.time() - start) > self.match_timeout
-            if expired:
-                break
-            
-            if (i == 0) or (i % 10 == 0):
-                msg = f"Incomplete group in groupwise matching. Waiting. Member: {self.member}"
-                self.log.debug(msg)
-            i += 1
-            time.sleep(1)
+        while not self.group:
+            self.member._ping()
+
+            self.group = self._do_match_groupwise()
+
+            if not self.group:
+                expired = (time.time() - start) > self.match_timeout
+                if expired:
+                    break
+
+                if (i == 0) or (i % 10 == 0):
+                    msg = f"Incomplete group in groupwise matching. Waiting. Member: {self.member}"
+                    self.log.debug(msg)
+
+                i += 1
+                time.sleep(1)
 
         if expired:
             self.log.error("Groupwise matchmaking timed out.")
             if self.raise_exception:
                 raise MatchingTimeout
             else:
-                return self._matching_timeout(group)
+                return self._matching_timeout(self.group)
         else:
-            self.log.info(f"{group} filled in groupwise match.")
+            self.log.info(f"{self.group} filled in groupwise match.")
             return self.group
-    
-    def _matching_timeout(self, group):
-        if group:
-            group.data.expired = True
-            group._save()
-            self.log.warning(f"{group} marked as expired.")
-        
-        if self.timeout_page:
-            self.exp.abort(reason=self.TIMEOUT_MSG, page=self.timeout_page)
-        else:
-            self.exp.abort(reason=self.TIMEOUT_MSG, title="Timeout", msg="Sorry, the matchmaking process timed out.", icon="user-clock")
-        
-        return None
-    
-    def _wait_until_full(self, group: Group) -> Group:
-        start = time.time()
-        timeout = False
-        while not group.full and not timeout:
-            group = Group._from_id(group.group_id, exp=self.exp)
-            time.sleep(1)
-            timeout = (time.time() - start) > self.match_timeout
-        
-        if not group.full:
-            self.exp.log.error("Stepwise matchmaking timed out.")
-            if self.raise_exception:
-                raise MatchingTimeout
-            else:
-                return self._matching_timeout(group)
-        self.group = group
-        return group
 
-    def _start_group_and_assign(self):
-        with self._start_group() as group:
-            self.log.info(f"Starting stepwise match of session to new group: {group}.")
-            group += self.member
-            group._assign_next_role(to_member=self.member)
-            self.log.info(f"Session matched to role '{self.member.match_role}' in {group}.")
-            self.group = group
-            return group
-
-    def _match_next_group(self):
-        with next(self.grouplist.ready(self.exp_version)) as group:
-            self.log.info(f"Starting stepwise match of session to existing group: {group}.")
-            group._discard_expired_members()
-            group += self.member
-            group._assign_next_role(to_member=self.member)
-            self.log.info(f"Session matched to role '{self.member.match_role}' in {group}.")
-            self.group = group
-            return group
-
-    def _wait(self, secs: int, wait_max: int):
+    def _wait_until_free(self, wait_max: int):
         if saving_method(self.exp) == "local":
             raise MatchingError("Can't wait for result in local experiment.")
 
         self.log.info(
             f"Waiting for ongoing group assignment to finish. Waiting for a maximum of {wait_max} seconds."
         )
-        try:
-            total_wait_time = 0
+        group = next(self.group_manager.notfull())
+        start = time.time()
+        timeout = False
 
-            while next(self.grouplist.notfull(self.exp_version)) == next(
-                self.grouplist.waiting(self.exp_version)
-            ):
+        while group.busy and not timeout:
+            timeout = time.time() - start > wait_max
+            group = self.group_manager.find(group.group_id)
+            time.sleep(1)
 
-                if total_wait_time > wait_max:
-                    # this is what happens, if waiting took too long
-                    # something is odd in this case
-                    # we leave the odd group open for the time being but start a new one
-                    group = next(self.grouplist.waiting(self.exp_version))
-
-                    msg1 = f"{group} was in waiting position for too long. "
-                    msg2 = f"Starting a new group for session {self.exp.session_id}."
-                    self.log.warning(msg1 + msg2)
-                    return self._start_group_and_assign()
-
-                total_wait_time += secs
-                time.sleep(secs)
-
-        except StopIteration:
+        if not timeout and not group.busy:
             self.log.info("Previous group assignment finished. Proceeding.")
-            # this is the planned output for the waiting function
-            # gets triggered, as soon as there is either no notfull group
-            # or no waiting group anymore
-            return self.match_stepwise()
+            return group
 
-    def _do_match_groupwise(self) -> Group:
-        # to avoid racing between different MatchMaker sessions
-        if any(self.grouplist.notfull(self.exp_version)):  
-            return None
+        elif timeout:
+            msg1 = f"{group} was in waiting position for too long. "
+            msg2 = f"Starting a new group for session {self.exp.session_id}."
+            self.log.warning(msg1 + msg2)
 
-        # if another matchmaker has created the group
-        # we rebuild the group object from the database and return it here
-        member = self.member._reload()
-        if member.match_group:
-            self.member = member
-            return Group._from_id(group_id=member.match_group, exp=self.exp)
-
-        # if this matchmaker is creating the group
-        unmatched_members = list(self.memberlist.ready(self.exp_version))
-        if len(unmatched_members) >= self.size:
-            for m in unmatched_members[: self.size]:
-                m._set_assignment_status(status=True)
-
-            with self._start_group() as group:
-                group += self.member
-                waiting_members = self.memberlist.waiting(self.exp_version)
-                while not group.full:
-                    group += next(waiting_members)
-                group._assign_all_roles()
+            group = Group(self, roles=self.roles)
+            if self.shuffle_roles:
+                group._shuffle_roles()
 
             return group
-        else:
-            return None
 
-    def _start_group(self) -> Group:
-        data = {}
-        data["group_id"] = uuid4().hex
-        data["match_maker_name"] = self.name
-        data["match_size"] = self.size
-        data["match_roles"] = {r: None for r in self.roles}
-        data["member_timeout"] = self.member_timeout
-        data["group_timeout"] = self.group_timeout
+    def _wait_until_full(self, group: Group):
+        start = time.time()
+        timeout = False
+        group_id = group.group_id
 
-        group = Group._from_exp(exp=self.exp, **data)
-        if self.shuffle_roles:
-            group._shuffle_roles()
-        group._save()
+        while not group.full and not timeout:
+            group = self.group_manager.find(group_id)
+            time.sleep(1)
+            timeout = (time.time() - start) > self.match_timeout
+
+        if timeout:
+            self.exp.log.error("Stepwise matchmaking timed out.")
+            if self.raise_exception:
+                raise MatchingTimeout
+            else:
+                return self._matching_timeout(group)
+
         return group
 
+    def _match_next_group(self):
+        with next(self.group_manager.notfull()) as group:
+            self.log.info(f"Starting stepwise match of session to existing group: {group}.")
+
+            group += self.member
+            group._assign_next_role(to_member=self.member)
+            self.member._save()
+
+            self.log.info(f"Session matched to role '{self.member.role}' in {group}.")
+            return group
+
+    def _do_match_groupwise(self):
+        member = self.member._load_if_notbusy()
+        if member is None:
+            self.log.debug("Returning. Member not found, MM is busy")
+            return None
+
+        elif member.matched:
+            self.log.debug("Returning. Found group")
+            return self.group_manager.find(member.data.group_id)
+
+        # returns None if MatchMaker is busy, marks as busy otherwise
+        data = self.io.load_markbusy()
+        if data is None:
+            self.log.debug("Returning. Data marked, MM is busy.")
+            return None
+
+        waiting_members = list(self.member_manager.waiting())
+        waiting_members = [m for m in waiting_members if m != self.member]
+        waiting_members.insert(0, self.member)
+
+        if len(waiting_members) >= len(self.roles):
+            self.log.debug("Filling group.")
+            roles = {role: None for role in self.roles}
+            group = Group(matchmaker=self, roles=roles)
+            if self.shuffle_roles:
+                group._shuffle_roles()
+
+            candidates = (m for m in waiting_members)
+            while not group.full:
+                group += next(candidates)
+
+            group._assign_all_roles(to_members=waiting_members)
+            group._save()
+
+            # update matchmaker data
+            for m in waiting_members:
+                data.members[m.data.session_id] = asdict(m.data)
+            self.io.save(data=data)
+
+            # release busy-lock
+            self.io.release()
+            self._data = self.io.load()
+            self.log.debug("Returning filled group.")
+            return group
+
+        else:  # if there were not enough members
+            self.io.release()
+            self._data = self.io.load()
+            return None
+
+    def _matching_timeout(self, group):
+        if group:
+            group.data.active = False
+            group._save()
+        self.log.warning(f"{group} marked as expired. Releasing MatchMaker busy lock.")
+        self.io.release()
+        self._data = self.io.load()
+
+        if self.timeout_page:
+            self.exp.abort(reason=self.TIMEOUT_MSG, page=self.timeout_page)
+        else:
+            self.exp.abort(
+                reason=self.TIMEOUT_MSG,
+                title="Timeout",
+                msg="Sorry, the matchmaking process timed out.",
+                icon="user-clock",
+            )
+
+        return None
+
+    def _deactivate(self, exp):
+        # gets called when the experiment aborts!
+        if self.member:
+            self.member.data.active = False
+            self.member._save()
+
     def __str__(self):
-        return f"{type(self).__name__}(name='{self.name}', roles={str(self.roles)})"
+        return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"
+
+    def __repr__(self):
+        return self.__str__()

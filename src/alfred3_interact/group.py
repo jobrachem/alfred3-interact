@@ -1,187 +1,32 @@
-import copy
 import json
 import random
 import time
-from dataclasses import asdict, dataclass, field
-from typing import Iterator, List
+from pathlib import Path
+from typing import Iterator
+from dataclasses import asdict
 
-from alfred3.alfredlog import QueuedLoggingInterface
-from alfred3.data_manager import DataManager as dm
-
-from ._util import MatchingError, saving_method
+from .manager import MemberManager
+from .member import GroupMember
+from .data import GroupData
 from .data import SharedGroupData
-
-
-@dataclass
-class GroupMemberData:
-    session_id: str
-    exp_id: str
-    exp_version: str
-    match_size: int
-    match_maker_name: str
-    match_group: str = None
-    match_role: str = None
-    timestamp: float = time.time()
-    assignment_ongoing: bool = False
-    member_active: bool = True
-    type: str = "match_member"
-
-
-class GroupMember:
-    def __init__(self, data: dict = None, exp=None):
-        self.data = GroupMemberData(**data)
-        self._exp = exp
-        p = self._exp.config.get("interact", "path", fallback="save/interact")
-        self.path = self._exp.subpath(p) / "members" / f"member_{self.session_id}.json"
-        self.path.parent.mkdir(exist_ok=True, parents=True)
-
-        psave = self._exp.config.get("local_saving_agent", "path")
-        self._save_path = self._exp.subpath(psave)
-
-    @classmethod
-    def _from_exp(cls, exp, **kwargs):
-        kwargs_version = kwargs.get("exp_version", None)
-        version = kwargs_version if kwargs_version is not None else exp.version
-        data = {
-            **{"session_id": exp.session_id, "exp_id": exp.exp_id, "exp_version": version},
-            **kwargs,
-        }
-        return cls(data=data, exp=exp)
-
-    @property
-    def exp(self):
-        return self._exp
-
-    def __getattr__(self, name):
-        return getattr(self.data, name)
-
-    def _save(self):
-        if saving_method(self._exp) == "local":
-            with open(self.path, "w") as p:
-                json.dump(asdict(self.data), p, indent=4, sort_keys=True)
-        elif saving_method(self._exp) == "mongo":
-            query = {"type": "match_member", "session_id": self.session_id}
-            self._exp.db_misc.find_one_and_replace(query, asdict(self.data), upsert=True)
-        else:
-            raise MatchingError("No saving method found. Try defining a saving agent.")
-
-    def _reload(self):
-        if saving_method(self._exp) == "local":
-            with open(self.path, "r") as p:
-                return GroupMember(data=json.load(p), exp=self._exp)
-        elif saving_method(self._exp) == "mongo":
-            query = {"type": "match_member", "session_id": self.session_id}
-            d = self._exp.db_misc.find_one(query)
-            d.pop("_id")
-            return GroupMember(data=d, exp=self._exp)
-        else:
-            raise MatchingError("No saving method found. Try defining a saving agent.")
-
-    def _set_assignment_status(self, status: bool):
-        self.data.assignment_ongoing = status
-        self._save()
-
-    def active(self, timeout: int):
-        return self.member_active and time.time() - self.timestamp < timeout
-    
-    def deactivate(self):
-        self.member_active = False
-        self._save()
-
-    def __repr__(self):
-        return f"{type(self).__name__}(role='{self.match_role}', session_id='{self.session_id}')"
-
-    @property
-    def values(self):
-        session_data = self.session_data
-        if session_data:
-            return {
-                k: v
-                for k, v in dm.flatten(session_data).items()
-                if k not in dm._metadata and k not in dm.client_data
-            }
-        else:
-            return None
-
-    @property
-    def session_data(self) -> dict:
-        if self.session_id.startswith("placeholder"):
-            return None
-        if saving_method(self._exp) == "local":
-            iterator = dm.iterate_local_data(dm.EXP_DATA, directory=self._save_path)
-        elif saving_method(self._exp) == "mongo":
-            iterator = dm.iterate_mongo_data(
-                exp_id=self.exp_id, data_type=dm.EXP_DATA, secrets=self._exp.secrets
-            )
-        else:
-            return None
-        for data in iterator:
-            if data["exp_session_id"] == self.session_id:
-                return data
-
-    @property
-    def move_history(self):
-        session_data = self.session_data
-        if session_data:
-            return session_data.get("exp_move_history", None)
-
-    @property
-    def metadata(self):
-        session_data = self.session_data
-        if session_data:
-            return {k: v for k, v in dm.flatten(session_data).items() if k in dm._metadata}
-        else:
-            return None
-
-    @property
-    def client_data(self):
-        session_data = self.session_data
-        if session_data:
-            return {k: v for k, v in dm.flatten(session_data).items() if k in dm.client_data}
-        else:
-            return None
-
-    @property
-    def role(self):
-        return self.data.match_role
-
-    
-
-@dataclass
-class GroupData:
-    group_id: str
-    exp_id: str
-    exp_version: str
-    match_maker_name: str
-    match_size: int
-    match_roles: dict
-    match_time: float = time.time()
-    type: str = "match_group"
-    members: list = None
-    member_timeout: int = None
-    assignment_ongoing: bool = True
-    expired: bool = False
-    group_timeout: int = 60 * 60 * 1
-    shared_data: dict = field(default_factory=lambda: {})
-
+from ._util import MatchingError
+from ._util import saving_method
 
 class Group:
-    def __init__(self, data: dict, exp):
-        self.data = GroupData(**data)
-        self.exp = exp
-        self.log = QueuedLoggingInterface(base_logger="alfred3")
-        self.log.add_queue_logger(self, __name__)
+    DATA_TYPE = "match_group"
 
-        try:
-            self.data.members = [GroupMember(data=d, exp=exp) for d in self.data.members]
-        except TypeError:
-            self.data.members = []
-
-        p = self.exp.config.get("interact", "path", fallback="save/interact")
-        self.path = self.exp.subpath(p) / f"group_{self.group_id}.json"
-        self.path.parent.mkdir(exist_ok=True, parents=True)
-
+    def __init__(self, matchmaker, **kwargs):
+        kwargs.pop("_id", None)
+        self.mm = matchmaker
+        self.exp = self.mm.exp
+        self.manager = MemberManager(matchmaker=self.mm)
+        exp_id = kwargs.get("exp_id", None)
+        kwargs["exp_id"] = exp_id if exp_id is not None else self.exp.exp_id
+        mm_id = kwargs.get("matchmaker_id", None)
+        kwargs["matchmaker_id"] = mm_id if mm_id is not None else self.mm.matchmaker_id
+        self.data = GroupData(**kwargs)
         self._operation_start = None
+
         self._shared_data = SharedGroupData(group=self)
         self._save()
         self._shared_data._fetch()
@@ -192,176 +37,128 @@ class Group:
         return self._shared_data
 
     @property
-    def other_members(self) -> List[GroupMember]:
-        others = [m for m in self.members if m.session_id != self.exp.session_id]
-        if others:
-            return others
-        else:
-            data = {}
-            data["exp_id"] = self.exp.exp_id
-            data["match_group"] = self.group_id
-            data["exp_version"] = self.exp_version
-            data["match_size"] = self.match_size
-            data["match_maker_name"] = self.match_maker_name
-            data["timestamp"] = 0
-            others = []
-            for role in self.open_roles():
-                data["session_id"] = f"placeholder_{role}"
-                data["match_role"] = role
-                others.append(GroupMember(data=data, exp=self.exp))
-            return others
-
-    @property
-    def you(self) -> GroupMember:
-        if self.match_size > 2:
-            raise MatchingError(
-                "Can't use 'you' for groups with more than 2 slots. Use 'other_members' instead."
-            )
-
-        return self.other_members[0]
-
-    @property
-    def me(self):
-        print(self.members)
-        print(self.exp.session_id)
-        return [m for m in self.members if m.session_id == self.exp.session_id][0]
+    def path(self) -> Path:
+        parent = self.mm.io.path.parent
+        return parent / f"group_{self.group_id}.json"
 
     @property
     def full(self) -> bool:
-        return self.match_size == len(self.members)
+        return len(list(self.active_members())) == len(self.data.roles)
 
-    @classmethod
-    def _from_exp(cls, exp, **kwargs):
-        kwargs_version = kwargs.get("exp_version", None)
-        version = kwargs_version if kwargs_version is not None else exp.version
+    @property
+    def you(self):
+        if len(self.data.roles) > 2:
+            raise MatchingError(
+                "Can't use 'you' for groups with more than 2 slots, because it is ambiguous. Use the 'other_members()' generator instead, or access members based on their roles."
+            )
+        else:
+            return next(self.other_members())
 
-        data = {**{"exp_id": exp.exp_id, "exp_version": version}, **kwargs}
-        return cls(data=data, exp=exp)
+    @property
+    def me(self):
+        return next(m for m in self.members() if m.session_id == self.exp.session_id)
 
-    @classmethod
-    def _from_id(cls, group_id: str, exp):
-        query = {"type": "match_group", "group_id": group_id}
-        d = exp.db_misc.find_one(query)
-        d.pop("_id")
-        return cls(data=d, exp=exp)
+    def members(self) -> Iterator[GroupMember]:
+        return (self.manager.find(mid) for mid in self.data.members)
 
-    def get_one_by_role(self, role: str) -> GroupMember:
-        """
-        GroupMember: Returns the first member with the given role.
-        """
-        try:
-            return self.get_many_by_role(role=role)[0]
-        except IndexError:
-            return None
+    def active_members(self) -> Iterator[GroupMember]:
+        return (member for member in self.members() if member.active)
 
-    def get_many_by_role(self, role: str) -> List[GroupMember]:
-        """
-        list: List of all GroupMembers with the given role.
-        """
-        if not role in self.match_roles:
+    def other_members(self) -> Iterator[GroupMember]:
+        return (m for m in self.active_members() if m.session_id != self.exp.session_id)
+
+    def get_member_by_role(self, role: str) -> GroupMember:
+        if not role in self.data.roles:
             raise AttributeError(f"Role '{role}' not found in {self}.")
 
-        return [m for m in self.members if m.match_role == role]
+        return next(m for m in self.active_members() if m.role == role)
 
-    def get_one_by_id(self, session_id: str) -> GroupMember:
-        try:
-            return [m for m in self.members if m.session_id == session_id][0]
-        except IndexError:
-            return None
+    def get_member_by_id(self, id: str) -> GroupMember:
+        if not id in self.data.members:
+            raise AttributeError(f"Member with id '{id}' not found in {self}.")
 
-    def get_many_by_id(self, session_id: str) -> List[GroupMember]:
-        return [m for m in self.members if m.session_id == session_id]
+        return next(m for m in self.members() if m.data.session_id == id)
 
     def open_roles(self) -> Iterator[str]:
+        manager = MemberManager(matchmaker=self.mm)
+        for role, member_id in self.data.roles.items():
+            if member_id is None:
+                yield role
+            else:
+                member = manager.find(id=member_id)
+                if not member.active:
+                    yield role
 
-        return (role for role, member_id in self.match_roles.items() if member_id is None)
+    def _shuffle_roles(self):
+        role_list = list(self.data.roles.items())
+        random.shuffle(role_list)
+        self.data.roles = dict(role_list)
 
-    def _discard_expired_members(self):
-        if self.member_timeout is not None:
-            self.data.members = [m for m in self.members if m.active(self.member_timeout)]
-            member_ids = [m.session_id for m in self.members]
-            for role, sid in self.match_roles.items():
-                if sid not in member_ids:
-                    self.match_roles[role] = None
-
-    def _assigned_roles(self) -> Iterator[str]:
-        return (role for role, member_id in self.match_roles.items() if member_id is not None)
-
-    def _assign_next_role(self, to_member: GroupMember):
-        if not any(self.open_roles()):
-            return
-        role = next(self.open_roles())
-        to_member.data.match_role = role
-        self.data.match_roles[role] = to_member.session_id
-        to_member._save()
-
-    def _assign_all_roles(self):
+    def _assign_all_roles(self, to_members):
         if not self.full:
             raise MatchingError("Can't assign all roles if group is not full.")
 
-        for role, member in zip(self.match_roles.keys(), self.members):
-            member.data.match_role = role
-            self.match_roles[role] = member.session_id
-            member.data.assignment_ongoing = False
-            member._save()
+        if not len(list(self.open_roles())) == len(self.data.roles):
+            raise MatchingError("Some roles are already assigned, can't assign all roles.")
 
-    def _shuffle_roles(self):
-        role_list = list(self.match_roles.items())
-        random.shuffle(role_list)
-        self.data.match_roles = dict(role_list)
+        for role, member in zip(self.data.roles.keys(), to_members):
+            member.data.role = role
+            self.data.roles[role] = member.data.session_id
 
-    def roles(self) -> List[str]:
-        return list(self.match_roles)
-
-    def _asdict(self):
-        group = copy.copy(self.data)
-        group.members = [asdict(m.data) for m in group.members]
-        group.data = group.members
-        return asdict(group)
+    def _assign_next_role(self, to_member: GroupMember):
+        role = next(self.open_roles())
+        to_member.data.role = role
+        self.data.roles[role] = to_member.data.session_id
 
     def _save(self):
-
         if saving_method(self.exp) == "local":
-            with open(self.path, "w") as p:
-                json.dump(self._asdict(), p, indent=4)
+            self._save_local()
         elif saving_method(self.exp) == "mongo":
-            query = {"type": "match_group", "group_id": self.group_id}
-            self.exp.db_misc.find_one_and_replace(query, self._asdict(), upsert=True)
-        else:
-            raise MatchingError("No saving method found. Try defining a saving agent.")
+            self._save_mongo()
 
-    def _set_assignment_status(self, status: bool = True):
-        self.data.assignment_ongoing = status
-        self._save()
+    def _save_local(self):
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(asdict(self.data), f, sort_keys=True, indent=4)
+
+    def _save_mongo(self):
+        q = {}
+        q["type"] = self.DATA_TYPE
+        q["group_id"] = self.group_id
+        data = self.exp.db_misc.find_one_and_replace(q, asdict(self.data), upsert=True)
+        return data
 
     def __iadd__(self, member):
-        member.data.match_group = self.group_id
-        if "__groups" in member._exp.adata:
-            member._exp.adata[f"__groups"].append(self.group_id)
-        else:
-            member._exp.adata["__groups"] = [self.group_id]
-        self.members.append(member)
+        # TODO: Add group ID to member's experiment data
+
+        if member.data.session_id in self.data.members:
+            return self
+
+        member.data.group_id = self.data.group_id
+        self.data.members.append(member.data.session_id)
         return self
-
-    def __enter__(self):
-        self._operation_start = time.time()
-        self._set_assignment_status(status=True)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if (time.time() - self._operation_start) > self.group_timeout:
-            self.data.expired = True
-        self._set_assignment_status(status=False)
-
-    def __str__(self):
-        return f"{type(self).__name__}(roles={str(list(self.match_roles.keys()))}, {len(self.members)}/{len(self.match_roles)} roles filled)"
 
     def __eq__(self, other):
-        return (type(self) == type(other)) and (self.group_id == other.group_id)
+        return (type(self) == type(other)) and (self.data.group_id == other.data.group_id)
+
+    def __str__(self):
+        return f"{type(self).__name__}(roles={str(list(self.data.roles.keys()))}, {len(self.data.members)}/{len(self.data.roles)} roles filled)"
+
+    def __repr__(self):
+        return self.__str__()
 
     def __getattr__(self, name):
         try:
             return getattr(self.data, name)
         except AttributeError:
-            return self.get_one_by_role(role=name)
+            return self.get_member_by_role(role=name)
 
+    def __enter__(self):
+        self.data.busy = True
+        self._operation_start = time.time()
+        self._save()  # returns data, if group was not busy before but is now busy
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if time.time() - self._operation_start > self.mm.group_timeout:
+            self.data.active = False
+        self.data.busy = False
+        self._save()

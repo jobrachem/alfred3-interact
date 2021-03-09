@@ -1,5 +1,8 @@
 import time
+from uuid import uuid4
 from collections import UserDict
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple
 
 from alfred3.util import prefix_keys_safely
 from pymongo.collection import ReturnDocument
@@ -44,7 +47,7 @@ class SharedGroupData(UserDict):
         self._push()
     
     def _push(self):
-        self._push_additional_data()
+        self._push_additional_data() # TODO: Remove
         self.data["__group_id"] = self.group.group_id
         self.data["__last_change"] = time.time()
 
@@ -55,6 +58,7 @@ class SharedGroupData(UserDict):
             self._push_local()
     
     def _push_additional_data(self):
+        # TODO: Remove
         entry = {"__group_data": self.data}
         self.group.exp.adata.update(entry)
 
@@ -77,5 +81,42 @@ class SharedGroupData(UserDict):
         self._fetch()
         super().__delitem__(key)
         self._push()
+
+
+@dataclass
+class GroupMemberData:
+    exp_id: str
+    session_id: str
+    group_id: str = None
+    role: str = None
+    timestamp: float = time.time()
+    ping: float = time.time()
+    active: bool = True
+    type: str = "match_member"
+
+
+@dataclass
+class GroupData:
+    exp_id: str
+    matchmaker_id: str
+    roles: dict
+    group_id: str = uuid4().hex
+    members: list = field(default_factory=list)
+    timestamp: float = time.time()
+    active: bool = True
+    busy: bool = False
+    shared_data: dict = field(default_factory=dict)
+    type: str = "match_group"
+
+
+@dataclass
+class MatchMakerData:
+    exp_id: str
+    exp_version: str
+    matchmaker_id: str 
+    members: dict = field(default_factory=dict)
+    busy: bool = False
+    active: bool = False
+    type: str = "match_maker"
 
 

@@ -29,6 +29,9 @@ class Callback(Element):
         $(document).ready(function () {
     
             $.get( "{{ url }}", function(data) {
+                
+                // if return has status 500, abort experiment
+                
                 $("#alt-submit").attr("name", "move");
                 $("#alt-submit").val("forward");
                 $("#form").submit();
@@ -67,7 +70,7 @@ class WaitingPage(al.NoNavigationPage):
         try:
             start = time.time()
 
-            while not self.wait_for():
+            while not self.wait_for() and not self.exp.aborted:
                 time.sleep(self.wait_sleep_time)
 
                 if time.time() - start > self.wait_timeout:
@@ -83,6 +86,7 @@ class WaitingPage(al.NoNavigationPage):
     def on_exp_access(self):
         
         self += al.VerticalSpace("100px")
-        self += al.Text(al.icon("spinner", spin=True, size="120pt"), align="center")
-        self += al.VerticalSpace("50px")
+        self += al.Text(al.icon("spinner", spin=True, size="90pt"), align="center")
+        self += al.VerticalSpace("30px")
+        self += al.Counter(font_size=30, align="center")
         self += al.Text(self.wait_msg, align="center")

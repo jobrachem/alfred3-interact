@@ -1,0 +1,164 @@
+import time
+import json
+from dataclasses import asdict
+
+from pymongo.collection import ReturnDocument
+from alfred3.data_manager import DataManager as dm
+
+from .data import GroupMemberData
+from ._util import saving_method
+from ._util import MatchingError
+
+
+class GroupMember:
+    def __init__(self, matchmaker, **kwargs):
+        kwargs.pop("_id", None)
+        self.mm = matchmaker
+        self.exp = self.mm.exp
+        exp_id = kwargs.get("exp_id", None)
+        kwargs["exp_id"] = exp_id if exp_id is not None else self.exp.exp_id
+        sid = kwargs.get("session_id", None)
+        kwargs["session_id"] = sid if sid is not None else self.exp.session_id
+        self.data = GroupMemberData(**kwargs)
+
+    @property
+    def _path(self):
+        return self.mm.io.path
+
+    @property
+    def active(self):
+        expired = time.time() - self.data.timestamp > self.mm.member_timeout
+        return self.data.active and not expired
+
+    @property
+    def matched(self):
+        return True if self.data.group_id is not None else False
+
+    @property
+    def waiting(self):
+        return (not self.matched) and (time.time() - self.ping < self.mm.ping_timeout)
+
+    @property
+    def values(self):
+        d = dm.flatten(self.session_data).items()
+        return {k: v for k, v in d if k not in dm._metadata and k not in dm.client_data}
+
+    @property
+    def session_data(self) -> dict:
+        if saving_method(self.exp) == "local":
+            iterator = dm.iterate_local_data(dm.EXP_DATA, directory=self.mm.io.path.parent)
+        elif saving_method(self.exp) == "mongo":
+            iterator = dm.iterate_mongo_data(
+                exp_id=self.exp_id, data_type=dm.EXP_DATA, secrets=self.exp.secrets
+            )
+
+        return next(d for d in iterator if d["exp_session_id"] == self.session_id)
+
+    @property
+    def move_history(self):
+        return self.session_data.get("exp_move_history", None)
+
+    @property
+    def metadata(self):
+        data = dm.flatten(self.session_data).items()
+        return {k: v for k, v in data if k in dm._metadata}
+
+    @property
+    def client_data(self):
+        data = dm.flatten(self.session_data).items()
+        return {k: v for k, v in data if k in dm.client_data}
+
+    def _ping(self):
+        self.data.ping = time.time()
+        q = {}
+        q["type"] = self.mm.DATA_TYPE
+        q["matchmaker_id"] = self.mm.matchmaker_id
+        q["exp_id"] = self.exp.exp_id
+        q["exp_version"] = self.mm.exp_version
+        self.exp.db_misc.find_one_and_update(
+            q, [{"$set": {"members": {self.session_id: {"ping": self.data.ping}}}}]
+        )
+
+    def _save(self):
+        if saving_method(self.exp) == "local":
+            self._save_local()
+        elif saving_method(self.exp) == "mongo":
+            self._save_mongo()
+
+    def _save_local(self):
+        """
+        Updates the entry for the member in the matchmaker data.
+        """
+        with open(self._path, "r", encoding="utf-8") as f:
+            mm = json.load(f)
+
+        mm["members"][self.session_id] = asdict(self.data)
+
+        with open(self._path, "w", encoding="utf-8") as f:
+            json.dump(mm, f, sort_keys=True, indent=4)
+
+    def _save_mongo(self):
+        """
+        Updates only the entry for the member in the matchmaker data.
+        """
+        q = {}
+        q["type"] = self.mm.DATA_TYPE
+        q["matchmaker_id"] = self.mm.matchmaker_id
+        q["exp_id"] = self.exp.exp_id
+        q["exp_version"] = self.mm.exp_version
+        d = {"members": {self.session_id: asdict(self.data)}}
+        mm = self.exp.db_misc.find_one_and_update(
+            q, [{"$set": d}], return_document=ReturnDocument.AFTER
+        )
+        if not self.session_id in mm["members"]:
+            raise MatchingError
+
+    def _load_if_notbusy(self):
+        """
+        Returns an updated version of self, if the corresponsing matchmaker
+        is not busy.
+        """
+        if saving_method(self.exp) == "local":
+            mm = self._load_if_notbusy_local()
+        elif saving_method(self.exp) == "mongo":
+            mm = self._load_if_notbusy_mongo()
+
+        if mm is None:
+            return None
+
+        self.data = GroupMemberData(**mm["members"][self.session_id])
+        return self
+
+    def _load_if_notbusy_local(self):
+        with open(self._path, "r", encoding="utf-8") as f:
+            mm = json.load(f)
+
+        if mm["busy"]:
+            return None
+        else:
+            return mm
+
+    def _load_if_notbusy_mongo(self):
+        q = {}
+        q["type"] = self.mm.DATA_TYPE
+        q["matchmaker_id"] = self.mm.matchmaker_id
+        q["exp_id"] = self.exp.exp_id
+        q["exp_version"] = self.mm.exp_version
+        q["busy"] = False
+        return self.exp.db_misc.find_one(q)
+
+    def __str__(self):
+        return f"{type(self).__name__}(role='{self.data.role}', session_id='{self.data.session_id}', group='{self.data.group_id}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        c1 = type(self) == type(other)
+        c2 = self.data.session_id == other.data.session_id
+
+        return all([c1, c2])
+
+    def __getattr__(self, name):
+        return getattr(self.data, name)
+
