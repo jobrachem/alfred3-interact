@@ -1,3 +1,2 @@
-#from .match import *
-from .page import *
-from .group2 import *
+from .page import WaitingPage
+from .match import MatchMaker

@@ -30,8 +30,6 @@ class Callback(Element):
     
             $.get( "{{ url }}", function(data) {
                 
-                // if return has status 500, abort experiment
-                
                 $("#alt-submit").attr("name", "move");
                 $("#alt-submit").val("forward");
                 $("#form").submit();
@@ -88,5 +86,5 @@ class WaitingPage(al.NoNavigationPage):
         self += al.VerticalSpace("100px")
         self += al.Text(al.icon("spinner", spin=True, size="90pt"), align="center")
         self += al.VerticalSpace("30px")
-        self += al.Counter(font_size=30, align="center")
+        self += al.CountUp(font_size=30, align="center")
         self += al.Text(self.wait_msg, align="center")

@@ -28,7 +28,13 @@ class GroupMember:
     @property
     def active(self):
         expired = time.time() - self.data.timestamp > self.mm.member_timeout
-        return self.data.active and not expired
+        return self.data.active and (not expired or self.finished)
+    
+    @property
+    def finished(self):
+        q = {"type": "exp_data", "exp_id": self.exp.exp_id, "session_id": self.session_id}
+        doc = self.exp.db_main.find_one(q)
+        return doc["exp_finished"]
 
     @property
     def matched(self):
@@ -78,7 +84,7 @@ class GroupMember:
         self.exp.db_misc.find_one_and_update(
             q, [{"$set": {"members": {self.session_id: {"ping": self.data.ping}}}}]
         )
-
+    
     def _save(self):
         if saving_method(self.exp) == "local":
             self._save_local()
@@ -162,3 +168,25 @@ class GroupMember:
     def __getattr__(self, name):
         return getattr(self.data, name)
 
+class MemberManager:
+    def __init__(self, matchmaker):
+        self.mm = matchmaker
+
+    def members(self):
+        data = self.mm.io.load().members.values()
+        for mdata in data:
+            yield GroupMember(matchmaker=self.mm, **mdata)
+
+    def active(self):
+        return (m for m in self.members() if m.active)
+
+    def unmatched(self):
+        return (m for m in self.active() if not m.matched)
+
+    def waiting(self):
+        for m in self.active():
+            if m.waiting:
+                yield m
+
+    def find(self, id: str):
+        return next((m for m in self.members() if m.data.session_id == id), None)

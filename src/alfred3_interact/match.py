@@ -11,9 +11,9 @@ from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.experiment import ExperimentSession
 
 from .group import Group
+from .group import GroupManager
 from .member import GroupMember
-from .manager import MemberManager
-from .manager import GroupManager
+from .member import MemberManager
 from .data import MatchMakerData
 from ._util import saving_method
 from ._util import MatchingError
@@ -160,6 +160,7 @@ class MatchMaker:
         member_timeout: int = None,
         group_timeout: int = 60 * 60,  # one hour
         match_timeout: int = 60 * 15,  # 15 minutes
+        ping_timeout: int = 15,
         timeout_page: Page = None,
         raise_exception: bool = False,
         shuffle_roles: bool = False,
@@ -175,15 +176,9 @@ class MatchMaker:
             member_timeout if member_timeout is not None else self.exp.session_timeout
         )
 
-        # if a single operation in a group takes longer than this, the group
-        # is marked as inactive
         self.group_timeout = group_timeout
-
-        # if
         self.match_timeout = match_timeout
-
-        # for groupwise matching - only members with active ping are considered
-        self.ping_timeout = 100
+        self.ping_timeout = ping_timeout
         self.timeout_page = timeout_page
         self.raise_exception = raise_exception
 
@@ -223,17 +218,21 @@ class MatchMaker:
         self.member = GroupMember(self)
         self.member._save()
 
+        # match to existing group
         if any(self.group_manager.notfull()):
             try:
                 self.group = self._match_next_group()
             except BusyGroup:
-                # TODO: Assignment timeout?
                 self.group = self._wait_until_free(self.match_timeout)
+            
+            self.log.info(f"Session matched to role '{self.member.role}' in {self.group}.")
             if wait:
                 self.group = self._wait_until_full(self.group)
-
+            
+            self._save_infos()
             return self.group
 
+        # start a new group
         else:
             roles = {role: None for role in self.roles}
             with Group(self, roles=roles) as group:
@@ -250,7 +249,7 @@ class MatchMaker:
 
             if wait:
                 self.group = self._wait_until_full(self.group)
-
+            self._save_infos()
             return self.group
 
     def match_groupwise(self) -> Group:
@@ -289,6 +288,7 @@ class MatchMaker:
                 return self._matching_timeout(self.group)
         else:
             self.log.info(f"{self.group} filled in groupwise match.")
+            self._save_infos()
             return self.group
 
     def _wait_until_free(self, wait_max: int):
@@ -308,7 +308,7 @@ class MatchMaker:
             time.sleep(1)
 
         if not timeout and not group.busy:
-            self.log.info("Previous group assignment finished. Proceeding.")
+            self.log.info("Waiting successful. Proceeding with group assignment.")
             return group
 
         elif timeout:
@@ -349,7 +349,6 @@ class MatchMaker:
             group._assign_next_role(to_member=self.member)
             self.member._save()
 
-            self.log.info(f"Session matched to role '{self.member.role}' in {group}.")
             return group
 
     def _do_match_groupwise(self):
@@ -403,10 +402,11 @@ class MatchMaker:
             return None
 
     def _matching_timeout(self, group):
+        self.log.warning("Matchmaking timeout.")
         if group:
             group.data.active = False
             group._save()
-        self.log.warning(f"{group} marked as expired. Releasing MatchMaker busy lock.")
+            self.log.warning(f"{group} marked as expired.")
         self.io.release()
         self._data = self.io.load()
 
@@ -421,6 +421,14 @@ class MatchMaker:
             )
 
         return None
+    
+    def _save_infos(self):
+        prefix = "interact"
+        while prefix in self.exp.adata:
+            prefix += "_"
+        self.exp.adata[prefix] = {}
+        self.exp.adata[prefix]["groupid"] = self.group.group_id
+        self.exp.adata[prefix]["role"] = self.member.role
 
     def _deactivate(self, exp):
         # gets called when the experiment aborts!

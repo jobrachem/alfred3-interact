@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterator
 from dataclasses import asdict
 
-from .manager import MemberManager
+from .member import MemberManager
 from .member import GroupMember
 from .data import GroupData
 from .data import SharedGroupData
@@ -24,6 +24,8 @@ class Group:
         kwargs["exp_id"] = exp_id if exp_id is not None else self.exp.exp_id
         mm_id = kwargs.get("matchmaker_id", None)
         kwargs["matchmaker_id"] = mm_id if mm_id is not None else self.mm.matchmaker_id
+        if not "exp_version" in kwargs:
+            kwargs["exp_version"] = self.mm.exp_version
         self.data = GroupData(**kwargs)
         self._operation_start = None
 
@@ -141,7 +143,11 @@ class Group:
         return (type(self) == type(other)) and (self.data.group_id == other.data.group_id)
 
     def __str__(self):
-        return f"{type(self).__name__}(roles={str(list(self.data.roles.keys()))}, {len(self.data.members)}/{len(self.data.roles)} roles filled)"
+        roles = str(list(self.data.roles.keys()))
+        nactive = len(list(self.active_members()))
+        nroles = len(self.data.roles)
+
+        return f"{type(self).__name__}(roles={roles}, {nactive}/{nroles} roles filled)"
 
     def __repr__(self):
         return self.__str__()
@@ -156,9 +162,66 @@ class Group:
         self.data.busy = True
         self._operation_start = time.time()
         self._save()  # returns data, if group was not busy before but is now busy
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if time.time() - self._operation_start > self.mm.group_timeout:
             self.data.active = False
         self.data.busy = False
         self._save()
+
+
+class GroupManager:
+    def __init__(self, matchmaker):
+        self.mm = matchmaker
+        self.exp = self.mm.exp
+
+    @property
+    def query(self):
+        q = {}
+        q["type"] = Group.DATA_TYPE
+        q["matchmaker_id"] = self.mm.matchmaker_id
+        q["exp_id"] = self.mm.exp.exp_id
+        q["exp_version"] = self.mm.exp_version
+        return q
+
+    @property
+    def path(self):
+        return self.mm.io.path.parent
+
+    def groups(self) -> Iterator[Group]:
+        if saving_method(self.exp) == "local":
+            return self._local_groups()
+        elif saving_method(self.exp) == "mongo":
+            return self._mongo_groups()
+        else:
+            raise MatchingError("No saving method found. Try defining a saving agent.")
+
+    def active(self):
+        return (g for g in self.groups() if g.active)
+
+    def notfull(self) -> Iterator[Group]:
+        return (g for g in self.active() if not g.full)
+
+    def find(self, id: str):
+        try:
+            return next(g for g in self.groups() if g.data.group_id == id)
+        except StopIteration:
+            raise MatchingError("The group you are looking for was not found.")
+
+    def _local_groups(self):
+        for fpath in self.path.iterdir():
+            if fpath.is_dir():
+                continue
+
+            elif not fpath.name.startswith("group"):
+                continue
+
+            else:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    gdata = json.load(f)
+                    yield Group(matchmaker=self.mm, **gdata)
+
+    def _mongo_groups(self):
+        for doc in self.exp.db_misc.find(self.query):
+            yield Group(matchmaker=self.mm, **doc)

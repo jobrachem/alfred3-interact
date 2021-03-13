@@ -30,9 +30,7 @@ class SharedGroupData(UserDict):
     def _fetch_remote(self):
         doc = self._db.find_one(
             filter={"group_id": self.group.group_id},
-            # update={"$set": {"shared_data": {"__last_access": time.time()}}},
             projection={"shared_data": True, "_id": False},
-            # return_document=ReturnDocument.AFTER,
             )
         self.data = doc["shared_data"]
     
@@ -47,7 +45,6 @@ class SharedGroupData(UserDict):
         self._push()
     
     def _push(self):
-        self._push_additional_data() # TODO: Remove
         self.data["__group_id"] = self.group.group_id
         self.data["__last_change"] = time.time()
 
@@ -57,11 +54,6 @@ class SharedGroupData(UserDict):
         elif saving_method(self.group.exp) == "local":
             self._push_local()
     
-    def _push_additional_data(self):
-        # TODO: Remove
-        entry = {"__group_data": self.data}
-        self.group.exp.adata.update(entry)
-
     def last_change(self, format: str = "%Y-%m-%d, %X") -> str:
         return time.strftime(format, time.localtime(self.data["__last_change"]))
     
@@ -98,6 +90,7 @@ class GroupMemberData:
 @dataclass
 class GroupData:
     exp_id: str
+    exp_version: str
     matchmaker_id: str
     roles: dict
     group_id: str = uuid4().hex
