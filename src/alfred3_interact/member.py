@@ -228,9 +228,10 @@ class MemberManager:
     def unmatched(self):
         return (m for m in self.active() if not m.matched)
 
-    def waiting(self):
+    def waiting(self, ping_timeout: int):
+        now = time.time()
         for m in self.active():
-            if m.waiting:
+            if not m.matched and now - m.ping < ping_timeout:
                 yield m
 
     def find(self, id: str):
