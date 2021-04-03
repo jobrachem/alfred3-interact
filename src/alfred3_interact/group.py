@@ -16,6 +16,31 @@ class Group:
     """
     The group object holds members and keeps track of their roles.
 
+    Basic Usage
+    -----------
+
+    The group object's main task is providing access to the group members
+    via their roles. Most importantly, the group offers the attributes
+    :attr:`.me` and :attr:`.you`. Beyond that, you can use dot notation,
+    using any member's role like an attribute on the group. The group will
+    return a :class:`.GroupMember` object for the member inhabiting that
+    role::
+
+        import alfred3 as al
+        from alfred3_interact import MatchMaker
+
+        exp = al.Experiment()
+
+        @exp.setup
+        def setup(exp):
+            mm = MatchMaker("a", "b", exp=exp)
+            exp.plugins.group = mm.match_stepwise()
+            print(exp.plugins.group.a) # Accessing the GroupMember with role "a"
+        
+        exp += al.Page(name="demo")
+
+    See Also:
+        For more details, refer to the :class:`.MatchMaker` documentation.
 
     """
     DATA_TYPE = "match_group"
@@ -39,23 +64,33 @@ class Group:
         self._shared_data._fetch()
     
     @property
-    def shared_data(self):
+    def shared_data(self) -> SharedGroupData:
+        """
+        SharedGroupData: Gives access to the group's shared data dictionary.
+        """
         self._shared_data._fetch()
         return self._shared_data
 
     @property
     def path(self) -> Path:
+        """
+        Path: Path to group data file in offline group experiments.
+        """
         parent = self.mm.io.path.parent
         return parent / f"group_{self.group_id}.json"
 
     @property
     def full(self) -> bool:
+        """
+        bool: Indicates whether the group is full or not. Counts only
+        active members.
+        """
         return len(list(self.active_members())) == len(self.data.roles)
 
     @property
     def you(self) -> GroupMember:
         """
-        alfred3_interact.member.GroupMember: GroupMember object for
+        GroupMember: :class:`.GroupMember`  object for
         the *other* participant in a dyad (i.e. a two-member-group).
         """
         if len(self.data.roles) > 2:
@@ -66,31 +101,68 @@ class Group:
             return next(self.other_members())
 
     @property
-    def me(self):
+    def me(self) -> GroupMember:
+        """
+        GroupMember: :class:`.GroupMember` object for the own session.
+        Useful to access the own role.
+        """
         return next(m for m in self.members() if m.session_id == self.exp.session_id)
 
     def members(self) -> Iterator[GroupMember]:
+        """
+        Iterator: A generator, iterating over *all* members of the group.
+        Yields :class:`.GroupMember` objects.
+
+        See Also:
+            - :meth:`.active_members`
+            - :meth:`.other_members`
+        """
         return (self.manager.find(mid) for mid in self.data.members)
 
     def active_members(self) -> Iterator[GroupMember]:
+        """
+        Iterator: A generator, iterating over all *active* members of the
+        group. Yields :class:`.GroupMember` objects.
+
+        See Also:
+            - :attr:`.GroupMember.active`
+        """
         return (member for member in self.members() if member.active)
 
     def other_members(self) -> Iterator[GroupMember]:
+        """
+        Iterator: A generator, iterating over the *active* group members
+        except for :attr:`.me`. Yields :class:`.GroupMember` objects.
+        """
         return (m for m in self.active_members() if m.session_id != self.exp.session_id)
 
     def get_member_by_role(self, role: str) -> GroupMember:
+        """
+        GroupMember: Returns the :class:`.GroupMember` that inhabits the
+        given role.
+        """
         if not role in self.data.roles:
             raise AttributeError(f"Role '{role}' not found in {self}.")
 
         return next(m for m in self.active_members() if m.role == role)
 
     def get_member_by_id(self, id: str) -> GroupMember:
+        """
+        GroupMember: Returns the :class:`.GroupMember` belonging to the
+        experiment session with session id *id*. 
+
+        Raises:
+            AttributeError: If there is no group member of the given id.
+        """
         if not id in self.data.members:
             raise AttributeError(f"Member with id '{id}' not found in {self}.")
 
         return next(m for m in self.members() if m.data.session_id == id)
 
     def open_roles(self) -> Iterator[str]:
+        """
+        Iterator: Iterates over open roles (str).
+        """
         manager = MemberManager(matchmaker=self.mm)
         for role, member_id in self.data.roles.items():
             if member_id is None:
