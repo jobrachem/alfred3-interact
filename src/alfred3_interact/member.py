@@ -11,6 +11,10 @@ from ._util import MatchingError
 
 
 class GroupMember:
+    """
+    The group member object grants access to a member's experiment data.
+    """
+
     def __init__(self, matchmaker, **kwargs):
         kwargs.pop("_id", None)
         self.mm = matchmaker
@@ -26,12 +30,19 @@ class GroupMember:
         return self.mm.io.path
 
     @property
-    def active(self):
+    def active(self) -> bool:
+        """
+        bool: True, if :attr:`.GroupMember.data.active` is True and the
+        member has not timed out.
+        """
         expired = time.time() - self.data.timestamp > self.mm.member_timeout
         return self.data.active and (not expired or self.finished)
     
     @property
-    def finished(self):
+    def finished(self) -> bool:
+        """
+
+        """
         q = {"type": "exp_data", "exp_id": self.exp.exp_id, "session_id": self.session_id}
         doc = self.exp.db_main.find_one(q)
         return doc["exp_finished"]
@@ -41,16 +52,28 @@ class GroupMember:
         return True if self.data.group_id is not None else False
 
     @property
-    def waiting(self):
-        return (not self.matched) and (time.time() - self.ping < self.mm.ping_timeout)
-
-    @property
-    def values(self):
+    def values(self) -> dict:
+        """
+        dict: Flat dictionary of input element values.
+        
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.values`. The keys are
+            the names of input elements in the member's experiment session.
+            The values are the user inputs. 
+        """
         d = dm.flatten(self.session_data).items()
         return {k: v for k, v in d if k not in dm._metadata and k not in dm.client_data}
 
     @property
     def session_data(self) -> dict:
+        """
+        dict: Full dictionary of experiment session data.
+
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.session_data`.
+        """
         if saving_method(self.exp) == "local":
             iterator = dm.iterate_local_data(dm.EXP_DATA, directory=self.mm.io.path.parent)
         elif saving_method(self.exp) == "mongo":
@@ -61,16 +84,38 @@ class GroupMember:
         return next(d for d in iterator if d["exp_session_id"] == self.session_id)
 
     @property
-    def move_history(self):
+    def move_history(self) -> dict:
+        """
+        dict: Dictionary of movement history.
+
+        See Also:
+            The dict works just like
+            :attr:`alfred3.experiment.ExperimentSession.move_history`.
+        """
         return self.session_data.get("exp_move_history", None)
 
     @property
-    def metadata(self):
+    def metadata(self) -> dict:
+        """
+        dict: Dictionary of experiment metadata.
+
+        See Also:
+            The dict works just like
+            :attr:`alfred3.experiment.ExperimentSession.metadata`.
+        """
         data = dm.flatten(self.session_data).items()
         return {k: v for k, v in data if k in dm._metadata}
 
     @property
-    def client_data(self):
+    def client_data(self) -> dict:
+        """
+        dict: Dictionary of client data.
+
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.client_data`.
+        """
+
         data = dm.flatten(self.session_data).items()
         return {k: v for k, v in data if k in dm.client_data}
 
