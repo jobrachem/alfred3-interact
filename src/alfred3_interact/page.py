@@ -6,6 +6,7 @@ from jinja2 import Template
 
 import alfred3 as al
 from alfred3.element.core import Element
+from alfred3._helper import inherit_kwargs
 
 from .match import MatchMaker
 from ._util import MatchingTimeout
@@ -40,7 +41,95 @@ class Callback(Element):
         js = js_template.render(url=self.url)
         self.add_js(js)
 
+
+@inherit_kwargs
 class WaitingPage(al.NoNavigationPage):
+    """
+    A page that provides a waiting screen for synchronization in 
+    interactive experiments.
+
+    This page is must be derived. You define the condition by defining
+    the :meth:`.wait_for` method. The page has a default design, set in
+    :meth:`.on_exp_access` - you can safely redefine this method to use
+    your own design.
+
+    Once the :meth:`.wait_for` method returns a *True*-like value (i.e.,
+    a value for which ``bool(value) == True)`` holds, the 
+    WaitingPage will proceed to the next page automatically.
+
+    .. important:: The :meth:`.wait_for` method *must* return a value,
+        otherwise you will wait indefinitely.
+
+    Args:
+        {kwargs}
+
+    Examples:
+        
+        The example below demonstrates how to use the waiting page for 
+        matchmaking. Matchmaking will start on the second page. 
+        Participants will be forwarded automatically once matchmaking
+        is finished::
+            
+            import alfred3 as al
+            import alfred3_interact as alint
+
+            exp = al.Experiment()
+
+            exp += al.Page(title="Landing page", name="landing")
+
+            @exp.member
+            class MatchPage(alint.WaitingPage):
+                title = "Making a Match"
+            
+                def wait_for(self):
+                    mm = alint.MatchMaker("a", "b", exp=self.exp)
+                    self.exp.plugins.group = mm.match_groupwise()
+                    return True
+            
+            
+            @exp.member
+            class Success(al.Page):
+                title = "It's a Match!"
+        
+        The next example demonstrates how to use the waiting page in
+        an ongoing experiment to wait until a group member has proceeded
+        to a certain point in the experiment (more precisely, until a
+        group member has filled a certain input element)::
+
+
+            import alfred3 as al
+            import alfred3_interact as alint
+
+            exp = al.Experiment()
+
+            @exp.member
+            class MatchPage(alint.WaitingPage):
+                title = "Making a Match"
+            
+                def wait_for(self):
+                    mm = alint.MatchMaker("a", "b", exp=self.exp)
+                    self.exp.plugins.group = mm.match_groupwise()
+                    return True
+            
+            @exp.member
+            class InputPage(al.Page):
+
+                def on_exp_access(self):
+                    self += al.TextEntry(leftlab="Enter text", name="el1", force_input=True)
+            
+            @exp.member
+            class Sync1(alint.WaitingPage):
+
+                def wait_for(self):
+                    you = self.exp.plugins.group.you
+                    el1 = you.values.get("el1", False)
+                    return el1
+            
+            exp += al.Page(title="Waiting successful", name="success")
+
+
+    """
+
     title = "Waiting"
     wait_msg: str = "Waiting for other group members."
     wait_timeout: int = 60*5
@@ -76,7 +165,7 @@ class WaitingPage(al.NoNavigationPage):
         
         except MatchingTimeout:
             self.log.exception("Timeout on waiting page.")
-            self.exp.abort(reason=MatchMaker.TIMEOUT_MSG, title="Timeout", msg="Sorry, waiting took too long.", icon="user-clock")
+            self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, title="Timeout", msg="Sorry, waiting took too long.", icon="user-clock")
         except Exception:
             self.log.exception("Exception in waiting function.")
             self.exp.abort(reason="waiting error")
