@@ -13,6 +13,11 @@ from ._util import MatchingError
 from ._util import saving_method
 
 class Group:
+    """
+    The group object holds members and keeps track of their roles.
+
+
+    """
     DATA_TYPE = "match_group"
 
     def __init__(self, matchmaker, **kwargs):
@@ -48,7 +53,11 @@ class Group:
         return len(list(self.active_members())) == len(self.data.roles)
 
     @property
-    def you(self):
+    def you(self) -> GroupMember:
+        """
+        alfred3_interact.member.GroupMember: GroupMember object for
+        the *other* participant in a dyad (i.e. a two-member-group).
+        """
         if len(self.data.roles) > 2:
             raise MatchingError(
                 "Can't use 'you' for groups with more than 2 slots, because it is ambiguous. Use the 'other_members()' generator instead, or access members based on their roles."
