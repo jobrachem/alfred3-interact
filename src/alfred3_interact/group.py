@@ -16,9 +16,6 @@ class Group:
     """
     The group object holds members and keeps track of their roles.
 
-    Basic Usage
-    -----------
-
     The group object's main task is providing access to the group members
     via their roles. Most importantly, the group offers the attributes
     :attr:`.me` and :attr:`.you`. Beyond that, you can use dot notation,

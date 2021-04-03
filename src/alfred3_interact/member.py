@@ -14,8 +14,6 @@ class GroupMember:
     """
     The group member object grants access to a member's experiment data.
 
-    Basic Usage
-    -----------
 
     The group member object's most important job is to provide easy
     access to the member's experiment data through the following

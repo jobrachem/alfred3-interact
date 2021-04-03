@@ -38,7 +38,7 @@ class MatchMakerIO:
     @property
     def query(self):
         q = {}
-        q["type"] = self.mm.DATA_TYPE
+        q["type"] = self.mm._DATA_TYPE
         q["exp_id"] = self.mm.exp.exp_id
         q["exp_version"] = self.mm.exp_version
         q["matchmaker_id"] = self.mm.matchmaker_id
@@ -170,8 +170,6 @@ class MatchMaker:
             behavior if you make changes to an ongoing experiment. 
             Defaults to True.
     
-    Basic Usage
-    -----------
 
     First, you initialize the MatchMaker with the roles that you
     need and the experiment session object::
@@ -273,8 +271,8 @@ class MatchMaker:
     """
 
 
-    TIMEOUT_MSG = "MatchMaking timeout"
-    DATA_TYPE = "match_maker"
+    _TIMEOUT_MSG = "MatchMaking timeout"
+    _DATA_TYPE = "match_maker"
 
     def __init__(
         self,
@@ -340,6 +338,9 @@ class MatchMaker:
     
     @property
     def member_timeout(self) -> int:
+        """
+        int: Timeout, after which members will be marked as inactive.
+        """
         return self._member_timeout
     
     @member_timeout.setter
@@ -347,7 +348,10 @@ class MatchMaker:
         self._member_timeout = value if value is not None else self.exp.session_timeout
 
     @property
-    def data(self):
+    def data(self) -> MatchMakerData:
+        """
+        MatchMakerData: The MatchMaker's underlying data.
+        """
         self._data.members[self.member.session_id] = asdict(self.member.data)
         return self._data
 
@@ -614,10 +618,10 @@ class MatchMaker:
         self._data = self.io.load()
 
         if timeout_page:
-            self.exp.abort(reason=self.TIMEOUT_MSG, page=timeout_page)
+            self.exp.abort(reason=self._TIMEOUT_MSG, page=timeout_page)
         else:
             self.exp.abort(
-                reason=self.TIMEOUT_MSG,
+                reason=self._TIMEOUT_MSG,
                 title="Timeout",
                 msg="Sorry, the matchmaking process timed out.",
                 icon="user-clock",
