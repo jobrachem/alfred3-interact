@@ -128,3 +128,4 @@ dmypy.json
 .vscode/
 tests/exp/
 .DS_Store
+tests/test_testing.py
