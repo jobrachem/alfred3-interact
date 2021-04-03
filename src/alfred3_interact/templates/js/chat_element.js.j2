@@ -1,0 +1,78 @@
+// post data
+
+var post_data = function() {
+    var msg = $( "#{{ name }}-input" ).val();
+    $.post( "{{ post_url }}", {"msg": msg});
+    $( "#{{ name }}-input" ).val("");
+    refresh();
+}
+
+// post data on button click
+$( "#{{ name }}-send" ).click(post_data);
+
+// post data on enter press
+$( "#{{ name }}-input" ).keydown(function(e) {
+    if(e.which === 13) {
+        post_data();
+        console.log("Enter pressed, data posted");
+    }
+})
+
+function prettyDate(time) {
+  var date = new Date(time);
+  return date.toLocaleTimeString(navigator.language, {
+    hour: '2-digit',
+    minute:'2-digit'
+  });
+}
+
+var update_display = function(data) {
+    var msg_display = $( "#{{ name }}-display" );
+    data.forEach(function(msg) {
+        
+        var msg_time = prettyDate(msg.timestamp*1000);
+
+        if (msg.nickname == "{{ own_nickname }}") {
+            var s = "margin-left: auto;"
+        } else {
+            var s = "";
+        }
+
+        // manage colors
+        if ("{{ color_target }}" == "nickname") {
+            var nick_color = `color: ${msg.color};`;
+            var border_color = "";
+        } else if ("{{ color_target }}" == "border") {
+            var nick_color = "";
+            var border_color = `border-color: ${msg.color};`;
+        } else if ("{{ color_target }}" == "none") {
+            var nick_color = "";
+            var border_color = "";
+        }
+
+        var html = `<div class='msg p-2 mt-2 card shadow-sm' style='width: {{ msg_width }}; ${s}; position: relative; ${border_color}'>
+
+        <span style='${nick_color}; font-size: 65%'>${msg.nickname}</span>
+        
+        <div style='font-size: 85%;'>
+        ${msg.msg}
+        </div>
+        
+        <span style='font-size:  60% ; position: absolute; bottom: 0; right: 0;' class='text-muted p-1'>${msg_time}</span>
+        </div>`;
+
+        msg_display.append(html);
+    });
+};
+
+var refresh = function() {
+    // load data periodically and refresh element
+    $.get( "{{ load_url }}");
+    $.get( "{{ get_new_url }}", update_display);
+};
+
+$(document).ready(function() {
+    $.get( "{{ load_url }}");
+    $.get( "{{ get_all_url }}", update_display);
+    setInterval(refresh, {{ interval }}*1000);
+})

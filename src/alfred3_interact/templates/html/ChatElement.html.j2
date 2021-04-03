@@ -1,0 +1,20 @@
+<div class="{{ css_class_element }}" id="{{ name }}" style="{{ fontsize }};">
+    
+    <div style="height: {{ height }}; overflow: auto; display: flex; flex-direction: column-reverse; background-color: {{ background_color }}; border-top: 4px solid {{ background_color }};">
+    <div class="{{ css_class_element }}-display p-2" id="{{ name }}-display" style="position: relative;">
+    </div>
+    </div>
+    <div>
+
+
+    <div class="input-group mb-3">
+
+  <input type="text" class="form-control {{ css_class_element }}-input" placeholder="{{ placeholder }}" aria-label="Chat input field" aria-describedby="{{ name }}-send" name="{{ name }}-input" id="{{ name }}-input">
+  <div class="input-group-append">
+
+    <button class="btn {{ button_style }} {{ css_class_element }}-send" type="button" id="{{ name }}-send">{{ button_text | safe }}</button>
+
+  </div>
+</div>
+    </div>
+</div>
