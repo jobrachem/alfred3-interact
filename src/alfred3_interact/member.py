@@ -13,6 +13,21 @@ from ._util import MatchingError
 class GroupMember:
     """
     The group member object grants access to a member's experiment data.
+
+    Basic Usage
+    -----------
+
+    The group member object's most important job is to provide easy
+    access to the member's experiment data through the following
+    attributes. They provide the same objects as the corresponding
+    attributes of the :class:`alfred3.experiment.ExperimentSession`
+    object:
+
+    - :attr:`.values`
+    - :attr:`.session_data`
+    - :attr:`.metadata`
+    - :attr:`.client_data`
+
     """
 
     def __init__(self, matchmaker, **kwargs):
@@ -33,7 +48,8 @@ class GroupMember:
     def active(self) -> bool:
         """
         bool: True, if :attr:`.GroupMember.data.active` is True and the
-        member has not timed out.
+        member has not timed out. A member is deactivated, e.g. when the
+        experiment session of that member aborts.
         """
         expired = time.time() - self.data.timestamp > self.mm.member_timeout
         return self.data.active and (not expired or self.finished)
@@ -41,14 +57,17 @@ class GroupMember:
     @property
     def finished(self) -> bool:
         """
-
+        bool: Indicates, whether the member's experiment session is finished.
         """
         q = {"type": "exp_data", "exp_id": self.exp.exp_id, "session_id": self.session_id}
         doc = self.exp.db_main.find_one(q)
         return doc["exp_finished"]
 
     @property
-    def matched(self):
+    def matched(self) -> bool:
+        """
+        bool: Indicates, whether the member has been added to a group.
+        """
         return True if self.data.group_id is not None else False
 
     @property
