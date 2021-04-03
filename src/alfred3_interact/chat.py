@@ -148,7 +148,7 @@ class ChatManager:
         else:
             return None
 
-@inherit_kwargs
+@inherit_kwargs(exclude=["height"])
 class Chat(Element):
     """
     Provides a chat window.
@@ -228,7 +228,7 @@ class Chat(Element):
         msg_width: str = "70%",
         colors: dict = None,
         color_target: str = "nickname",
-        placeholder: str = "...",
+        placeholder: str = "Press 'enter' to send your message",
         button_text: str = icon("paper-plane"),
         button_style: str = "btn-dark",
         height: str = "350px",
