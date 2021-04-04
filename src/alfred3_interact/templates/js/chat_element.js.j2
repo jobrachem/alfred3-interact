@@ -12,7 +12,8 @@ $( "#{{ name }}-send" ).click(post_data);
 
 // post data on enter press
 $( "#{{ name }}-input" ).keydown(function(e) {
-    if(e.which === 13) {
+    if(e.which === 13 && !e.shiftKey) {
+        event.preventDefault();
         post_data();
         console.log("Enter pressed, data posted");
     }

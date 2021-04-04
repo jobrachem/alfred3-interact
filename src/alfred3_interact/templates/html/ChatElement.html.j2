@@ -7,14 +7,27 @@
     <div>
 
 
-    <div class="input-group mb-3">
+    <div class="input-group mb-3" id="{{ name }}-input-group">
 
-  <input type="text" class="form-control {{ css_class_element }}-input" placeholder="{{ placeholder }}" aria-label="Chat input field" aria-describedby="{{ name }}-send" name="{{ name }}-input" id="{{ name }}-input">
-  <div class="input-group-append">
+    <textarea name="{{ name }}-input" id="{{ name }}-input" class="form-control {{ css_class_element }}-input" rows="1" placeholder="{{ placeholder }}" aria-label="Chat input field" aria-describedby="{{ name }}-send" {% if disabled %}disabled{% endif %} ></textarea>
 
-    <button class="btn {{ button_style }} {{ css_class_element }}-send" type="button" id="{{ name }}-send">{{ button_text | safe }}</button>
+    <div class="input-group-append">
 
-  </div>
-</div>
+    <button class="btn {{ button_style }} {{ css_class_element }}-send" type="button" id="{{ name }}-send" {% if disabled %}disabled{% endif %} >{{ button_text | safe }}</button>
+
+    </div>
+    </div>
     </div>
 </div>
+
+<style>
+#{{ name }}-input::placeholder {
+  font-size: 70%;
+}
+#{{ name }}-input {
+  {% if allow_resize %}
+  {% else %}
+  resize: none;
+  {% endif %}
+}
+</style>
