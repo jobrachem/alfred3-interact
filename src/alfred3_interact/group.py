@@ -298,7 +298,8 @@ class GroupManager:
             else:
                 with open(fpath, "r", encoding="utf-8") as f:
                     gdata = json.load(f)
-                    yield Group(matchmaker=self.mm, **gdata)
+                    if gdata["exp_version"] == self.mm.exp_version:
+                        yield Group(matchmaker=self.mm, **gdata)
 
     def _mongo_groups(self):
         for doc in self.exp.db_misc.find(self.query):
