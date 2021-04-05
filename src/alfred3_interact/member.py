@@ -41,6 +41,71 @@ class GroupMember:
     @property
     def _path(self):
         return self.mm.io.path
+    
+    @property
+    def status(self) -> str:
+        """
+        str: Returns a string, indicating the member's status. Can take
+        the following values:
+
+        - "active"
+        - "finished"
+        - "expired"
+        - "aborted"
+        - "unclear"
+
+        """
+        if self.finished:
+            return "finished"
+        elif self.session_data["exp_aborted"]:
+            return "aborted"
+        elif self.active:
+            return "active"
+        elif self.expired:
+            return "expired"
+        else:
+            return "unclear"
+        
+    @property
+    def start_time(self) -> str:
+        """
+        str: Session start-time in human-readbale format (H:M:S)
+        """
+        return time.strftime("%H:%M:%S", time.localtime(self.timestamp))
+    
+    @property
+    def last_move(self) -> str:
+        """
+        str: Time of last movement in human-readable format (H:M:S)
+        """
+        if self.move_history:
+            t = self.move_history[-1]["hide_time"]
+            if t:
+                return time.strftime("%H:%M:%S", time.localtime(t))
+            else:
+                return None
+        else:
+            return None
+
+    
+    @property
+    def current_page(self) -> str:
+        """
+        str: Returns the name of the member's current page.
+        """
+        if self.status != "active":
+            return "-"
+        try:
+            return self.move_history[-1]["target_page"]
+        except IndexError:
+            return "-landing page-"
+
+    @property
+    def expired(self) -> bool:
+        """
+        bool: True, if the session is expired. False otherwise.
+        """
+        return time.time() - self.data.timestamp > self.mm.member_timeout
 
     @property
     def active(self) -> bool:
@@ -49,8 +114,7 @@ class GroupMember:
         member has not timed out. A member is deactivated, e.g. when the
         experiment session of that member aborts.
         """
-        expired = time.time() - self.data.timestamp > self.mm.member_timeout
-        return self.data.active and (not expired or self.finished)
+        return self.data.active and (not self.expired or self.finished)
     
     @property
     def finished(self) -> bool:
@@ -244,6 +308,9 @@ class MemberManager:
 
     def unmatched(self):
         return (m for m in self.active() if not m.matched)
+    
+    def matched(self):
+        return (m for m in self.members() if m.matched)
 
     def waiting(self, ping_timeout: int):
         now = time.time()
