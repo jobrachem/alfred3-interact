@@ -121,9 +121,7 @@ class GroupMember:
         """
         bool: Indicates, whether the member's experiment session is finished.
         """
-        q = {"type": "exp_data", "exp_id": self.exp.exp_id, "session_id": self.session_id}
-        doc = self.exp.db_main.find_one(q)
-        return doc["exp_finished"]
+        return self.session_data["exp_finished"]
 
     @property
     def matched(self) -> bool:
@@ -156,13 +154,14 @@ class GroupMember:
             :attr:`alfred3.experiment.ExperimentSession.session_data`.
         """
         if saving_method(self.exp) == "local":
-            iterator = dm.iterate_local_data(dm.EXP_DATA, directory=self.mm.io.path.parent)
+            p = self.exp.config.get("local_saving_agent", "path")
+            iterator = dm.iterate_local_data(dm.EXP_DATA, directory=self.exp.subpath(p))
+            d = next((d for d in iterator if d["exp_session_id"] == self.session_id), None)
+            return d
         elif saving_method(self.exp) == "mongo":
-            iterator = dm.iterate_mongo_data(
-                exp_id=self.exp_id, data_type=dm.EXP_DATA, secrets=self.exp.secrets
-            )
+            query = {"exp_id": self.exp.exp_id, "exp_session_id": self.session_id, "type": dm.EXP_DATA}
+            return self.exp.db_main.find_one(query)
 
-        return next(d for d in iterator if d["exp_session_id"] == self.session_id)
 
     @property
     def move_history(self) -> dict:
