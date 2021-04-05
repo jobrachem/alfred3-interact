@@ -1,0 +1,18 @@
+var toggle_mm_status = function() {
+    $.get("{{ toggle_url }}", function(data) {
+        var btn = $("#{{ name }}");
+        if (data == "active") {
+            btn.removeClass("btn-secondary");
+            btn.addClass("btn-success");
+            btn.html('<i class="fas fa-toggle-on mr-2"></i>MatchMaker is ACTIVE');
+        } else if (data == "inactive") {
+            btn.removeClass("btn-success");
+            btn.addClass("btn-secondary");
+            btn.html('<i class="fas fa-toggle-off mr-2"></i>MatchMaker is INACTIVE');
+        }
+    });
+}
+
+$(document).ready(
+    $("#{{ name }}").click(toggle_mm_status)
+);

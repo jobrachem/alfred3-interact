@@ -1,4 +1,3 @@
-
 import time
 import json
 import copy
@@ -19,6 +18,7 @@ from ._util import saving_method
 from ._util import MatchingError
 from ._util import BusyGroup
 from ._util import MatchingTimeout
+
 
 class MatchMakerIO:
     def __init__(self, matchmaker):
@@ -96,6 +96,7 @@ class MatchMakerIO:
             exp_id=self.mm.exp.exp_id,
             exp_version=self.mm.exp_version,
             matchmaker_id=self.mm.matchmaker_id,
+            active=self.mm._active,
         )
 
         data = self.db.find_one_and_update(
@@ -121,6 +122,7 @@ class MatchMakerIO:
                 exp_id=self.mm.exp.exp_id,
                 exp_version=self.mm.exp_version,
                 matchmaker_id=self.mm.matchmaker_id,
+                active=self.mm._active,
             )
 
             with open(self.path, "w", encoding="utf-8") as f:
@@ -160,16 +162,19 @@ class MatchMaker:
             group must be unique.
         exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
             in which this matchmaker is used.
+        admin_pw (str): Password for the MatchMaker admin view. 
         id (str): Used in combination with the experiment ID as unique
-            identifier for the MatchMaker.  Defaults to 'matchmaker', 
-            which is usually fine, unless you are using multiple 
+            identifier for the MatchMaker.  Defaults to 'matchmaker',
+            which is usually fine, unless you are using multiple
             matchmakers in one experiment.
         respect_version (bool): If True, the matchmaker will only match
             sessions that run on the same experiment version into the
             same group. This setting makes sure that there's no strange
-            behavior if you make changes to an ongoing experiment. 
+            behavior if you make changes to an ongoing experiment.
             Defaults to True.
-    
+        admin_param (str): Name of the URL parameter used to start the
+            admin mode. Defaults to the matchmaker id.
+
 
     First, you initialize the MatchMaker with the roles that you
     need and the experiment session object::
@@ -182,7 +187,7 @@ class MatchMaker:
         @exp.setup
         def setup(exp):
             mm = MatchMaker("a", "b", exp=exp) # Initialize the MatchMaker
-        
+
         exp += al.Page(name="demo")
 
     Next, you use either :meth:`.match_stepwise` or :meth:`.match_groupwise`
@@ -200,9 +205,9 @@ class MatchMaker:
         def setup(exp):
             mm = MatchMaker("a", "b", exp=exp)
             exp.plugins.group = mm.match_stepwise() # Assign and return a group
-        
+
         exp += al.Page(name="demo")
-    
+
     The group object offers the attribute :attr:`.Group.me`, which always
     refers to the :class:`.GroupMember` object of the current experiment
     session - most importantly, this attribute can be used to get to know
@@ -218,11 +223,11 @@ class MatchMaker:
             mm = MatchMaker("a", "b", exp=exp)
             exp.plugins.group = mm.match_stepwise()
             print(exp.plugins.group.me.role) # Print own role
-        
+
         exp += al.Page(name="demo")
-    
+
     Beyond "me", the group object offers :attr:`.Group.you`, which always
-    refers to the other participant *in groups of size two* (it cannot 
+    refers to the other participant *in groups of size two* (it cannot
     be used in bigger groups). On top of that, all members of a group
     can be referenced through the group via their role::
 
@@ -236,21 +241,21 @@ class MatchMaker:
             mm = MatchMaker("a", "b", exp=exp)
             exp.plugins.group = mm.match_stepwise()
             print(exp.plugins.group.a) # Accessing the GroupMember with role "a"
-        
+
         exp += al.Page(name="demo")
 
     The :class:`.GroupMember` object then serves as a gateway to the
     data collected in a specific member's session. For example,
     :attr:`.GroupMember.values` offers access to the values of all
     input elements that have been filled by the referenced member.
-    
-    You can complete the matchmaking process in the 
+
+    You can complete the matchmaking process in the
     :meth:`alfred3.experiment.Experiment.setup`
     hook, but it is usually advisable to use the
     :meth:`.WaitingPage.wait_for` hook of a :class:`.WaitingPage`. That
     way you have two advantages. First, you have more control over the
     exact moment in which you want to allow participants into the
-    matchmaking process (for example, after they read initial 
+    matchmaking process (for example, after they read initial
     instructions). Second, the WaitingPage offers a nice visual display
     that informs participants about the ongoing matchmaking and about
     how much time has passed.
@@ -262,14 +267,13 @@ class MatchMaker:
     So, before the fith page, you place a WaitingPage that will pause "b"'s
     session until "a" has progressed far enough through the experiment,
     so that the required data is available.
-    
+
     Notes:
-        See :meth:`.match_stepwise` and :meth:`.match_groupwise` for 
+        See :meth:`.match_stepwise` and :meth:`.match_groupwise` for
         more information and examples. Also, there is an alternative
         constructor :meth:`.from_size`.
-        
-    """
 
+    """
 
     _TIMEOUT_MSG = "MatchMaking timeout"
     _DATA_TYPE = "match_maker"
@@ -278,23 +282,35 @@ class MatchMaker:
         self,
         *roles,
         exp: ExperimentSession,
+        admin_pw: str,
         id: str = "matchmaker",
         respect_version: bool = True,
+        active: bool = True,
+        inactive_page=None,
+        admin_param: str = None,
     ):
         self.exp = exp
+        
+        if exp.start_time:
+            raise MatchingError("MatchMaker must be initialized during experiment setup.")
+        
         self.exp_version = self.exp.version if respect_version else ""
         self.log = QueuedLoggingInterface(base_logger="alfred3")
         self.log.add_queue_logger(self, __name__)
+        self._active = active
+        self.inactive_page = inactive_page
+        self.admin_param = admin_param if admin_param is not None else id
+        self.admin_pw = admin_pw
 
         self.member_timeout = None
-        
+
         #: Number of seconds after which a single
         #: group-operation will be considered to have failed. In this
         #: case, the group in question will be marked as inactive and
         #: not be included in further matchmaking. Defaults to 300 seconds
         #: (5 minutes).
         self.group_timeout = 10
-        
+
         if len(roles) != len(set(roles)):
             raise ValueError("All roles in a group must be unique.")
 
@@ -309,7 +325,8 @@ class MatchMaker:
         self.member = None
         self.group = None
 
-        self.exp.abort_functions.append(self._deactivate)
+        self.exp.abort_functions.append(self._deactivate_session)
+        self._enable_admin_mode(self.exp)
 
     @classmethod
     def from_size(cls, n: int, **kwargs):
@@ -324,7 +341,7 @@ class MatchMaker:
 
         Notes:
             Group roles will be the letters of the alphabet: First small
-            letters, then capitalized, then repeated small letters 
+            letters, then capitalized, then repeated small letters
             (e.g. "aa"), and so on.
         """
         roles = []
@@ -333,16 +350,22 @@ class MatchMaker:
             while letter in roles:
                 letter = letter + string.ascii_letters[i]
             roles.append(letter)
-        
+
         return cls(*roles, **kwargs)
-    
+
+    @property
+    def active(self):
+        d = self.io.load()
+        self._active = d.active
+        return self._active
+
     @property
     def member_timeout(self) -> int:
         """
         int: Timeout, after which members will be marked as inactive.
         """
         return self._member_timeout
-    
+
     @member_timeout.setter
     def member_timeout(self, value: int):
         self._member_timeout = value if value is not None else self.exp.session_timeout
@@ -357,31 +380,31 @@ class MatchMaker:
 
     def match_stepwise(self, member_timeout: int = None) -> Group:
         """
-        Assigns participants to groups and roles one-by-one without 
+        Assigns participants to groups and roles one-by-one without
         waiting for a group to be full.
 
         Args:
             member_timeout (int): Number of seconds after which an experiment
                 session is considered inactive. Inactive sessions are not
                 included in the matchmaking process (but can in principle
-                still finish their session). The roles of inactive sessions 
-                will be free for allocation to new members. If None, 
+                still finish their session). The roles of inactive sessions
+                will be free for allocation to new members. If None,
                 :attr:`alfred3.experiment.ExperimentSession.session_timeout`
                 will be used. Defaults to None.
-        
-        
+
+
         Roles are assigned to members in order.
-        
+
         This method is the correct choice for groups that can operate
         in an asynchronous fashion. One example for such a setting is
-        a "yoking" setup. 
-        
-        Let's take a yoking group with two members, "a" and "b", as an 
-        example: The first participant starts her experiment 
-        and is immediately assinged to role "a". She finishes her 
-        experiment without needing access to any values from participant 
+        a "yoking" setup.
+
+        Let's take a yoking group with two members, "a" and "b", as an
+        example: The first participant starts her experiment
+        and is immediately assinged to role "a". She finishes her
+        experiment without needing access to any values from participant
         "b". The next participant is assigned to role "b". In his version
-        of the experiment, some aspects depend on the inputs of 
+        of the experiment, some aspects depend on the inputs of
         participant "a".
 
         Examples:
@@ -389,14 +412,14 @@ class MatchMaker:
 
                 import alfred3 as al
                 from alfred3_interact import MatchMaker
-                
+
                 exp = al.Experiment()
 
                 @exp.setup
                 def setup(exp):
                     mm = MatchMaker("a", "b", exp=exp)
                     exp.plugins["group"] = mm.match_stepwise()
-                
+
                 @exp.member
                 class Demo(al.Page):
 
@@ -405,6 +428,8 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
+        self._check_activation()
+
         self.member_timeout = member_timeout
         self.member = GroupMember(self)
         self.member._save()
@@ -415,7 +440,7 @@ class MatchMaker:
                 self.group = self._match_next_group()
             except BusyGroup:
                 self.group = self._wait_until_free(self.group_timeout)
-            
+
             self.log.info(f"Session matched to role '{self.member.role}' in {self.group}.")
             self._save_infos()
             return self.group
@@ -435,7 +460,13 @@ class MatchMaker:
             self._save_infos()
             return self.group
 
-    def match_groupwise(self, match_timeout: int = 60 * 30, ping_timeout: int = 15, timeout_page = None, raise_exception: bool = False) -> Group:
+    def match_groupwise(
+        self,
+        match_timeout: int = 60 * 30,
+        ping_timeout: int = 15,
+        timeout_page=None,
+        raise_exception: bool = False,
+    ) -> Group:
         """
         Waits until there are enough participants for a full group, then
         matches them together.
@@ -454,12 +485,12 @@ class MatchMaker:
                 session will be excluded from groupwise matching. This makes
                 sure that only currently active sessions will be allocated
                 to a group. Defaults to 15 (seconds).
-            raise_exception (bool): If True, the matchmaker will raise 
+            raise_exception (bool): If True, the matchmaker will raise
                 a :class:`.MatchingTimeout` exception instead of aborting
                 the experiment if the matchmaking times out. This is useful,
-                if you want to catch the exception and customize the 
+                if you want to catch the exception and customize the
                 experiment's behavior in this case. Defaults to False.
-        
+
         This method is the correct choice, if group members exchange data
         in real time. Roles are assigned randomly.
 
@@ -468,14 +499,14 @@ class MatchMaker:
 
                 import alfred3 as al
                 from alfred3_interact import MatchMaker
-                
+
                 exp = al.Experiment()
 
                 @exp.setup
                 def setup(exp):
                     mm = MatchMaker("a", "b", exp=exp)
                     exp.plugins["group"] = mm.match_groupwise()
-                
+
                 @exp.member
                 class Demo(al.Page):
 
@@ -484,6 +515,8 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
+        self._check_activation()
+
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
 
@@ -521,6 +554,20 @@ class MatchMaker:
             self.log.info(f"{self.group} filled in groupwise match.")
             self._save_infos()
             return self.group
+
+    def toggle_activation(self) -> str:
+        """
+        Toggles MatchMaker activation.
+
+        Returns:
+            str: Returns the new status (active/inactive).
+        """
+        data = self.io.load()
+        data.active = not data.active
+        self.io.save(data=data)
+        self._data = data
+
+        return "active" if data.active else "inactive"
 
     def _wait_until_free(self, wait_max: int):
         if saving_method(self.exp) == "local":
@@ -628,7 +675,19 @@ class MatchMaker:
             )
 
         return None
-    
+
+    def _check_activation(self):
+        if not self.active:
+            self.log.info("MatchMaking session aborted (MatchMaker inactive).")
+            if self.inactive_page:
+                self.exp.abort(reason="matchmaker_inactive", page=self.inactive_page)
+            else:
+                self.exp.abort(
+                    reason="matchmaker_inactive",
+                    title="MatchMaking inactive",
+                    msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
+                )
+
     def _save_infos(self):
         prefix = "interact"
         while prefix in self.exp.adata:
@@ -637,11 +696,29 @@ class MatchMaker:
         self.exp.adata[prefix]["groupid"] = self.group.group_id
         self.exp.adata[prefix]["role"] = self.member.role
 
-    def _deactivate(self, exp):
+    def _deactivate_session(self, exp):
         # gets called when the experiment aborts!
         if self.member:
             self.member.data.active = False
             self.member._save()
+
+    def _enable_admin_mode(self, exp):
+        from alfred3_interact.page import PasswordPage, AdminPage
+
+        if exp.urlargs.get(self.admin_param, False) == "admin":
+            exp.config.read_dict({"data": {"save_data": False}})
+            exp.config.read_dict({"layout": {"show_progress": False}})
+            exp.session_status = "admin"
+
+            exp._allow_append = True
+            exp += PasswordPage(
+                password=self.admin_pw,
+                match_maker_id=self.matchmaker_id,
+                title="MatchMaker Admin",
+                name="_pw_admin_page",
+            )
+            exp += AdminPage(match_maker=self, title="MatchMaker Admin", name="_admin_page")
+            exp._allow_append = False
 
     def __str__(self):
         return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"

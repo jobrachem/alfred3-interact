@@ -1,0 +1,32 @@
+
+var render_table = function() {
+
+    var table = $('#{{ name }}').DataTable(
+        {"ajax": "{{ render_url }}", 
+        "columns": [
+            {"data": "Session"},
+            {"data": "Status"},
+            {"data": "Current Page"},
+            {"data": "Start"},
+            {"data": "Last Move"},
+            {"data": "Group"},
+            {"data": "Role"}
+        ]}
+    );
+    
+    return table
+};
+
+$(document).ready(function() {
+    var table = render_table();
+    
+    // reload periodically
+    setInterval(function() {
+        table.ajax.reload();
+    }, {{ refresh_interval }}*1000);
+    
+    // reload on click
+    $("#{{ name }}-refresh").click(function() {
+        table.ajax.reload();
+    });
+})
