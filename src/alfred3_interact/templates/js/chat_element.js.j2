@@ -34,9 +34,13 @@ var update_display = function(data) {
 
         if (msg.nickname == "{{ own_nickname }}") {
             var s = "margin-left: auto;"
+            var you = " (you)";
         } else {
             var s = "";
+            var you = "";
         }
+
+        var nick = msg.nickname + you;
 
         // manage colors
         if ("{{ color_target }}" == "nickname") {
@@ -52,7 +56,7 @@ var update_display = function(data) {
 
         var html = `<div class='msg p-2 mt-2 card shadow-sm' style='width: {{ msg_width }}; ${s}; position: relative; ${border_color}'>
 
-        <span style='${nick_color}; font-size: 65%'>${msg.nickname}</span>
+        <span style='${nick_color}; font-size: 65%'>${nick}</span>
         
         <div style='font-size: 85%;'>
         ${msg.msg}
@@ -62,6 +66,7 @@ var update_display = function(data) {
         </div>`;
 
         msg_display.append(html);
+
     });
 };
 
