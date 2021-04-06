@@ -36,6 +36,7 @@ class GroupMember:
         kwargs["exp_id"] = exp_id if exp_id is not None else self.exp.exp_id
         sid = kwargs.get("session_id", None)
         kwargs["session_id"] = sid if sid is not None else self.exp.session_id
+        
         self.data = GroupMemberData(**kwargs)
 
     @property
@@ -89,7 +90,7 @@ class GroupMember:
 
     
     @property
-    def current_page(self) -> str:
+    def last_page(self) -> str:
         """
         str: Returns the name of the member's current page.
         """
@@ -202,7 +203,7 @@ class GroupMember:
     def _ping(self):
         self.data.ping = time.time()
         q = {}
-        q["type"] = self.mm.DATA_TYPE
+        q["type"] = self.mm._DATA_TYPE
         q["matchmaker_id"] = self.mm.matchmaker_id
         q["exp_id"] = self.exp.exp_id
         q["exp_version"] = self.mm.exp_version
@@ -233,7 +234,7 @@ class GroupMember:
         Updates only the entry for the member in the matchmaker data.
         """
         q = {}
-        q["type"] = self.mm.DATA_TYPE
+        q["type"] = self.mm._DATA_TYPE
         q["matchmaker_id"] = self.mm.matchmaker_id
         q["exp_id"] = self.exp.exp_id
         q["exp_version"] = self.mm.exp_version
@@ -241,6 +242,7 @@ class GroupMember:
         mm = self.exp.db_misc.find_one_and_update(
             q, [{"$set": d}], return_document=ReturnDocument.AFTER
         )
+
         if not self.session_id in mm["members"]:
             raise MatchingError
 
@@ -271,7 +273,7 @@ class GroupMember:
 
     def _load_if_notbusy_mongo(self):
         q = {}
-        q["type"] = self.mm.DATA_TYPE
+        q["type"] = self.mm._DATA_TYPE
         q["matchmaker_id"] = self.mm.matchmaker_id
         q["exp_id"] = self.exp.exp_id
         q["exp_version"] = self.mm.exp_version
@@ -279,7 +281,8 @@ class GroupMember:
         return self.exp.db_misc.find_one(q)
 
     def __str__(self):
-        return f"{type(self).__name__}(role='{self.data.role}', session_id='{self.data.session_id}', group='{self.data.group_id}')"
+        gid = self.data.group_id[-4:] if self.group_id is not None else "-"
+        return f"{type(self).__name__}(role='{self.data.role}', session_id='{self.data.session_id[-4:]}', group='{gid}', start={self.start_time})"
 
     def __repr__(self):
         return self.__str__()
