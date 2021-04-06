@@ -415,10 +415,10 @@ class ToggleMatchMakerActivation(Element):
     def template_data(self):
         d = super().template_data
         if self.match_maker.active:
-            d["text"] = '<i class="fas fa-toggle-on mr-2"></i>MatchMaker is ACTIVE'
+            d["text"] = '<i class="fas fa-circle-notch fa-spin mr-2"></i>MatchMaker is ACTIVE'
             d["button_style"] = "btn-success"
         else:
-            d["text"] = '<i class="fas fa-toggle-off mr-2"></i>MatchMaker is INACTIVE'
+            d["text"] = '<i class="fas fa-circle-notch mr-2"></i>MatchMaker is INACTIVE'
             d["button_style"] = "btn-secondary"
         return d
 
