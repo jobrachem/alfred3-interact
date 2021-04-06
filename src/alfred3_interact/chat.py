@@ -81,6 +81,8 @@ class ChatManager:
         """
         Posts a new message to the database.
         """
+        if not msg:
+            return
         msg_data = {}
         msg_data["sender_session_id"] = self.exp.session_id
         msg_data["timestamp"] = time.time()
