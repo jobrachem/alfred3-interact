@@ -1,4 +1,5 @@
 import time
+import bleach
 from pymongo.collection import ReturnDocument
 
 class ChatManager:
@@ -83,7 +84,7 @@ class ChatManager:
         msg_data = {}
         msg_data["sender_session_id"] = self.exp.session_id
         msg_data["timestamp"] = time.time()
-        msg_data["msg"] = msg
+        msg_data["msg"] = bleach.clean(msg)
         msg_data["nickname"] = self.nickname
         msg_data["color"] = self.color
 
