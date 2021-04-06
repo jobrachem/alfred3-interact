@@ -4,11 +4,11 @@ var toggle_mm_status = function() {
         if (data == "active") {
             btn.removeClass("btn-secondary");
             btn.addClass("btn-success");
-            btn.html('<i class="fas fa-toggle-on mr-2"></i>MatchMaker is ACTIVE');
+            btn.html('<i class="fas fa-circle-notch fa-spin mr-2"></i>MatchMaker is ACTIVE');
         } else if (data == "inactive") {
             btn.removeClass("btn-success");
             btn.addClass("btn-secondary");
-            btn.html('<i class="fas fa-toggle-off mr-2"></i>MatchMaker is INACTIVE');
+            btn.html('<i class="fas fa-circle-notch mr-2"></i>MatchMaker is INACTIVE');
         }
     });
 }
