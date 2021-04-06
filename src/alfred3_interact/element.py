@@ -1,4 +1,6 @@
 import time
+from typing import Union
+
 from pymongo.collection import ReturnDocument
 from jinja2 import Environment, PackageLoader, Template
 from alfred3.element.core import Element
@@ -242,6 +244,10 @@ class Chat(Element):
         
         allow_resize (bool): If *True*, participants can adjust the 
             height of the text input field. Defaults to True.
+        
+        refresh_interval (int, float): Time in seconds, determines how
+            often the chat elements looks for new messages. Defaults to
+            1.
 
         {kwargs}
     
@@ -277,6 +283,7 @@ class Chat(Element):
         button_style: str = "btn-dark",
         background_color: str = "WhiteSmoke",
         allow_resize: bool = True,
+        refresh_interval: Union[int, float] = 1,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -302,7 +309,7 @@ class Chat(Element):
         self.readonly = readonly
         self.allow_resize = allow_resize
 
-        self._interval = 2
+        self._interval = refresh_interval
 
     @property
     def _js_data(self):
@@ -348,7 +355,6 @@ class Chat(Element):
 
 class ViewMembers(Element):
     element_template = jenv.get_template("html/ViewMembersElement.html.j2")
-    table_body = jenv.get_template("html/members_table_body.html.j2")
     view_js = jenv.get_template("js/view_members.js.j2")
     
     def __init__(self, match_maker, refresh_interval: int = 10, **kwargs):
@@ -361,9 +367,8 @@ class ViewMembers(Element):
         super().added_to_experiment(exp)
         
         self.render_url = self.exp.ui.add_callable(self.render_table_body)
-        print(self.render_url)
-        
-        js = self.view_js.render(name=self.name, render_url=self.render_url, refresh_interval=self.refresh_interval)
+        cols = ["Session", "Status", "Last Page", "Start", "Last Move", "Group", "Role"]
+        js = self.view_js.render(name=self.name, render_url=self.render_url, refresh_interval=self.refresh_interval, cols=cols)
         self.add_js(js)
 
     
@@ -378,13 +383,14 @@ class ViewMembers(Element):
         members = self.match_maker.member_manager.members()
         tbody = []
         for m in members:
+
             d = {}
             d["Session"] = m.session_id[-4:]
             d["Status"] = m.status
-            d["Current Page"] = m.current_page
+            d["Last Page"] = m.last_page
             d["Start"] = m.start_time
             d["Last Move"] = m.last_move
-            d["Group"] = m.group_id[-4:]
+            d["Group"] = m.group_id[-4:] if m.group_id else "-"
             d["Role"] = m.role
             tbody.append(d)
 
