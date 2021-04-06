@@ -24,7 +24,7 @@ class PasswordPage(al.WidePage):
         self += al.Text(f"Matchmaker ID: {self.match_maker_id}", align="center")
         self += al.VerticalSpace("50px")
         self += al.PasswordEntry(
-            toplab="Password", password=self.password, width="narrow", name="pw"
+            toplab="Password", password=self.password, width="narrow", name="pw", align="center"
         )
 
         self += al.SubmittingButtons(
@@ -56,6 +56,7 @@ class AdminPage(al.WidePage):
         
         
         self += al.HideNavigation()
+        self += al.WebExitEnabler()
         self += al.Style(code=f"#view_mm {{font-size: 85%;}}")
         
         # datatables javascript package
