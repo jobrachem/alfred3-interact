@@ -88,8 +88,8 @@ class GroupMemberData:
     session_id: str
     group_id: str = None
     role: str = None
-    timestamp: float = time.time()
-    ping: float = time.time()
+    timestamp: float = field(default_factory=time.time)
+    ping: float = field(default_factory=time.time)
     active: bool = True
     type: str = "match_member"
 
@@ -100,9 +100,9 @@ class GroupData:
     exp_version: str
     matchmaker_id: str
     roles: dict
-    group_id: str = uuid4().hex
+    group_id: str = field(default_factory=lambda: uuid4().hex)
     members: list = field(default_factory=list)
-    timestamp: float = time.time()
+    timestamp: float = field(default_factory=time.time)
     active: bool = True
     busy: bool = False
     shared_data: dict = field(default_factory=dict)
