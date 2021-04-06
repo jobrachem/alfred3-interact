@@ -11,6 +11,7 @@ from .data import GroupData
 from .data import SharedGroupData
 from ._util import MatchingError
 from ._util import saving_method
+from .element import Chat
 
 class Group:
     """
@@ -104,6 +105,28 @@ class Group:
         Useful to access the own role.
         """
         return next(m for m in self.members() if m.session_id == self.exp.session_id)
+    
+    def chat(self, **kwargs) -> Chat:
+        """
+        Shortcut for creating a group chat.
+
+        Args:
+            **kwargs: Any argument accepted by :class:`.Chat` can be used,
+                including *chat_id* and *nickname*. Specifying the latter
+                two will simply override the defaults.
+        
+        See Also:
+            The basic functionality is provided in the :class:`.Chat`
+            element, which can be used on its own.
+
+        Returns:
+            Chat: A chat element in which the default for the chat id is
+            set to the group id and the default for the nickname is set 
+            to each member's role. 
+        """
+        chat_id = kwargs.pop("chat_id", self.group_id)
+        nickname = kwargs.pop("nickname", self.me.role)
+        return Chat(chat_id=chat_id, nickname=nickname, **kwargs)
 
     def members(self) -> Iterator[GroupMember]:
         """
@@ -286,7 +309,7 @@ class GroupManager:
             return next(g for g in self.groups() if g.data.group_id == id)
         except StopIteration:
             raise MatchingError("The group you are looking for was not found.")
-
+    
     def _local_groups(self):
         for fpath in self.path.iterdir():
             if fpath.is_dir():
