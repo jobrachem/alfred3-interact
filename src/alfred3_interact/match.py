@@ -326,7 +326,8 @@ class MatchMaker:
         self.group = None
 
         self.exp.abort_functions.append(self._deactivate_session)
-        self._enable_admin_mode(self.exp)
+        self.admin_mode = self._enable_admin_mode(self.exp)
+        self._check_activation()
 
     @classmethod
     def from_size(cls, n: int, **kwargs):
@@ -428,7 +429,7 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
-        self._check_activation()
+        # self._check_activation()
 
         self.member_timeout = member_timeout
         self.member = GroupMember(self)
@@ -515,7 +516,7 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
-        self._check_activation()
+        
 
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
@@ -528,6 +529,7 @@ class MatchMaker:
 
         i = 0
         while not self.group:
+            # self._check_activation()
             self.member._ping()
 
             self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
@@ -600,7 +602,6 @@ class MatchMaker:
     def _match_next_group(self):
         with next(self.group_manager.notfull()) as group:
             self.log.info(f"Starting stepwise match of session to existing group: {group}.")
-
             group += self.member
             group._assign_next_role(to_member=self.member)
             self.member._save()
@@ -610,11 +611,11 @@ class MatchMaker:
     def _do_match_groupwise(self, ping_timeout):
         member = self.member._load_if_notbusy()
         if member is None:
-            self.log.debug("Returning. Member not found, MM is busy")
+            self.log.debug("Returning. Member not found, MM is busy.")
             return None
 
         elif member.matched:
-            self.log.debug("Returning. Found group")
+            self.log.debug("Returning. Found group.")
             return self.group_manager.find(member.data.group_id)
 
         # returns None if MatchMaker is busy, marks as busy otherwise
@@ -677,6 +678,9 @@ class MatchMaker:
         return None
 
     def _check_activation(self):
+        if self.admin_mode:
+            return
+
         if not self.active:
             self.log.info("MatchMaking session aborted (MatchMaker inactive).")
             if self.inactive_page:
@@ -686,6 +690,7 @@ class MatchMaker:
                     reason="matchmaker_inactive",
                     title="MatchMaking inactive",
                     msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
+                    icon="user-times"
                 )
 
     def _save_infos(self):
@@ -702,7 +707,10 @@ class MatchMaker:
             self.member.data.active = False
             self.member._save()
 
-    def _enable_admin_mode(self, exp):
+    def _enable_admin_mode(self, exp) -> bool:
+        """
+        Returns *True* if admin mode is called, *False* otherwise.
+        """
         from alfred3_interact.page import PasswordPage, AdminPage
 
         if exp.urlargs.get(self.admin_param, False) == "admin":
@@ -719,6 +727,11 @@ class MatchMaker:
             )
             exp += AdminPage(match_maker=self, title="MatchMaker Admin", name="_admin_page")
             exp._allow_append = False
+
+            return True
+        
+        else:
+            return False
 
     def __str__(self):
         return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"
