@@ -117,6 +117,7 @@ class MatchMakerData:
     members: dict = field(default_factory=dict)
     busy: bool = False
     active: bool = False
+    ping_timeout: int = None
     type: str = "match_maker"
 
 
