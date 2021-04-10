@@ -2,6 +2,8 @@
 var render_table = function() {
     var table = $('#{{ name }}').DataTable(
         {"ajax": "{{ render_url }}", 
+        "scrollX": true,
+        "order": [[ 4, "desc" ]],
         "columns": [
             {% for col in cols %}
                 {"data": "{{ col }}"},
