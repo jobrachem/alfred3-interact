@@ -604,7 +604,8 @@ class MatchMaker:
             msg2 = f"Starting a new group for session {self.exp.session_id}."
             self.log.warning(msg1 + msg2)
 
-            group = Group(self, roles=self.roles)
+            roles = {role: None for role in self.roles}
+            group = Group(self, roles=roles)
             return group
 
     def _match_next_group(self, ongoing_sessions_ok: bool):
