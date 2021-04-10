@@ -202,13 +202,14 @@ class Group:
         """
         Iterator: Iterates over open roles (str).
         """
-        manager = MemberManager(matchmaker=self.mm)
         for role, member_id in self.data.roles.items():
             if member_id is None:
                 yield role
             else:
-                member = manager.find(id=member_id)
-                if not member.active:
+                member = self.manager.find(id=member_id)
+                if member.finished:
+                    continue
+                elif not member.active:
                     yield role
 
     def _shuffle_roles(self):
@@ -320,8 +321,13 @@ class GroupManager:
     def active(self):
         return (g for g in self.groups() if g.active)
 
-    def notfull(self) -> Iterator[Group]:
-        return (g for g in self.active() if not g.full)
+    def notfull(self, ongoing_sessions_ok=True) -> Iterator[Group]:
+        if ongoing_sessions_ok:
+            return (g for g in self.active() if not g.full)
+        else:
+            for g in self.active():
+                if not g.full and not any(g.ongoing_roles()):
+                    yield g
 
     def find(self, id: str):
         try:
