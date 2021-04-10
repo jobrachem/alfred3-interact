@@ -18,9 +18,9 @@ $(document).ready(function() {
     var table = render_table();
     
     // reload periodically
-    setInterval(function() {
-        table.ajax.reload();
-    }, {{ refresh_interval }}*1000);
+    //setInterval(function() {
+    //    table.ajax.reload();
+    //}, {{ refresh_interval }}*1000);
     
     // reload on click
     $("#{{ name }}-refresh").click(function() {

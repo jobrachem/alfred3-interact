@@ -6,11 +6,13 @@ from jinja2 import Template
 
 import alfred3 as al
 from alfred3.element.core import Element
+from alfred3.element.misc import Callback, RepeatedCallback
 from alfred3._helper import inherit_kwargs
+from alfred3.exceptions import SessionTimeout
 
 from .match import MatchMaker
 from ._util import MatchingTimeout
-from .element import Callback, ViewMembers, ToggleMatchMakerActivation
+from .element import ViewMembers, ToggleMatchMakerActivation
 
 
 class PasswordPage(al.WidePage):
@@ -43,7 +45,6 @@ class PasswordPage(al.WidePage):
 
 
 class AdminPage(al.WidePage):
-
     def __init__(self, match_maker, **kwargs):
         super().__init__(**kwargs)
         self.match_maker = match_maker
@@ -53,15 +54,26 @@ class AdminPage(al.WidePage):
         self += ToggleMatchMakerActivation(match_maker=self.match_maker, align="center")
         self += al.VerticalSpace("30px")
         self += ViewMembers(match_maker=self.match_maker, name="view_mm")
-        
-        
+        self += al.VerticalSpace("30px")
+        self += al.Text(
+            "Note: The MatchMaker Admin displays only sessions for which the matchmaking process has been started.",
+            font_size=10,
+            width="full",
+        )
+
         self += al.HideNavigation()
         self += al.WebExitEnabler()
         self += al.Style(code=f"#view_mm {{font-size: 85%;}}")
-        
+
         # datatables javascript package
-        self += al.Style(url="//cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css")
+        # self += al.Style(url="//cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css")
+        self += al.Style(
+            url="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"
+        )
         self += al.JavaScript(url="//cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js")
+        self += al.JavaScript(
+            url="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"
+        )
 
 
 @inherit_kwargs
@@ -163,7 +175,7 @@ class WaitingPage(al.NoNavigationPage):
         wait_msg: str = None,
         wait_timeout: int = None,
         wait_sleep_time: int = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -176,7 +188,7 @@ class WaitingPage(al.NoNavigationPage):
         if wait_sleep_time is not None:
             self.wait_sleep_time = wait_sleep_time
 
-        self += Callback(self._wait_for)
+        self += Callback(self._wait_for, followup="forward")
 
     @abstractmethod
     def wait_for(self):
@@ -191,6 +203,9 @@ class WaitingPage(al.NoNavigationPage):
 
                 if time.time() - start > self.wait_timeout:
                     raise MatchingTimeout
+
+        except SessionTimeout:
+            pass  # the experiment handles session timeouts
 
         except MatchingTimeout:
             self.log.exception("Timeout on waiting page.")
