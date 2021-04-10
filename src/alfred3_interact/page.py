@@ -226,3 +226,27 @@ class WaitingPage(al.NoNavigationPage):
         self += al.VerticalSpace("30px")
         self += al.CountUp(font_size=30, align="center")
         self += al.Text(self.wait_msg, align="center")
+
+
+class MatchingPage(WaitingPage):
+
+    ping_interval: int = 1
+
+    def __init__(self, ping_interval: int = None, **kwargs):
+        super().__init__(**kwargs)
+
+        if ping_interval is not None:
+            self.ping_interval = ping_interval
+
+    def on_exp_access(self):
+        super().on_exp_access()
+        self += RepeatedCallback(func=self._ping, interval=self.ping_interval, submit_first=False)
+
+    def _ping(self):
+        sid = self.exp.session_id
+        query = {
+            "type": "match_maker",
+            f"members.{sid}.session_id": sid,
+        }
+        update = {"members": {sid: {"ping": time.time()}}}
+        self.exp.db_misc.find_one_and_update(query, update=[{"$set": update}])
