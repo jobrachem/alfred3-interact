@@ -184,6 +184,20 @@ class Group:
 
         return next(m for m in self.members() if m.data.session_id == id)
 
+    def ongoing_roles(self) -> Iterator[str]:
+        """
+        Iterator: Iterates over roles for which sessions are currently 
+        in progess.
+        """
+        for role, member_id in self.data.roles.items():
+            if member_id is None:
+                continue
+            else:
+                member = self.manager.find(id=member_id)
+                self.mm.log.warning(f"{member}, active: {member.active}")
+                if member.active:
+                    yield role
+
     def open_roles(self) -> Iterator[str]:
         """
         Iterator: Iterates over open roles (str).
