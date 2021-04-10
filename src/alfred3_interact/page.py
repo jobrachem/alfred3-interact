@@ -105,18 +105,18 @@ class WaitingPage(al.NoNavigationPage):
         is finished::
 
             import alfred3 as al
-            import alfred3_interact as alint
+            import alfred3_interact as ali
 
             exp = al.Experiment()
 
             exp += al.Page(title="Landing page", name="landing")
 
             @exp.member
-            class MatchPage(alint.WaitingPage):
+            class MatchPage(ali.WaitingPage):
                 title = "Making a Match"
 
                 def wait_for(self):
-                    mm = alint.MatchMaker("a", "b", exp=self.exp)
+                    mm = ali.MatchMaker("a", "b", exp=self.exp)
                     self.exp.plugins.group = mm.match_groupwise()
                     return True
 
@@ -132,16 +132,16 @@ class WaitingPage(al.NoNavigationPage):
 
 
             import alfred3 as al
-            import alfred3_interact as alint
+            import alfred3_interact as ali
 
             exp = al.Experiment()
 
             @exp.member
-            class MatchPage(alint.WaitingPage):
+            class MatchPage(ali.WaitingPage):
                 title = "Making a Match"
 
                 def wait_for(self):
-                    mm = alint.MatchMaker("a", "b", exp=self.exp)
+                    mm = ali.MatchMaker("a", "b", exp=self.exp)
                     self.exp.plugins.group = mm.match_groupwise()
                     return True
 
@@ -152,7 +152,7 @@ class WaitingPage(al.NoNavigationPage):
                     self += al.TextEntry(leftlab="Enter text", name="el1", force_input=True)
 
             @exp.member
-            class Sync1(alint.WaitingPage):
+            class Sync1(ali.WaitingPage):
 
                 def wait_for(self):
                     you = self.exp.plugins.group.you

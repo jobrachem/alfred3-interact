@@ -88,12 +88,12 @@ class Chat(Element):
         A minimal message-board style chat::
 
             import alfred3 as al
-            import alfred3_interact as alint
+            import alfred3_interact as ali
             
             exp = al.Experiment()
 
             exp += al.Page(title="Chat Demo", name="chat_demo")
-            exp.chat_demo += alint.Chat("test_chat")
+            exp.chat_demo += ali.Chat("test_chat")
 
     """
 
