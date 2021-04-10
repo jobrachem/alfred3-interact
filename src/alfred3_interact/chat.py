@@ -1,6 +1,8 @@
 import time
 import bleach
 from pymongo.collection import ReturnDocument
+from alfred3.exceptions import AlfredError
+
 
 class ChatManager:
     """
@@ -10,10 +12,18 @@ class ChatManager:
         exp (alfred.experiment.ExperimentSession): The experiment session
             to which the chat belongs.
         chat_id (str): Unique identifier for the chat.
-        nickname (str): Nickname for the identification of the current 
+        nickname (str): Nickname for the identification of the current
             session.
         colors (dict): Dictionary of colors for identifying participants
             with color.
+        encrypt (bool): If True, the content of the messages will be
+            encrypted before saving to the database. Requires encryption
+            to be enabled on the experiment. Defaults to True.
+        ignore_aborted_sessions (bool): If True, the ChatManager will not
+            output messages of aborted or expired sessions. Can be
+            necessary in experiments with asynchronous interaction to
+            prevent confusing chats. Defaults to True.
+
     """
 
     # colors from https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
@@ -31,10 +41,20 @@ class ChatManager:
         "#cab2d6",
     ]
 
-    def __init__(self, exp, chat_id: str, nickname: str = None, colors: dict = None):
+    def __init__(
+        self,
+        exp,
+        chat_id: str,
+        nickname: str = None,
+        colors: dict = None,
+        encrypt: bool = True,
+        ignore_aborted_sessions: bool = True,
+    ):
         self.exp = exp
         self.chat_id = chat_id
         self.colors = colors
+        self.encrypt = encrypt
+        self.ignore_aborted_sessions = ignore_aborted_sessions
 
         self._query = {}
         self._query["exp_id"] = self.exp.exp_id
@@ -49,6 +69,8 @@ class ChatManager:
         self.data = None
         self._loaded_index = 0
         self.color = self._find_color()
+
+        self._inactive_sids = []
 
     def _find_color_index(self, n) -> int:
         n_colors = len(self.DEFAULT_COLORS)
@@ -83,10 +105,16 @@ class ChatManager:
         """
         if not msg:
             return
+
+        msg = bleach.clean(msg)  # sanitize input
+
+        if self.encrypt:
+            msg = self.exp.encrypt(msg)
+
         msg_data = {}
         msg_data["sender_session_id"] = self.exp.session_id
         msg_data["timestamp"] = time.time()
-        msg_data["msg"] = bleach.clean(msg)
+        msg_data["msg"] = msg
         msg_data["nickname"] = self.nickname
         msg_data["color"] = self.color
 
@@ -96,18 +124,20 @@ class ChatManager:
 
     def load_messages(self) -> str:
         """
-        Loads new messages from the database. 
-        
+        Loads new messages from the database into the ChatManager instance.
+
         Returns:
             str: A status indicator. "init" means that the method has
-            been called for the first time in the current session, 
-            "append" means that new messages have been loaded and 
+            been called for the first time in the current session,
+            "append" means that new messages have been loaded and
             appended, "pass" means that no new messages have been found.
         """
         chat_data = self.exp.db_misc.find_one(self._query)
 
         if not self.data or not self.data.get("messages", False):
             self.data = chat_data
+            if self.ignore_aborted_sessions:
+                    self._update_session_status()
             return "init"
         else:
             msgs_db = chat_data["messages"]
@@ -117,6 +147,9 @@ class ChatManager:
             if len(msgs_db) > n_local:
                 msgs_db.sort(key=lambda msg: msg["timestamp"])
                 self.data["messages"] += msgs_db[n_local:]
+
+                if self.ignore_aborted_sessions:
+                    self._update_session_status()
                 return "append"
 
             else:
@@ -129,7 +162,17 @@ class ChatManager:
         """
         if self.data and self.data.get("messages", False):
             i, self._loaded_index = self._loaded_index, len(self.data["messages"])
-            return tuple(self.data["messages"][i:])
+
+            msgs = self.data["messages"][i:]
+            out_messages = [
+                msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
+            ]
+
+            if self.encrypt:
+                for msg in out_messages:
+                    msg["msg"] = self.exp.decrypt(msg["msg"])
+
+            return tuple(out_messages)
         else:
             return None
 
@@ -139,7 +182,42 @@ class ChatManager:
             tuple: All messages belonging to the chat
         """
         if self.data and self.data.get("messages", False):
-            self._loaded_index = len(self.data["messages"])
-            return tuple(self.data["messages"])
+            msgs = self.data["messages"]
+            self._loaded_index = len(msgs)
+
+            out_messages = [
+                msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
+            ]
+
+            if self.encrypt:
+                for msg in out_messages:
+                    msg["msg"] = self.exp.decrypt(msg["msg"])
+
+            return tuple(out_messages)
         else:
             return None
+
+    def _update_session_status(self):
+        """
+        Updates the list of inactive session IDs.
+        """
+        if not self.data.get("messages", False):
+            return
+        sids = [msg["sender_session_id"] for msg in self.data["messages"]]
+        sids = set(sids)
+
+        uncertain_sids = sids - set(self._inactive_sids)
+
+        for sid in uncertain_sids:
+            query = {"type": "exp_data", "exp_session_id": sid}
+            sdata = self.exp.db_main.find_one(
+                query, projection={"exp_aborted": True, "exp_start_time": True, "exp_finished": True}
+            )
+
+            if sdata["exp_aborted"]:
+                self._inactive_sids.append(sid)
+
+            elif self.exp.session_timeout and not sdata["exp_finished"]:
+                expired = time.time() - sdata["exp_start_time"] > self.exp.session_timeout
+                if expired:
+                    self._inactive_sids.append(sid)
