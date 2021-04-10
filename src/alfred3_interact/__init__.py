@@ -1,4 +1,5 @@
 from .page import WaitingPage
+from .page import MatchingPage
 
 from .match import MatchMaker
 
