@@ -6,6 +6,7 @@ from jinja2 import Environment, PackageLoader, Template
 from alfred3.element.core import Element
 from alfred3 import icon
 from alfred3._helper import inherit_kwargs
+from alfred3.data_manager import DataManager as dm
 
 from .chat import ChatManager
 
@@ -198,7 +199,7 @@ class ViewMembers(Element):
         super().added_to_experiment(exp)
         
         self.render_url = self.exp.ui.add_callable(self.render_table_body)
-        cols = ["Session", "Status", "Last Page", "Start", "Last Move", "Group", "Role"]
+        cols = ["Session", "Status", "Condition", "Last Page", "Start", "Last Move", "Group", "Role"]
         js = self.view_js.render(name=self.name, render_url=self.render_url, refresh_interval=self.refresh_interval, cols=cols)
         self.add_js(js)
 
@@ -218,7 +219,8 @@ class ViewMembers(Element):
             d = {}
             d["Session"] = m.session_id[-4:]
             d["Status"] = m.status
-            d["Last Page"] = m.last_page
+            d["Condition"] = self._condition_of(m.session_id)
+            d["Last Page"] = m.last_page if len(m.last_page) < 20 else m.last_page[:17] + "..."
             d["Start"] = m.start_time
             d["Last Move"] = m.last_move
             d["Group"] = m.group_id[-4:] if m.group_id else "-"
@@ -226,6 +228,16 @@ class ViewMembers(Element):
             tbody.append(d)
 
         return {"data": tbody}
+    
+    def _condition_of(self, sid: str) -> str:
+        q = {}
+        q["exp_id"] = self.exp.exp_id
+        q["type"] = dm.EXP_DATA
+        q["exp_session_id"] = sid
+
+        pro = {"exp_condition": True}
+        doc = self.exp.db_main.find_one(q, projection=pro)
+        return doc["exp_condition"]
 
 class ToggleMatchMakerActivation(Element):
     element_template = jenv.get_template("html/ToggleMatchMakerActivation.html.j2")
