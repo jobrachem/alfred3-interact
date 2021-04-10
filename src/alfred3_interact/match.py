@@ -8,6 +8,7 @@ from pymongo.collection import ReturnDocument
 from alfred3.page import Page
 from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.experiment import ExperimentSession
+from alfred3.exceptions import SessionTimeout
 
 from .group import Group
 from .group import GroupManager
@@ -172,6 +173,9 @@ class MatchMaker:
             same group. This setting makes sure that there's no strange
             behavior if you make changes to an ongoing experiment.
             Defaults to True.
+        inactive_page (Page): Page to be displayed to new participants
+            if the MatchMaker is inactive. If None, a default page is
+            used.
         admin_param (str): Name of the URL parameter used to start the
             admin mode. Defaults to the matchmaker id.
 
@@ -332,6 +336,7 @@ class MatchMaker:
             self.admin_mode = self._enable_admin_mode(self.exp)
         
         self._check_activation()
+            
 
     @classmethod
     def from_size(cls, n: int, **kwargs):
@@ -437,8 +442,6 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
-        # self._check_activation()
-
         self.member_timeout = member_timeout
         self.member = GroupMember(self)
         self.member._save()
@@ -529,23 +532,24 @@ class MatchMaker:
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
 
+        self._set_ping_timeout(ping_timeout)
+
         self.member = GroupMember(self)
         self.member._save()
-
         start = time.time()
-        expired = (time.time() - start) > match_timeout
+        # matching_expired = (time.time() - start) > match_timeout
 
         i = 0
         while not self.group:
-            # self._check_activation()
-            self.member._ping()
+            matching_expired = (time.time() - start) > match_timeout
+            session_expired = self.member.expired
+            if matching_expired or session_expired:
+                break
+            # self.member._ping()
 
             self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
 
             if not self.group:
-                expired = (time.time() - start) > match_timeout
-                if expired:
-                    break
 
                 if (i == 0) or (i % 10 == 0):
                     msg = f"Incomplete group in groupwise matching. Waiting. Member: {self.member}"
@@ -554,12 +558,14 @@ class MatchMaker:
                 i += 1
                 time.sleep(1)
 
-        if expired:
+        if matching_expired:
             self.log.error("Groupwise matchmaking timed out.")
             if raise_exception:
                 raise MatchingTimeout
             else:
                 return self._matching_timeout(self.group, timeout_page)
+        elif session_expired:
+            raise SessionTimeout
         else:
             self.log.info(f"{self.group} filled in groupwise match.")
             self._save_infos()
@@ -742,6 +748,14 @@ class MatchMaker:
         
         else:
             return False
+
+    def _set_ping_timeout(self, ping_timeout):
+        if not self._data.ping_timeout == ping_timeout:
+            q = {"type": "match_maker", "exp_id": self.exp.exp_id}
+            q["exp_version"] = self.exp_version
+            q["matchmaker_id"] = self.matchmaker_id
+            self.exp.db_misc.find_one_and_update(q, update={"$set": {"ping_timeout": ping_timeout}})
+
 
     def __str__(self):
         return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"
