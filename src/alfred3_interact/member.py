@@ -46,26 +46,24 @@ class GroupMember:
     @property
     def status(self) -> str:
         """
-        str: Returns a string, indicating the member's status. Can take
-        the following values:
-
-        - "active"
-        - "finished"
-        - "expired"
-        - "aborted"
-        - "unclear"
-
+        str: Returns a string, indicating the member's status.
         """
+        ping_timeout = self.mm.io.load().ping_timeout
         if self.finished:
             return "finished"
         elif self.session_data["exp_aborted"]:
             return "aborted"
         elif self.active:
-            return "active"
+            if self.group_id:
+                return "matched"
+            elif ping_timeout and time.time() - self.ping > ping_timeout:
+                return "ping timeout"
+            else:
+                return "unmatched"
         elif self.expired:
-            return "expired"
+            return "session timeout"
         else:
-            return "unclear"
+            return "pre-matching"
         
     @property
     def start_time(self) -> str:
@@ -94,8 +92,6 @@ class GroupMember:
         """
         str: Returns the name of the member's current page.
         """
-        if self.status != "active":
-            return "-"
         try:
             return self.move_history[-1]["target_page"]
         except IndexError:
@@ -115,7 +111,7 @@ class GroupMember:
         member has not timed out. A member is deactivated, e.g. when the
         experiment session of that member aborts.
         """
-        return self.data.active and (not self.expired or self.finished)
+        return self.data.active and not self.expired and not self.finished
     
     @property
     def finished(self) -> bool:
@@ -161,7 +157,12 @@ class GroupMember:
             return d
         elif saving_method(self.exp) == "mongo":
             query = {"exp_id": self.exp.exp_id, "exp_session_id": self.session_id, "type": dm.EXP_DATA}
-            return self.exp.db_main.find_one(query)
+            
+            d = self.exp.db_main.find_one(query)
+
+            if d is None:
+                self.mm.log.warning(f"{self} did not find any session data.")
+            return d
 
 
     @property
@@ -200,16 +201,6 @@ class GroupMember:
         data = dm.flatten(self.session_data).items()
         return {k: v for k, v in data if k in dm.client_data}
 
-    def _ping(self):
-        self.data.ping = time.time()
-        q = {}
-        q["type"] = self.mm._DATA_TYPE
-        q["matchmaker_id"] = self.mm.matchmaker_id
-        q["exp_id"] = self.exp.exp_id
-        q["exp_version"] = self.mm.exp_version
-        self.exp.db_misc.find_one_and_update(
-            q, [{"$set": {"members": {self.session_id: {"ping": self.data.ping}}}}]
-        )
     
     def _save(self):
         if saving_method(self.exp) == "local":
@@ -317,7 +308,8 @@ class MemberManager:
     def waiting(self, ping_timeout: int):
         now = time.time()
         for m in self.active():
-            if not m.matched and now - m.ping < ping_timeout:
+            ping_timeout = now - m.ping > ping_timeout
+            if not m.matched and not ping_timeout:
                 yield m
 
     def find(self, id: str):
