@@ -282,11 +282,11 @@ class MatchMaker:
         self,
         *roles,
         exp: ExperimentSession,
-        admin_pw: str,
         id: str = "matchmaker",
         respect_version: bool = True,
         active: bool = True,
         inactive_page=None,
+        admin_pw: str = None,
         admin_param: str = None,
     ):
         self.exp = exp
@@ -301,6 +301,7 @@ class MatchMaker:
         self.inactive_page = inactive_page
         self.admin_param = admin_param if admin_param is not None else id
         self.admin_pw = admin_pw
+        self.admin_mode = False
 
         self.member_timeout = None
 
@@ -322,11 +323,14 @@ class MatchMaker:
 
         self.member_manager = MemberManager(self)
         self.group_manager = GroupManager(self)
-        self.member = None
         self.group = None
+        self.member = None
 
         self.exp.abort_functions.append(self._deactivate_session)
-        self.admin_mode = self._enable_admin_mode(self.exp)
+        
+        if self.admin_pw:
+            self.admin_mode = self._enable_admin_mode(self.exp)
+        
         self._check_activation()
 
     @classmethod
@@ -713,7 +717,8 @@ class MatchMaker:
         """
         from alfred3_interact.page import PasswordPage, AdminPage
 
-        if exp.urlargs.get(self.admin_param, False) == "admin":
+        if exp.urlargs.get(self.admin_param, False) == "admin" and not exp.session_status == "admin":
+            exp.session_timeout = None
             exp.config.read_dict({"data": {"save_data": False}})
             exp.config.read_dict({"layout": {"show_progress": False}})
             exp.session_status = "admin"
