@@ -83,7 +83,7 @@ class Group:
         bool: Indicates whether the group is full or not. Counts only
         active members.
         """
-        return len(list(self.active_members())) == len(self.data.roles)
+        return len(list(self.active_or_finished_members())) == len(self.data.roles)
 
     @property
     def you(self) -> GroupMember:
@@ -148,13 +148,18 @@ class Group:
             - :attr:`.GroupMember.active`
         """
         return (member for member in self.members() if member.active)
+    
+    def active_or_finished_members(self) -> Iterator[GroupMember]:
+        for member in self.members():
+            if member.active or member.finished:
+                yield member
 
     def other_members(self) -> Iterator[GroupMember]:
         """
         Iterator: A generator, iterating over the *active* group members
         except for :attr:`.me`. Yields :class:`.GroupMember` objects.
         """
-        return (m for m in self.active_members() if m.session_id != self.exp.session_id)
+        return (m for m in self.active_or_finished_members() if m.session_id != self.exp.session_id)
 
     def get_member_by_role(self, role: str) -> GroupMember:
         """
