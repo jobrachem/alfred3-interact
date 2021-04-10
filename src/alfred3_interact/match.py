@@ -383,7 +383,7 @@ class MatchMaker:
         self._data.members[self.member.session_id] = asdict(self.member.data)
         return self._data
 
-    def match_stepwise(self, member_timeout: int = None) -> Group:
+    def match_stepwise(self, member_timeout: int = None, ongoing_sessions_ok: bool = False) -> Group:
         """
         Assigns participants to groups and roles one-by-one without
         waiting for a group to be full.
@@ -396,6 +396,10 @@ class MatchMaker:
                 will be free for allocation to new members. If None,
                 :attr:`alfred3.experiment.ExperimentSession.session_timeout`
                 will be used. Defaults to None.
+            ongoing_sessions_ok (bool): If False, new members will only
+                be added to a group if all previous members of that group
+                have finished their experiment sessions. This can prevent
+                session losses in case 
 
 
         Roles are assigned to members in order.
@@ -440,9 +444,9 @@ class MatchMaker:
         self.member._save()
 
         # match to existing group
-        if any(self.group_manager.notfull()):
+        if any(self.group_manager.notfull(ongoing_sessions_ok=ongoing_sessions_ok)):
             try:
-                self.group = self._match_next_group()
+                self.group = self._match_next_group(ongoing_sessions_ok=ongoing_sessions_ok)
             except BusyGroup:
                 self.group = self._wait_until_free(self.group_timeout)
 
@@ -603,8 +607,8 @@ class MatchMaker:
             group = Group(self, roles=self.roles)
             return group
 
-    def _match_next_group(self):
-        with next(self.group_manager.notfull()) as group:
+    def _match_next_group(self, ongoing_sessions_ok: bool):
+        with next(self.group_manager.notfull(ongoing_sessions_ok=ongoing_sessions_ok)) as group:
             self.log.info(f"Starting stepwise match of session to existing group: {group}.")
             group += self.member
             group._assign_next_role(to_member=self.member)
