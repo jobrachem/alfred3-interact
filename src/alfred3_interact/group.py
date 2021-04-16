@@ -60,6 +60,19 @@ class Group:
         self._shared_data = SharedGroupData(group=self)
         self._save()
         self._shared_data._fetch()
+        self.exp.append_plugin_data_query(self._plugin_data_query)
+    
+    @property
+    def _plugin_data_query(self):
+        f = {"exp_id": self.exp.exp_id, "type": "match_group"}
+        
+        q = {}
+        q["title"] = "Group Data"
+        q["type"] = "match_group"
+        q["query"] = {"filter": f}
+        q["encrypted"] = False
+
+        return q
     
     @property
     def shared_data(self) -> SharedGroupData:

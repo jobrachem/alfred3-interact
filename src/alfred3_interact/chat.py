@@ -71,6 +71,19 @@ class ChatManager:
         self.color = self._find_color()
 
         self._inactive_sids = []
+        self.exp.append_plugin_data_query(self._plugin_data_query)
+    
+    @property
+    def _plugin_data_query(self):
+        f = {"exp_id": self.exp.exp_id, "type": "chat_data"}
+        
+        q = {}
+        q["title"] = "Chat"
+        q["type"] = "chat_data"
+        q["query"] = {"filter": f}
+        q["encrypted"] = True
+
+        return q
 
     def _find_color_index(self, n) -> int:
         n_colors = len(self.DEFAULT_COLORS)
