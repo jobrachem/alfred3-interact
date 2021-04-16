@@ -161,7 +161,17 @@ class GroupMember:
             d = self.exp.db_main.find_one(query)
 
             if d is None:
-                self.mm.log.warning(f"{self} did not find any session data.")
+                self.mm.log.warning(f"{self} did not find any session data. Trying to recover by waiting.")
+                start = time.time()
+                while d is None:
+                    if time.time() - start > 10:
+                        break
+                    time.sleep(1)
+                    d = self.exp.db_main.find_one(query)
+            
+            if not d:
+                raise MatchingError(f"Could not find session data for {self}.")
+            
             return d
 
 
