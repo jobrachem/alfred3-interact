@@ -57,7 +57,7 @@ class AdminPage(al.WidePage):
         self += al.VerticalSpace("30px")
         self += al.Text(
             "Note: The MatchMaker Admin displays only sessions for which the matchmaking process has been started.",
-            font_size=10,
+            font_size="small",
             width="full",
         )
 
