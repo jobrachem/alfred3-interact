@@ -106,4 +106,4 @@ def linkcode_resolve(domain, info):
         return None
     filename = info['module'].replace('.', '/')
 
-    return f"https://github.com/jobrachem/alfred3_interact/blob/master/src/{filename}.py"
+    return f"https://github.com/jobrachem/alfred3-interact/blob/main/src/{filename}.py"
