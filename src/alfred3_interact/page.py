@@ -1,3 +1,7 @@
+"""
+Specialized pages for interactive experiments.
+"""
+
 import time
 from abc import abstractmethod
 from functools import wraps
@@ -95,40 +99,24 @@ class WaitingPage(al.NoNavigationPage):
         otherwise you will wait indefinitely.
 
     Args:
+        wait_msg (str): Text to be displayed in the default layout.
+            Defaults to None, in which case the text is 
+            "Waiting for other group members."
+        wait_timeout (int): Maximum waiting time in seconds. If *wait_for* 
+            does not return a *True*-like value within waiting time, the experiment 
+            session is aborted. Defaults to None, in which case the 
+            timeout is ``60 * 20``, i.e. 20 minutes.
+        wait_sleep_time (int): Number of seconds in between two internal
+            calls to :meth:`.wait_for`. Defaults to None, in which case
+            a call will be made every two seconds.
         {kwargs}
 
     Examples:
 
-        The example below demonstrates how to use the waiting page for
-        matchmaking. Matchmaking will start on the second page.
-        Participants will be forwarded automatically once matchmaking
-        is finished::
-
-            import alfred3 as al
-            import alfred3_interact as ali
-
-            exp = al.Experiment()
-
-            exp += al.Page(title="Landing page", name="landing")
-
-            @exp.member
-            class MatchPage(ali.WaitingPage):
-                title = "Making a Match"
-
-                def wait_for(self):
-                    mm = ali.MatchMaker("a", "b", exp=self.exp)
-                    self.exp.plugins.group = mm.match_groupwise()
-                    return True
-
-
-            @exp.member
-            class Success(al.Page):
-                title = "It's a Match!"
-
-        The next example demonstrates how to use the waiting page in
+        The example demonstrates how to use the waiting page in
         an ongoing experiment to wait until a group member has proceeded
         to a certain point in the experiment (more precisely, until a
-        group member has filled a certain input element)::
+        group member has filled a certain input element in this case)::
 
 
             import alfred3 as al
@@ -136,14 +124,11 @@ class WaitingPage(al.NoNavigationPage):
 
             exp = al.Experiment()
 
-            @exp.member
-            class MatchPage(ali.WaitingPage):
-                title = "Making a Match"
+            @exp.setup
+            def setup(exp):
+                mm = ali.MatchMaker("a", "b", exp=exp)
+                exp.plugins.group = mm.match_stepwise()
 
-                def wait_for(self):
-                    mm = ali.MatchMaker("a", "b", exp=self.exp)
-                    self.exp.plugins.group = mm.match_groupwise()
-                    return True
 
             @exp.member
             class InputPage(al.Page):
@@ -151,23 +136,37 @@ class WaitingPage(al.NoNavigationPage):
                 def on_exp_access(self):
                     self += al.TextEntry(leftlab="Enter text", name="el1", force_input=True)
 
+
             @exp.member
             class Sync1(ali.WaitingPage):
 
                 def wait_for(self):
                     you = self.exp.plugins.group.you
-                    el1 = you.values.get("el1", False)
-                    return el1
+                    return you.values.get("el1", False)
 
             exp += al.Page(title="Waiting successful", name="success")
 
 
     """
 
-    title = "Waiting"
+    #: str: Page title
+    title = "Waiting" 
+
+    #: Text to be displayed in the default layout.
+    #: Defaults to None, in which case the text is 
+    #: "Waiting for other group members."
     wait_msg: str = "Waiting for other group members."
-    wait_timeout: int = 60 * 5
-    wait_sleep_time: int = 1
+
+    #: Maximum waiting time in seconds. If *wait_for* 
+    #: does not return a *True*-like value within waiting time, the experiment 
+    #: session is aborted. Defaults to None, in which case the 
+    #: timeout is ``60 * 20``, i.e. 20 minutes.
+    wait_timeout: int = 60 * 20
+
+    #: Number of seconds in between two internal
+    #: calls to :meth:`.wait_for`. Defaults to None, in which case
+    #: a call will be made every two seconds.
+    wait_sleep_time: int = 2
 
     def __init__(
         self,
@@ -192,6 +191,13 @@ class WaitingPage(al.NoNavigationPage):
 
     @abstractmethod
     def wait_for(self):
+        """
+        One this method returns a *True*-like value, the page automatically 
+        forwards participants to the next page.
+
+        It will be repeatedly called internally with the time between
+        two calls defined by :attr:`.wait_sleep_time`.
+        """
         pass
 
     def _wait_for(self):
@@ -227,10 +233,55 @@ class WaitingPage(al.NoNavigationPage):
         self += al.CountUp(font_size=30, align="center")
         self += al.Text(self.wait_msg, align="center")
 
-
+@inherit_kwargs
 class MatchingPage(WaitingPage):
+    """
+    A page that provides a waiting screen and participant activity check 
+    while waiting for a match to complete.
 
-    ping_interval: int = 1
+    Apart from the activity ping, the behavior and usage of the 
+    MatchingPage is the same as in :class:`.WaitingPage`, i.e. you 
+    must overload the method :meth:`.wait_for`, and as soon as *wait_for*
+    returns *True*, participants are forwarded to the next page.
+
+    Args:
+        ping_interval (int): The number of seconds in between two 
+            activity pings being sent to the server. If None (default),
+            a ping is sent every three seconds. Can be defined as a class
+            attribute.
+        
+        {kwargs}
+
+    Examples:
+        ::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = al.Experiment()
+
+            exp += al.Page(title="Landing page", name="landing")
+
+            @exp.member
+            class MatchPage(ali.WaitingPage):
+                title = "Making a Match"
+
+                def wait_for(self):
+                    mm = ali.MatchMaker("a", "b", exp=self.exp)
+                    self.exp.plugins.group = mm.match_groupwise()
+                    return True
+
+
+            @exp.member
+            class Success(al.Page):
+                title = "It's a Match!"
+    """
+    
+    #: The number of seconds in between two 
+    #: activity pings being sent to the server. If None (default),
+    #: a ping is sent every three seconds. Can be defined as a class
+    #: attribute.
+    ping_interval: int = 3
 
     def __init__(self, ping_interval: int = None, **kwargs):
         super().__init__(**kwargs)

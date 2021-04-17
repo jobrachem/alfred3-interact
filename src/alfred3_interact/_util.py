@@ -1,3 +1,7 @@
+"""
+Soome basic utilities.
+"""
+
 
 def saving_method(exp) -> bool:
     if not exp.secrets.getboolean("mongo_saving_agent", "use"):

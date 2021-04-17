@@ -1,3 +1,7 @@
+"""
+Specialized elements for interactive experiments.
+"""
+
 import time
 from typing import Union
 

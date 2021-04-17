@@ -1,3 +1,7 @@
+"""
+Provides the main MatchMaker functionality.
+"""
+
 import time
 import json
 import copy
@@ -202,7 +206,9 @@ class MatchMaker:
               at a specified point in the experiment.
 
     Examples:
-        ::
+        The example below illustrates the creation of an *asynchronous*
+        group via :meth:`.match_stepwise`. For a synchronous group,
+        refer to :meth:`.match_groupwise`::
 
             import alfred3 as al
             import alfred3_interact as ali
@@ -211,23 +217,15 @@ class MatchMaker:
 
             @exp.setup
             def setup(exp):
-                exp.plugins.mm = ali.MatchMaker("role1", "role2", exp=exp)
-            
-            
-            @exp.member
-            class Match(ali.MatchingPage):
-
-                def wait_for(self):
-
-                    group = self.exp.plugins.mm.match_stepwise()
-                    self.exp.plugins.group = group
+                mm = ali.MatchMaker("role1", "role2", exp=exp)
+                exp.plugins.group = mm.match_stepwise()
             
             
             @exp.member
             class Success(al.Page):
                 title = "Match successful"
 
-                def on_first_show(self):
+                def on_exp_access(self):
                     group = self.exp.plugins.group
                     
                     txt = f"You have successfully matched to role: {group.me.role}"
@@ -398,7 +396,7 @@ class MatchMaker:
                 @exp.member
                 class Demo(al.Page):
 
-                    def on_first_show(self):
+                    def on_exp_access(self):
                         role = self.exp.plugins.group.me.role
                         self += al.Text(f"I was assigned to role '{role}'.")
 

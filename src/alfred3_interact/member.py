@@ -1,3 +1,7 @@
+"""
+Functionality related to group members.
+"""
+
 import time
 import json
 from dataclasses import asdict

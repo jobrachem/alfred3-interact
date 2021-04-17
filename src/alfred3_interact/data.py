@@ -1,3 +1,7 @@
+"""
+Data representation classes for interactive components.
+"""
+
 import time
 from uuid import uuid4
 from collections import UserDict

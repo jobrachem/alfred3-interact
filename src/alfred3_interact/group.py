@@ -1,3 +1,7 @@
+"""
+Functionality related to groups.
+"""
+
 import json
 import random
 import time

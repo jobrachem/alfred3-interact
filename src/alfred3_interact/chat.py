@@ -1,3 +1,7 @@
+"""
+The under-the-hood administration of the chat.
+"""
+
 import time
 import bleach
 from pymongo.collection import ReturnDocument
