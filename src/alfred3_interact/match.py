@@ -163,7 +163,8 @@ class MatchMaker:
             group must be unique.
         exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
             in which this matchmaker is used.
-        admin_pw (str): Password for the MatchMaker admin view. 
+        admin_pw (str): Password for the MatchMaker admin view. If no
+            admin password is supplied, the admin view is deactivated.
         id (str): Used in combination with the experiment ID as unique
             identifier for the MatchMaker.  Defaults to 'matchmaker',
             which is usually fine, unless you are using multiple
@@ -184,7 +185,21 @@ class MatchMaker:
         See :meth:`.match_stepwise` and :meth:`.match_groupwise` for
         more information and examples. Also, there is an alternative
         constructor :meth:`.from_size`.
-    
+
+        .. note:: Note that the automatic MatchMaker admin mode is only
+            available if the matchmaker is initialized in the experiment
+            setup hook!
+
+    See Also:
+            - See :class:`.MatchingPage` for a special page class that
+              offers a nice waiting screen and automatic forwarding upon
+              achieving a match.
+            
+            - See :class:`.WaitingPage` for a special page class that
+              offers a nice waiting screen for synchronization in an 
+              ongoing experiment. This is useful to pause at some points
+              in the experiment and wait for all group members to arrive
+              at a specified point in the experiment.
 
     Examples:
         ::
@@ -284,8 +299,7 @@ class MatchMaker:
     @classmethod
     def from_size(cls, n: int, **kwargs):
         """
-        Creates a matchmaker instance on the basis of the number
-        of group members.
+        Creates a matchmaker instance from the number of group members.
 
         Args:
             n (int): The number of group members.
@@ -307,7 +321,10 @@ class MatchMaker:
         return cls(*roles, **kwargs)
 
     @property
-    def active(self):
+    def active(self) -> bool:
+        """
+        Returns *True*, if the MatchMaker is active.
+        """
         d = self.io.load()
         self._active = d.active
         return self._active
@@ -350,7 +367,8 @@ class MatchMaker:
                 session losses in case 
 
 
-        Roles are assigned to members in order.
+        Roles are assigned to members in the order in which they
+        are matched (first come, first serve).
 
         This method is the correct choice for groups that can operate
         in an asynchronous fashion. One example for such a setting is
@@ -375,7 +393,7 @@ class MatchMaker:
                 @exp.setup
                 def setup(exp):
                     mm = MatchMaker("a", "b", exp=exp)
-                    exp.plugins["group"] = mm.match_stepwise()
+                    exp.plugins.group = mm.match_stepwise()
 
                 @exp.member
                 class Demo(al.Page):
@@ -427,40 +445,68 @@ class MatchMaker:
         matches them together.
 
         Args:
-            timeout_page (alfred3.page.Page): A custom page to display to
-                participants if matchmaking times out. This will replace the
-                default timeout page.
-            match_timeout (int): Number of seconds after which a matching
-                procedure will be considered to have failed. In this case,
-                the experiment will be aborted and the group in question will
-                be marked as inactive and not included in further matchmaking.
-                This timeout determines the maximum waiting time for
-                a group to be complete. Defaults to 1,800 (30 minutes).
+            match_timeout (int): This timeout determines the maximum 
+                waiting time for a group to be complete. Defaults to 
+                1,800 (30 minutes). After expiration, the current experiment
+                session is aborted and the group is marked as inactive.
             ping_timeout (int): Number of seconds after which an experiment
                 session will be excluded from groupwise matching. This makes
                 sure that only currently active sessions will be allocated
                 to a group. Defaults to 15 (seconds).
+            timeout_page (alfred3.page.Page): A custom page to display to
+                participants if matchmaking times out. This will replace the
+                default timeout page.
             raise_exception (bool): If True, the matchmaker will raise
                 a :class:`.MatchingTimeout` exception instead of aborting
                 the experiment if the matchmaking times out. This is useful,
                 if you want to catch the exception and customize the
                 experiment's behavior in this case. Defaults to False.
 
-        This method is the correct choice, if group members exchange data
+        This method is the correct choice if group members exchange data
         in real time. Roles are assigned randomly.
+
+        Notes:
+            .. important:: Note that you should use a :class:`.MatchingPage` for 
+                groupwise matching. This will not only provide a nice waiting
+                screen for participants while they wait for a match, it 
+                will also make sure that participants who close the
+                experiment tab will not be included in the matchmaking process.
+
+                If you do not use a MatchingPage, the MatchMaker cannot
+                distinguish active from inactive participants and
+                discard even active participants.
+
+
+
+        See Also:
+            - See :class:`.MatchingPage` for a special page class that
+              offers a nice waiting screen and automatic forwarding upon
+              achieving a match.
+            
+            - See :class:`.WaitingPage` for a special page class that
+              offers a nice waiting screen for synchronization in an 
+              ongoing experiment. This is useful to pause at some points
+              in the experiment and wait for all group members to arrive
+              at a specified point in the experiment.
 
         Examples:
             ::
 
                 import alfred3 as al
-                from alfred3_interact import MatchMaker
+                import alfred3_interact as ali
 
                 exp = al.Experiment()
 
                 @exp.setup
                 def setup(exp):
-                    mm = MatchMaker("a", "b", exp=exp)
-                    exp.plugins["group"] = mm.match_groupwise()
+                    exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
+                
+                @exp.member
+                class Match(ali.MatchingPage):
+
+                    def wait_for(self):
+                        self.exp.plugins.group = self.plugins.mm.match_groupwise()
+                        return True
 
                 @exp.member
                 class Demo(al.Page):
@@ -480,7 +526,6 @@ class MatchMaker:
         self.member = GroupMember(self)
         self.member._save()
         start = time.time()
-        # matching_expired = (time.time() - start) > match_timeout
 
         i = 0
         while not self.group:
@@ -488,7 +533,6 @@ class MatchMaker:
             session_expired = self.member.expired
             if matching_expired or session_expired:
                 break
-            # self.member._ping()
 
             self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
 

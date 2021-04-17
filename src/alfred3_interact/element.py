@@ -94,6 +94,24 @@ class Chat(Element):
 
             exp += al.Page(title="Chat Demo", name="chat_demo")
             exp.chat_demo += ali.Chat("test_chat")
+        
+        A group chat in an interactive experiment::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = al.Experiment()
+
+            @exp.setup
+            def setup(exp):
+                exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
+            
+            @exp.member
+            class Match(ali.MatchingPage):
+
+                def wait_for(self):
+                    self.exp.plugins.group = self.exp.plugins.mm.match_groupwise()
+                    return True
 
     """
 

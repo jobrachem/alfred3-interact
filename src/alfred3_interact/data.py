@@ -14,9 +14,10 @@ class SharedGroupData(UserDict):
     """
     Shared group data dictionary.
 
-    This dictionary can be used just like a normal dictionary, except
-    that it synchronises data to a database. This way, the data is
-    automatically shared between all group members.
+    This dictionary can be used just like a normal dictionary. 
+    Its benefit is that it synchronises data to a database. 
+    This way, the data is always automatically shared between all group 
+    members.
     """
 
     def __init__(self, *args, group, **kwargs):

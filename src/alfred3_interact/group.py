@@ -77,7 +77,12 @@ class Group:
     @property
     def shared_data(self) -> SharedGroupData:
         """
-        SharedGroupData: Gives access to the group's shared data dictionary.
+        SharedGroupData: Gives access to the group's shared data dictionary,
+        which will always automatically synchronize data for all group 
+        members.
+
+        See Also:
+            :class:`.SharedGroupData`
         """
         self._shared_data._fetch()
         return self._shared_data
