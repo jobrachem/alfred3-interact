@@ -21,6 +21,12 @@
       ~Group.active_members
    
    
+      ~Group.active_or_finished_members
+   
+   
+      ~Group.chat
+   
+   
       ~Group.get_member_by_id
    
    
@@ -28,6 +34,9 @@
    
    
       ~Group.members
+   
+   
+      ~Group.ongoing_roles
    
    
       ~Group.open_roles

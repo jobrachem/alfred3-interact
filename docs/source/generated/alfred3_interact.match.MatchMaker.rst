@@ -26,6 +26,9 @@
    
       ~MatchMaker.match_stepwise
    
+   
+      ~MatchMaker.toggle_activation
+   
 
    
    
@@ -39,6 +42,7 @@
       :toctree:
 
       
+         ~MatchMaker.active
          ~MatchMaker.data
          ~MatchMaker.member_timeout
       
