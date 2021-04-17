@@ -1,3 +1,6 @@
+How to use the MatchMaker
+=========================
+
 First, you initialize the MatchMaker with the roles that you
 need and the experiment session object::
 
@@ -8,7 +11,7 @@ need and the experiment session object::
 
     @exp.setup
     def setup(exp):
-        mm = MatchMaker("a", "b", exp=exp) # Initialize the MatchMaker
+        exp.plugins.mm = MatchMaker("a", "b", exp=exp) # Initialize the MatchMaker
 
     exp += al.Page(name="demo")
 
