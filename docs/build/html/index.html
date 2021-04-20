@@ -1282,15 +1282,22 @@ on their role in the group. The roles are defined during MatchMaker
 intialization.</p>
 <p>Beyond access to group members, Groups offer a <a class="reference internal" href="generated/alfred3_interact.data.SharedGroupData.html#alfred3_interact.data.SharedGroupData" title="alfred3_interact.data.SharedGroupData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SharedGroupData</span></code></a>
 dictionary, which you can use as a centralized place for information that
-belongs to the whole group rather than an individual member.</p>
-<p>Within the experiment, you can define waiting points for synchronizing
-multiple participants’ progress through the <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>.</p>
-<p>We also provide a <a class="reference internal" href="generated/alfred3_interact.element.Chat.html#alfred3_interact.element.Chat" title="alfred3_interact.element.Chat"><code class="xref py py-class docutils literal notranslate"><span class="pre">Chat</span></code></a> element. This element can be comfortably
+belongs to the whole group rather than an individual member.
+Within the experiment, you can define waiting points for synchronizing
+multiple participants’ progress through the <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>.
+We also provide a <a class="reference internal" href="generated/alfred3_interact.element.Chat.html#alfred3_interact.element.Chat" title="alfred3_interact.element.Chat"><code class="xref py py-class docutils literal notranslate"><span class="pre">Chat</span></code></a> element. This element can be comfortably
 used as a group chat through the shortcut <a class="reference internal" href="generated/alfred3_interact.group.Group.chat.html#alfred3_interact.group.Group.chat" title="alfred3_interact.group.Group.chat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Group.chat()</span></code></a>, but also
 independently of groups.</p>
-<p>Also note that individual sessions can belong to multiple groups at once.</p>
+<p>Note that individual sessions can belong to multiple groups at once.
+You can use multiple MatchMakers in the same experiment.</p>
+<p>There’s an <em>admin-mode</em> for the MatchMaker that you can use to toggle
+its activation - an inactive MatchMaker will not construct any groups.
+The admin mode also shows an overview of sessions included in the
+experiment. It can be entered by using an url parameter during experiment
+start, which defaults to <code class="docutils literal notranslate"><span class="pre">?matchmaker=admin</span></code> and can be customized
+during MatchMaker initialization.</p>
 <p>Equipped with this narrative information, you can dive into the API
-documentation to see how to actually use alfred3_interact in you alfred3
+documentation to see in more detail how to use alfred3_interact in your alfred3
 experiments.</p>
 </div>
 <div class="section" id="api-reference-overview">
