@@ -1,12 +1,6 @@
 alfred3-interact: Interactive web-experiments
 ==============================================
 
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   CHANGELOG
-
 Welcome to the documentation of alfred3-interact! Alfred3-interact
 is a plugin for alfred3_ that offers the creation of interactive web 
 experiments, predominantly in the social sciences. 
