@@ -1,0 +1,1275 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MatchingPage.minimum_display_time_msg &#8212; alfred3_interact</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MatchingPage.must_be_shown" href="alfred3_interact.page.MatchingPage.must_be_shown.html" />
+    <link rel="prev" title="MatchingPage.minimum_display_time" href="alfred3_interact.page.MatchingPage.minimum_display_time.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/alfred_logo_color.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">alfred3_interact</h1>
+  
+</a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../CHANGELOG.html">
+   Changelog
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  API Reference
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.match.MatchMaker.html">
+   MatchMaker
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.from_size.html">
+     MatchMaker.from_size()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.match_groupwise.html">
+     MatchMaker.match_groupwise()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.match_stepwise.html">
+     MatchMaker.match_stepwise()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.toggle_activation.html">
+     MatchMaker.toggle_activation()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.active.html">
+     MatchMaker.active
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.data.html">
+     MatchMaker.data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.match.MatchMaker.member_timeout.html">
+     MatchMaker.member_timeout
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.group.Group.html">
+   Group
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.active_members.html">
+     Group.active_members()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.active_or_finished_members.html">
+     Group.active_or_finished_members()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.chat.html">
+     Group.chat()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.get_member_by_id.html">
+     Group.get_member_by_id()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.get_member_by_role.html">
+     Group.get_member_by_role()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.members.html">
+     Group.members()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.ongoing_roles.html">
+     Group.ongoing_roles()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.open_roles.html">
+     Group.open_roles()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.other_members.html">
+     Group.other_members()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.DATA_TYPE.html">
+     Group.DATA_TYPE
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.full.html">
+     Group.full
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.me.html">
+     Group.me
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.path.html">
+     Group.path
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.shared_data.html">
+     Group.shared_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.group.Group.you.html">
+     Group.you
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.member.GroupMember.html">
+   GroupMember
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.active.html">
+     GroupMember.active
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.client_data.html">
+     GroupMember.client_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.expired.html">
+     GroupMember.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.finished.html">
+     GroupMember.finished
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.last_move.html">
+     GroupMember.last_move
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.last_page.html">
+     GroupMember.last_page
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.matched.html">
+     GroupMember.matched
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.metadata.html">
+     GroupMember.metadata
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.move_history.html">
+     GroupMember.move_history
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.session_data.html">
+     GroupMember.session_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.start_time.html">
+     GroupMember.start_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.status.html">
+     GroupMember.status
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.member.GroupMember.values.html">
+     GroupMember.values
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.data.SharedGroupData.html">
+   SharedGroupData
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.clear.html">
+     SharedGroupData.clear()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.copy.html">
+     SharedGroupData.copy()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.fromkeys.html">
+     SharedGroupData.fromkeys()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.get.html">
+     SharedGroupData.get()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.items.html">
+     SharedGroupData.items()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.keys.html">
+     SharedGroupData.keys()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.last_access.html">
+     SharedGroupData.last_access()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.last_change.html">
+     SharedGroupData.last_change()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.pop.html">
+     SharedGroupData.pop()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.popitem.html">
+     SharedGroupData.popitem()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.setdefault.html">
+     SharedGroupData.setdefault()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.update.html">
+     SharedGroupData.update()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.data.SharedGroupData.values.html">
+     SharedGroupData.values()
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 current active collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.page.MatchingPage.html">
+   MatchingPage
+  </a>
+  <ul class="current collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.added_to_experiment.html">
+     MatchingPage.added_to_experiment()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.added_to_section.html">
+     MatchingPage.added_to_section()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.append.html">
+     MatchingPage.append()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.close.html">
+     MatchingPage.close()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.custom_move.html">
+     MatchingPage.custom_move()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.durations.html">
+     MatchingPage.durations()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.first_duration.html">
+     MatchingPage.first_duration()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.last_duration.html">
+     MatchingPage.last_duration()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_close.html">
+     MatchingPage.on_close()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_each_hide.html">
+     MatchingPage.on_each_hide()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_each_show.html">
+     MatchingPage.on_each_show()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_exp_access.html">
+     MatchingPage.on_exp_access()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_first_hide.html">
+     MatchingPage.on_first_hide()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.on_first_show.html">
+     MatchingPage.on_first_show()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.prepare_web_widget.html">
+     MatchingPage.prepare_web_widget()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.save_data.html">
+     MatchingPage.save_data()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.uptree.html">
+     MatchingPage.uptree()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_elements.html">
+     MatchingPage.validate_elements()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_page.html">
+     MatchingPage.validate_page()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.visible.html">
+     MatchingPage.visible()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html">
+     MatchingPage.wait_for()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.all_elements.html">
+     MatchingPage.all_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.all_input_elements.html">
+     MatchingPage.all_input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.background_color.html">
+     MatchingPage.background_color
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.data.html">
+     MatchingPage.data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.elements.html">
+     MatchingPage.elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.exp.html">
+     MatchingPage.exp
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.experiment.html">
+     MatchingPage.experiment
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.filled_input_elements.html">
+     MatchingPage.filled_input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.fixed_width.html">
+     MatchingPage.fixed_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.has_been_shown.html">
+     MatchingPage.has_been_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.header_color.html">
+     MatchingPage.header_color
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.input_elements.html">
+     MatchingPage.input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.instance_log.html">
+     MatchingPage.instance_log
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.is_closed.html">
+     MatchingPage.is_closed
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.minimum_display_time.html">
+     MatchingPage.minimum_display_time
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     MatchingPage.minimum_display_time_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.must_be_shown.html">
+     MatchingPage.must_be_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.name.html">
+     MatchingPage.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.parent.html">
+     MatchingPage.parent
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.parent_name.html">
+     MatchingPage.parent_name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping_interval.html">
+     MatchingPage.ping_interval
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.prefix_element_names.html">
+     MatchingPage.prefix_element_names
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.progress.html">
+     MatchingPage.progress
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.responsive_width.html">
+     MatchingPage.responsive_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.section.html">
+     MatchingPage.section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.short_tree.html">
+     MatchingPage.short_tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.should_be_shown.html">
+     MatchingPage.should_be_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.showif.html">
+     MatchingPage.showif
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.subtitle.html">
+     MatchingPage.subtitle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.tag.html">
+     MatchingPage.tag
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.title.html">
+     MatchingPage.title
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.tree.html">
+     MatchingPage.tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.uid.html">
+     MatchingPage.uid
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.unlinked_data.html">
+     MatchingPage.unlinked_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.updated_elements.html">
+     MatchingPage.updated_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.vargs.html">
+     MatchingPage.vargs
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
+     MatchingPage.wait_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html">
+     MatchingPage.wait_sleep_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
+     MatchingPage.wait_timeout
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.page.WaitingPage.html">
+   WaitingPage
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.added_to_experiment.html">
+     WaitingPage.added_to_experiment()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.added_to_section.html">
+     WaitingPage.added_to_section()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.append.html">
+     WaitingPage.append()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.close.html">
+     WaitingPage.close()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.custom_move.html">
+     WaitingPage.custom_move()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.durations.html">
+     WaitingPage.durations()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.first_duration.html">
+     WaitingPage.first_duration()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.last_duration.html">
+     WaitingPage.last_duration()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_close.html">
+     WaitingPage.on_close()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_each_hide.html">
+     WaitingPage.on_each_hide()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_each_show.html">
+     WaitingPage.on_each_show()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_exp_access.html">
+     WaitingPage.on_exp_access()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_first_hide.html">
+     WaitingPage.on_first_hide()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.on_first_show.html">
+     WaitingPage.on_first_show()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.prepare_web_widget.html">
+     WaitingPage.prepare_web_widget()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.save_data.html">
+     WaitingPage.save_data()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.uptree.html">
+     WaitingPage.uptree()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_elements.html">
+     WaitingPage.validate_elements()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_page.html">
+     WaitingPage.validate_page()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.visible.html">
+     WaitingPage.visible()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_for.html">
+     WaitingPage.wait_for()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.all_elements.html">
+     WaitingPage.all_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.all_input_elements.html">
+     WaitingPage.all_input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.background_color.html">
+     WaitingPage.background_color
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.data.html">
+     WaitingPage.data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.elements.html">
+     WaitingPage.elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.exp.html">
+     WaitingPage.exp
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.experiment.html">
+     WaitingPage.experiment
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.filled_input_elements.html">
+     WaitingPage.filled_input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.fixed_width.html">
+     WaitingPage.fixed_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.has_been_shown.html">
+     WaitingPage.has_been_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.header_color.html">
+     WaitingPage.header_color
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.input_elements.html">
+     WaitingPage.input_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.instance_log.html">
+     WaitingPage.instance_log
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.is_closed.html">
+     WaitingPage.is_closed
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.minimum_display_time.html">
+     WaitingPage.minimum_display_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.minimum_display_time_msg.html">
+     WaitingPage.minimum_display_time_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.must_be_shown.html">
+     WaitingPage.must_be_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.name.html">
+     WaitingPage.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.parent.html">
+     WaitingPage.parent
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.parent_name.html">
+     WaitingPage.parent_name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.prefix_element_names.html">
+     WaitingPage.prefix_element_names
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.progress.html">
+     WaitingPage.progress
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.responsive_width.html">
+     WaitingPage.responsive_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.section.html">
+     WaitingPage.section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.short_tree.html">
+     WaitingPage.short_tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.should_be_shown.html">
+     WaitingPage.should_be_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.showif.html">
+     WaitingPage.showif
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.subtitle.html">
+     WaitingPage.subtitle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.tag.html">
+     WaitingPage.tag
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.title.html">
+     WaitingPage.title
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.tree.html">
+     WaitingPage.tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.uid.html">
+     WaitingPage.uid
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.unlinked_data.html">
+     WaitingPage.unlinked_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.updated_elements.html">
+     WaitingPage.updated_elements
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.vargs.html">
+     WaitingPage.vargs
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_msg.html">
+     WaitingPage.wait_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_sleep_time.html">
+     WaitingPage.wait_sleep_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_timeout.html">
+     WaitingPage.wait_timeout
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="alfred3_interact.element.Chat.html">
+   Chat
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.add_css.html">
+     Chat.add_css()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.add_js.html">
+     Chat.add_js()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.added_to_experiment.html">
+     Chat.added_to_experiment()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.added_to_page.html">
+     Chat.added_to_page()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.prepare_web_widget.html">
+     Chat.prepare_web_widget()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.render_inner_html.html">
+     Chat.render_inner_html()
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.base_template.html">
+     Chat.base_template
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.converted_width.html">
+     Chat.converted_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.css_class_container.html">
+     Chat.css_class_container
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.css_class_element.html">
+     Chat.css_class_element
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.css_code.html">
+     Chat.css_code
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.css_urls.html">
+     Chat.css_urls
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.display_standalone.html">
+     Chat.display_standalone
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.element_template.html">
+     Chat.element_template
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.element_width.html">
+     Chat.element_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.exp.html">
+     Chat.exp
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.experiment.html">
+     Chat.experiment
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.font_size.html">
+     Chat.font_size
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.js_code.html">
+     Chat.js_code
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.js_template.html">
+     Chat.js_template
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.js_urls.html">
+     Chat.js_urls
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.name.html">
+     Chat.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.page.html">
+     Chat.page
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.position.html">
+     Chat.position
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.section.html">
+     Chat.section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.short_tree.html">
+     Chat.short_tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.should_be_shown.html">
+     Chat.should_be_shown
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.showif.html">
+     Chat.showif
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.template_data.html">
+     Chat.template_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.tree.html">
+     Chat.tree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.web_widget.html">
+     Chat.web_widget
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.element.Chat.width.html">
+     Chat.width
+    </a>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+</ul>
+
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/generated/alfred3_interact.page.MatchingPage.minimum_display_time_msg.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/jobrachem/alfred3-interact"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="matchingpage-minimum-display-time-msg">
+<h1>MatchingPage.minimum_display_time_msg<a class="headerlink" href="#matchingpage-minimum-display-time-msg" title="Permalink to this headline">¶</a></h1>
+<dl class="py method">
+<dt id="alfred3_interact.page.MatchingPage.minimum_display_time_msg">
+<em class="property"><span class="pre">property</span> </em><code class="sig-prename descclassname"><span class="pre">MatchingPage.</span></code><code class="sig-name descname"><span class="pre">minimum_display_time_msg</span></code><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.MatchingPage.minimum_display_time_msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Message that is displayed if participants try to leave a page
+before the minimum display time is up.</p>
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="alfred3_interact.page.MatchingPage.minimum_display_time.html" title="previous page">MatchingPage.minimum_display_time</a>
+    <a class='right-next' id="next-link" href="alfred3_interact.page.MatchingPage.must_be_shown.html" title="next page">MatchingPage.must_be_shown</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By Johannes Brachem, Christian Treffenstädt<br/>
+        
+            &copy; Copyright 2021, Johannes Brachem, Christian Treffenstädt.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>
