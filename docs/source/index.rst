@@ -31,7 +31,7 @@ participants and their corresponding :class:`.GroupMember` objects based
 on their role in the group. The roles are defined during MatchMaker 
 intialization. 
 
-Beyond access to group members, Groups offer a :class:`.SharedGroupData` 
+Beyond access to group members, Groups offer a :attr:`.Group.shared_data` 
 dictionary, which you can use as a centralized place for information that 
 belongs to the whole group rather than an individual member.
 Within the experiment, you can define waiting points for synchronizing

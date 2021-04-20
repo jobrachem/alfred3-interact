@@ -116,6 +116,13 @@ class Chat(Element):
                 def wait_for(self):
                     self.exp.plugins.group = self.exp.plugins.mm.match_groupwise()
                     return True
+            
+            @exp.member
+            class Success(al.Page):
+                title = "Match Successful!"
+
+                def on_first_show(self):
+                    self += self.exp.plugins.group.chat()
 
     """
 

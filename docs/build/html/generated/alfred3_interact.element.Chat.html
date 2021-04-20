@@ -1338,6 +1338,13 @@ often the chat elements looks for new messages. Defaults to
     <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match_groupwise</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">True</span>
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span>
+<span class="k">class</span> <span class="nc">Success</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Match Successful!&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_first_show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">chat</span><span class="p">()</span>
 </pre></div>
 </div>
 <p class="rubric">Methods</p>
