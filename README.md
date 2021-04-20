@@ -13,7 +13,7 @@ $ pip3 install alfred3_interact
 
 ## Documentation
 
-Documentation for alfred3_interact is avaialable on [https://alfred3_interact.readthedocs.io](https://alfred3_interact.readthedocs.io)
+Documentation for alfred3_interact is avaialable here: [Link to docs](https://jobrachem.github.io/alfred3-interact/build/html/index.html)
 
 ## Quick example
 
