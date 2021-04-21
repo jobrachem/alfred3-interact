@@ -19,7 +19,12 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/jobrachem/alfred3-interact",
     packages=setuptools.find_packages("src"),
-    package_data={},
+    package_data={
+        "alfred3_interact": [
+            "templates/html/*",
+            "templates/js/*",
+        ]
+    },
     package_dir={"": "src"},
     install_requires=[
         "alfred3>=2.0",
