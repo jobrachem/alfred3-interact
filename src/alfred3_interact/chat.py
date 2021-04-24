@@ -152,7 +152,13 @@ class ChatManager:
         chat_data = self.exp.db_misc.find_one(self._query)
 
         if not self.data or not self.data.get("messages", False):
+
+            if self.encrypt:
+                for msg in chat_data.get("messages", []):
+                    msg["msg"] = self.exp.decrypt(msg["msg"])
+
             self.data = chat_data
+
             if self.ignore_aborted_sessions:
                     self._update_session_status()
             return "init"
@@ -163,7 +169,12 @@ class ChatManager:
 
             if len(msgs_db) > n_local:
                 msgs_db.sort(key=lambda msg: msg["timestamp"])
-                self.data["messages"] += msgs_db[n_local:]
+                
+                for msg in msgs_db[n_local:]:
+                    if self.encrypt:
+                        msg["msg"] = self.exp.decrypt(msg["msg"])
+                    self.data["messages"].append(msg)
+
 
                 if self.ignore_aborted_sessions:
                     self._update_session_status()
@@ -185,10 +196,6 @@ class ChatManager:
                 msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
             ]
 
-            if self.encrypt:
-                for msg in out_messages:
-                    msg["msg"] = self.exp.decrypt(msg["msg"])
-
             return tuple(out_messages)
         else:
             return None
@@ -206,9 +213,9 @@ class ChatManager:
                 msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
             ]
 
-            if self.encrypt:
-                for msg in out_messages:
-                    msg["msg"] = self.exp.decrypt(msg["msg"])
+            # if self.encrypt:
+            #     for msg in out_messages:
+            #         msg["msg"] = self.exp.decrypt(msg["msg"])
 
             return tuple(out_messages)
         else:
