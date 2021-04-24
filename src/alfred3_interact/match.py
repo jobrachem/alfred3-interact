@@ -178,6 +178,8 @@ class MatchMaker:
             same group. This setting makes sure that there's no strange
             behavior if you make changes to an ongoing experiment.
             Defaults to True.
+        active (bool): If True, the matchmaker will start in active mode.
+            Defaults to *True*.
         inactive_page (Page): Page to be displayed to new participants
             if the MatchMaker is inactive. If None, a default page is
             used.
