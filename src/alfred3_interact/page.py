@@ -291,7 +291,7 @@ class MatchingPage(WaitingPage):
 
     def on_exp_access(self):
         super().on_exp_access()
-        self += RepeatedCallback(func=self._ping, interval=self.ping_interval, submit_first=False)
+        self += RepeatedCallback(func=self._ping, interval=self.ping_interval, submit_first=False, followup="none")
 
     def _ping(self):
         sid = self.exp.session_id
