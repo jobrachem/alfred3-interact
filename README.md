@@ -1,4 +1,4 @@
-# alfred3-interact: Interactive web-experiments in alfred3
+# alfred3-interact: Interactive web-experiments in alfred3 [![DOI](https://zenodo.org/badge/340368707.svg)](https://zenodo.org/badge/latestdoi/340368707)
 
 Alfred3-interact is a plugin for [alfred3](https://github.com/ctreffe/alfred).
 It allows for the creation of interactive web experiments, predominantly 
@@ -26,11 +26,6 @@ asynchronous exchange of data between participants via *stepwise* matching:
 3. Now the group object is available in sections, pages, and elements
    through the experiment session object. You can use it to access data
    from other participants in the same group.
-
-Note: While `match_stepwise` has its main purpose in asynchronous interactive
-experiments, you can still include `WaitingPage`s to synchronize group
-members. Refer to the documentation for the WaitingPage class for more
-guidance.
 
 ```python
 # script.py
@@ -66,3 +61,13 @@ the `script.py`):
 ```
 $ alfred3 run
 ```
+
+## Citation
+
+Alfred3-interact was developed for research at the department for 
+economic and social psychology, Georg-August-University Göttingen. 
+**If you are publishing research conducted using alfred3, the 
+following citation is required:**
+
+>Brachem, J. & Treffenstädt, C. (2021). Alfred3-interact - Interactive web experiments in alfred3. (Version x.x.x). Göttingen, 
+Germany: https://doi.org/10.5281/zenodo.1437219
