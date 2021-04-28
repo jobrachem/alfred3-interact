@@ -2,9 +2,8 @@
 
 var post_data = function() {
     var msg = $( "#{{ name }}-input" ).val();
-    $.post( "{{ post_url }}", {"msg": msg});
+    $.post( "{{ post_url }}", {"msg": msg}, function(){});
     $( "#{{ name }}-input" ).val("");
-    refresh();
 }
 
 // post data on button click
@@ -28,6 +27,7 @@ function prettyDate(time) {
 
 var update_display = function(data) {
     var msg_display = $( "#{{ name }}-display" );
+    
     data.forEach(function(msg) {
         
         var msg_time = prettyDate(msg.timestamp*1000);
@@ -54,7 +54,7 @@ var update_display = function(data) {
             var border_color = "";
         }
 
-        var html = `<div class='msg p-2 mt-2 card shadow-sm' style='width: {{ msg_width }}; ${s}; position: relative; ${border_color}'>
+        var html = `<div class='msg p-2 mt-2 card shadow-sm' style='width: {{ msg_width }}; ${s}; position: relative; ${border_color}' id='${msg.timestamp}'>
 
         <span style='${nick_color}; font-size: 65%'>${nick}</span>
         
@@ -71,13 +71,18 @@ var update_display = function(data) {
 };
 
 var refresh = function() {
-    // load data periodically and refresh element
-    $.get( "{{ load_url }}");
+    $.get( "{{ load_url }}", function(){});
     $.get( "{{ get_new_url }}", update_display);
+}
+
+var refresh_repeatedly = function() {
+    // load data periodically and refresh element
+    refresh();
+    setTimeout(refresh_repeatedly, {{ interval }}*1000)
 };
 
 $(document).ready(function() {
     $.get( "{{ load_url }}");
     $.get( "{{ get_all_url }}", update_display);
-    setInterval(refresh, {{ interval }}*1000);
+    refresh_repeatedly();
 })

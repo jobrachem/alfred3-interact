@@ -72,6 +72,7 @@ class ChatManager:
 
         self.data = None
         self._loaded_index = 0
+        self._local_change_counter = 0
         self.color = self._find_color()
 
         self._inactive_sids = []
@@ -136,7 +137,7 @@ class ChatManager:
         msg_data["color"] = self.color
 
         self.exp.db_misc.find_one_and_update(
-            self._query, update={"$push": {"messages": msg_data}}, upsert=True
+            self._query, update={"$push": {"messages": msg_data}, "$inc": {"change_counter": 1}}, upsert=True
         )
 
     def load_messages(self) -> str:
@@ -144,44 +145,28 @@ class ChatManager:
         Loads new messages from the database into the ChatManager instance.
 
         Returns:
-            str: A status indicator. "init" means that the method has
-            been called for the first time in the current session,
-            "append" means that new messages have been loaded and
-            appended, "pass" means that no new messages have been found.
+            str: A status indicator. "pass" means that no new messages 
+            have been found, "update" means that the internal message 
+            storage has been updated.
         """
+        data = self.exp.db_misc.find_one(self._query, projection={"change_counter": True})
+        
+        if data.get("change_counter", False) == self._local_change_counter:
+            return "pass"
+
+        self._local_change_counter = data["change_counter"]
         chat_data = self.exp.db_misc.find_one(self._query)
 
-        if not self.data or not self.data.get("messages", False):
+        if self.encrypt:
+            for msg in chat_data.get("messages", []):
+                msg["msg"] = self.exp.decrypt(msg["msg"])
 
-            if self.encrypt:
-                for msg in chat_data.get("messages", []):
-                    msg["msg"] = self.exp.decrypt(msg["msg"])
+        self.data = chat_data
+        if self.ignore_aborted_sessions:
+                self._update_session_status()
+        
+        return "update"
 
-            self.data = chat_data
-
-            if self.ignore_aborted_sessions:
-                    self._update_session_status()
-            return "init"
-        else:
-            msgs_db = chat_data["messages"]
-            n_local = len(self.data["messages"])
-            self.data["sessions"] = chat_data["sessions"]
-
-            if len(msgs_db) > n_local:
-                msgs_db.sort(key=lambda msg: msg["timestamp"])
-                
-                for msg in msgs_db[n_local:]:
-                    if self.encrypt:
-                        msg["msg"] = self.exp.decrypt(msg["msg"])
-                    self.data["messages"].append(msg)
-
-
-                if self.ignore_aborted_sessions:
-                    self._update_session_status()
-                return "append"
-
-            else:
-                return "pass"
 
     def get_new_messages(self) -> tuple:
         """
@@ -191,14 +176,14 @@ class ChatManager:
         if self.data and self.data.get("messages", False):
             i, self._loaded_index = self._loaded_index, len(self.data["messages"])
 
-            msgs = self.data["messages"][i:]
+            msgs = self.data["messages"][i:self._loaded_index]
             out_messages = [
                 msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
             ]
 
             return tuple(out_messages)
         else:
-            return None
+            return tuple()
 
     def get_all_messages(self) -> tuple:
         """
