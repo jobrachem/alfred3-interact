@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Decryption of loaded messages in chat element
+- In some corner cases, the chat element displayed the same message
+  twice. This release fixes this bug.
 
 ## alfred3-interact v0.1.1 (Released 2021-04-21)
 
