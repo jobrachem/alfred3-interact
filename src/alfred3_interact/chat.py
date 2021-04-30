@@ -204,7 +204,7 @@ class ChatManager:
 
             return tuple(out_messages)
         else:
-            return None
+            return tuple()
 
     def _update_session_status(self):
         """
