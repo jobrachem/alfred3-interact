@@ -141,6 +141,7 @@ class Chat(Element):
         height: str = "350px",
         colors: dict = None,
         color_target: str = "nickname",
+        you_label: str = " (you)",
         button_style: str = "btn-dark",
         background_color: str = "WhiteSmoke",
         allow_resize: bool = True,
@@ -151,6 +152,7 @@ class Chat(Element):
         self._chat_id = chat_id
         self.chat_manager = None
         self.nickname = nickname
+        self.you_label = you_label
 
         self.msg_width = msg_width
 
@@ -184,6 +186,7 @@ class Chat(Element):
         d["own_nickname"] = self.chat_manager.nickname
         d["msg_width"] = self.msg_width
         d["color_target"] = self.color_target
+        d["you_label"] = self.you_label
         return d
 
     def added_to_experiment(self, exp):

@@ -27,14 +27,14 @@ function prettyDate(time) {
 
 var update_display = function(data) {
     var msg_display = $( "#{{ name }}-display" );
-    
+
     data.forEach(function(msg) {
         
         var msg_time = prettyDate(msg.timestamp*1000);
 
         if (msg.nickname == "{{ own_nickname }}") {
             var s = "margin-left: auto;"
-            var you = " (you)";
+            var you = "{{ you_label }}";
         } else {
             var s = "";
             var you = "";
