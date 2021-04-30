@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## alfred3-interact v0.1.2 [unreleased]
 
+### Changed
+
+- `alfred3_interact.Chat` gains the new parameter *you_label*.
+
 ### Fixed
 
 - Decryption of loaded messages in chat element
