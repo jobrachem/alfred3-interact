@@ -233,23 +233,33 @@ class WaitingPage(al.NoNavigationPage):
         self += al.CountUp(font_size=30, align="center")
         self += al.Text(self.wait_msg, align="center")
 
+
 @inherit_kwargs
 class MatchingPage(WaitingPage):
     """
-    A page that provides a waiting screen and participant activity check 
+    A page that provides a waiting screen and participant activity check
     while waiting for a match to complete.
 
-    Apart from the activity ping, the behavior and usage of the 
-    MatchingPage is the same as in :class:`.WaitingPage`, i.e. you 
+    The behavior and usage of the
+    MatchingPage is similar to :class:`.WaitingPage`, i.e. you
     must overload the method :meth:`.wait_for`, and as soon as *wait_for*
     returns *True*, participants are forwarded to the next page.
 
+    A major difference lies in the fact the MatchingPage expects the
+    timeouts to be handled by a :class:`.MatchMaker` operating in the
+    *wait_for* method. Thus, the MatchingPage does not have its own
+    timeout.
+
     Args:
-        ping_interval (int): The number of seconds in between two 
+        wait_msg (str): Text to be displayed in the default layout.
+            Defaults to None, in which case the text is
+            "Waiting for other group members."
+
+        ping_interval (int): The number of seconds in between two
             activity pings being sent to the server. If None (default),
             a ping is sent every three seconds. Can be defined as a class
             attribute.
-        
+
         {kwargs}
 
     Examples:
@@ -276,22 +286,75 @@ class MatchingPage(WaitingPage):
             class Success(al.Page):
                 title = "It's a Match!"
     """
-    
-    #: The number of seconds in between two 
+
+    #: str: Page title
+    title = "Waiting"
+
+    #: Text to be displayed in the default layout.
+    #: Defaults to None, in which case the text is
+    #: "Waiting for other group members."
+    wait_msg: str = "Waiting for other group members."
+
+    #: The number of seconds in between two
     #: activity pings being sent to the server. If None (default),
     #: a ping is sent every three seconds. Can be defined as a class
     #: attribute.
     ping_interval: int = 3
 
-    def __init__(self, ping_interval: int = None, **kwargs):
+    def __init__(
+        self,
+        wait_msg: str = None,
+        ping_interval: int = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
+
+        if wait_msg is not None:
+            self.wait_msg = wait_msg
 
         if ping_interval is not None:
             self.ping_interval = ping_interval
 
+        self += Callback(self._wait_for, followup="forward")
+
     def on_exp_access(self):
-        super().on_exp_access()
-        self += RepeatedCallback(func=self._ping, interval=self.ping_interval, submit_first=False, followup="none")
+        self += al.VerticalSpace("100px")
+        self += al.Text(al.icon("spinner", spin=True, size="90pt"), align="center")
+        self += al.VerticalSpace("30px")
+        self += al.CountUp(font_size=30, align="center")
+        self += al.Text(self.wait_msg, align="center")
+        self += RepeatedCallback(
+            func=self._ping, interval=self.ping_interval, submit_first=False, followup="none"
+        )
+
+    @abstractmethod
+    def wait_for(self):
+        """
+        One this method returns a *True*-like value, the page automatically
+        forwards participants to the next page.
+
+        It will be repeatedly called internally with the time between
+        two calls defined by :attr:`.wait_sleep_time`.
+        """
+        pass
+
+    def _wait_for(self):
+        try:
+            self.wait_for()
+            return
+
+        except SessionTimeout:
+            pass  # the experiment handles session timeouts
+
+        except Exception:
+            # there might be exceptions in the waiting function if code
+            # that depends on the matchmaking is executed after a timeout
+            # in the matching function
+            # In future versions, this behavior should be changed such that
+            # the MatchingPage has full control over the timeout, the waiting,
+            # and the abort page
+            self.log.exception("Exception caught and passed silently during waiting.")
+            pass
 
     def _ping(self):
         sid = self.exp.session_id
