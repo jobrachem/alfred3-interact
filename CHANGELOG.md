@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## alfred3-interact v0.1.2 [unreleased]
 
-### Changed
+### Added
 
 - `alfred3_interact.Chat` gains the new parameter *you_label*.
+- `alfred3_interact.WaitingPage` gains the parameters *wait_timeout_page*
+  and *wait_exception_page*, thereby allowing users to customize the
+  pages shown to participants if the experiment is aborted while waiting.
 
 ### Fixed
 
