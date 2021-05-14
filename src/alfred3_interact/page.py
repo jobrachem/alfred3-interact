@@ -80,6 +80,35 @@ class AdminPage(al.WidePage):
         )
 
 
+class DefaultWaitingTimeoutPage(al.Page):
+    """
+    Default page to be displayed upon waiting timeouts.
+    """
+
+    title = "Timeout"
+    name = "default_waiting_timeout_page"
+
+    def on_exp_access(self):
+        self += al.VerticalSpace("50px")
+        self += al.Html(al.icon("user-clock", size="80pt"), align="center")
+        self += al.VerticalSpace("100px")
+        self += al.Text("Sorry, waiting took too long.", align="center")
+
+
+class DefaultWaitingExceptionPage(al.Page):
+    """
+    Default page to be displayed upon waiting exceptions.
+    """
+    title = "Experiment aborted"
+    name = "default_waiting_exception_page"
+
+    def on_exp_access(self):
+        self += al.VerticalSpace("50px")
+        self += al.Html(al.icon("user-clock", size="80pt"), align="center")
+        self += al.VerticalSpace("100px")
+        self += al.Text("Sorry, the experiment was aborted while waiting.", align="center")
+
+
 @inherit_kwargs
 class WaitingPage(al.NoNavigationPage):
     """
@@ -100,15 +129,22 @@ class WaitingPage(al.NoNavigationPage):
 
     Args:
         wait_msg (str): Text to be displayed in the default layout.
-            Defaults to None, in which case the text is 
+            Defaults to None, in which case the text is
             "Waiting for other group members."
-        wait_timeout (int): Maximum waiting time in seconds. If *wait_for* 
-            does not return a *True*-like value within waiting time, the experiment 
-            session is aborted. Defaults to None, in which case the 
+        wait_timeout (int): Maximum waiting time in seconds. If *wait_for*
+            does not return a *True*-like value within waiting time, the experiment
+            session is aborted. Defaults to None, in which case the
             timeout is ``60 * 20``, i.e. 20 minutes.
         wait_sleep_time (int): Number of seconds in between two internal
             calls to :meth:`.wait_for`. Defaults to None, in which case
             a call will be made every two seconds.
+        wait_timeout_page (alfred3.Page): A custom page to be displayed
+            in case of a waiting timeout. Defaults to an instance of
+            :class:`.DefaultWaitingTimeoutPage`.
+        wait_exception_page (alfred3.Page): A custom page to be displayed
+            in case of an exception during waiting. Defaults to an
+            instance of :class:`.DefaultWaitingExceptionPage`.
+
         {kwargs}
 
     Examples:
@@ -150,16 +186,16 @@ class WaitingPage(al.NoNavigationPage):
     """
 
     #: str: Page title
-    title = "Waiting" 
+    title = "Waiting"
 
     #: Text to be displayed in the default layout.
-    #: Defaults to None, in which case the text is 
+    #: Defaults to None, in which case the text is
     #: "Waiting for other group members."
     wait_msg: str = "Waiting for other group members."
 
-    #: Maximum waiting time in seconds. If *wait_for* 
-    #: does not return a *True*-like value within waiting time, the experiment 
-    #: session is aborted. Defaults to None, in which case the 
+    #: Maximum waiting time in seconds. If *wait_for*
+    #: does not return a *True*-like value within waiting time, the experiment
+    #: session is aborted. Defaults to None, in which case the
     #: timeout is ``60 * 20``, i.e. 20 minutes.
     wait_timeout: int = 60 * 20
 
@@ -168,12 +204,20 @@ class WaitingPage(al.NoNavigationPage):
     #: a call will be made every two seconds.
     wait_sleep_time: int = 2
 
+    #: Abort page to be displayed on timeout
+    wait_timeout_page = DefaultWaitingTimeoutPage()
+
+    #: Abort page to be displayed on other exceptions during waiting
+    wait_exception_page = DefaultWaitingExceptionPage()
+
     def __init__(
         self,
         *args,
         wait_msg: str = None,
         wait_timeout: int = None,
         wait_sleep_time: int = None,
+        wait_timeout_page: al.Page = None,
+        wait_exception_page: al.Page = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -187,12 +231,18 @@ class WaitingPage(al.NoNavigationPage):
         if wait_sleep_time is not None:
             self.wait_sleep_time = wait_sleep_time
 
+        if wait_timeout_page is not None:
+            self.wait_timeout_page = wait_timeout_page
+
+        if wait_exception_page is not None:
+            self.wait_exception_page = wait_exception_page
+
         self += Callback(self._wait_for, followup="forward")
 
     @abstractmethod
     def wait_for(self):
         """
-        One this method returns a *True*-like value, the page automatically 
+        One this method returns a *True*-like value, the page automatically
         forwards participants to the next page.
 
         It will be repeatedly called internally with the time between
@@ -206,7 +256,6 @@ class WaitingPage(al.NoNavigationPage):
 
             while not self.wait_for() and not self.exp.aborted:
                 time.sleep(self.wait_sleep_time)
-
                 if time.time() - start > self.wait_timeout:
                     raise MatchingTimeout
 
@@ -215,15 +264,10 @@ class WaitingPage(al.NoNavigationPage):
 
         except MatchingTimeout:
             self.log.exception("Timeout on waiting page.")
-            self.exp.abort(
-                reason=MatchMaker._TIMEOUT_MSG,
-                title="Timeout",
-                msg="Sorry, waiting took too long.",
-                icon="user-clock",
-            )
-        except Exception:
+            self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
+        except Exception as e:
             self.log.exception("Exception in waiting function.")
-            self.exp.abort(reason="waiting error")
+            self.exp.abort(reason="waiting error", page=self.wait_exception_page)
 
     def on_exp_access(self):
 
