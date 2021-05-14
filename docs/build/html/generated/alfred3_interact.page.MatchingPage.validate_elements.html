@@ -38,8 +38,6 @@
     <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="MatchingPage.validate_page()" href="alfred3_interact.page.MatchingPage.validate_page.html" />
-    <link rel="prev" title="MatchingPage.uptree()" href="alfred3_interact.page.MatchingPage.uptree.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -74,7 +72,7 @@
   API Reference
  </span>
 </p>
-<ul class="current nav sidenav_l1">
+<ul class="nav sidenav_l1">
  <li class="toctree-l1 collapsible-parent">
   <a class="reference internal" href="alfred3_interact.match.MatchMaker.html">
    MatchMaker
@@ -351,11 +349,11 @@
   <i class="fas fa-chevron-down">
   </i>
  </li>
- <li class="toctree-l1 current active collapsible-parent">
+ <li class="toctree-l1 collapsible-parent">
   <a class="reference internal" href="alfred3_interact.page.MatchingPage.html">
    MatchingPage
   </a>
-  <ul class="current collapse-ul">
+  <ul class="collapse-ul">
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.added_to_experiment.html">
      MatchingPage.added_to_experiment()
@@ -441,14 +439,9 @@
      MatchingPage.uptree()
     </a>
    </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     MatchingPage.validate_elements()
-    </a>
-   </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_page.html">
-     MatchingPage.validate_page()
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate.html">
+     MatchingPage.validate()
     </a>
    </li>
    <li class="toctree-l2">
@@ -642,6 +635,11 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_exception_page.html">
+     MatchingPage.wait_exception_page
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
      MatchingPage.wait_msg
     </a>
@@ -654,6 +652,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
      MatchingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
+     MatchingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -751,13 +754,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_elements.html">
-     WaitingPage.validate_elements()
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_page.html">
-     WaitingPage.validate_page()
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate.html">
+     WaitingPage.validate()
     </a>
    </li>
    <li class="toctree-l2">
@@ -946,6 +944,11 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_exception_page.html">
+     WaitingPage.wait_exception_page
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_msg.html">
      WaitingPage.wait_msg
     </a>
@@ -958,6 +961,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_timeout.html">
      WaitingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_timeout_page.html">
+     WaitingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -1221,13 +1229,6 @@
                 
   <div class="section" id="matchingpage-validate-elements">
 <h1>MatchingPage.validate_elements()<a class="headerlink" href="#matchingpage-validate-elements" title="Permalink to this headline">¶</a></h1>
-<dl class="py method">
-<dt id="alfred3_interact.page.MatchingPage.validate_elements">
-<code class="sig-prename descclassname"><span class="pre">MatchingPage.</span></code><code class="sig-name descname"><span class="pre">validate_elements</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.MatchingPage.validate_elements" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <em>True</em>, if validation of all input elements passes,
-<em>False</em> otherwise.</p>
-</dd></dl>
-
 </div>
 
 
@@ -1236,8 +1237,6 @@
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="alfred3_interact.page.MatchingPage.uptree.html" title="previous page">MatchingPage.uptree()</a>
-    <a class='right-next' id="next-link" href="alfred3_interact.page.MatchingPage.validate_page.html" title="next page">MatchingPage.validate_page()</a>
 
         </div>
         

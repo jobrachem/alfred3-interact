@@ -442,13 +442,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_elements.html">
-     MatchingPage.validate_elements()
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_page.html">
-     MatchingPage.validate_page()
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.validate.html">
+     MatchingPage.validate()
     </a>
    </li>
    <li class="toctree-l2">
@@ -642,6 +637,11 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_exception_page.html">
+     MatchingPage.wait_exception_page
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
      MatchingPage.wait_msg
     </a>
@@ -654,6 +654,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
      MatchingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
+     MatchingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -751,13 +756,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_elements.html">
-     WaitingPage.validate_elements()
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate_page.html">
-     WaitingPage.validate_page()
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.validate.html">
+     WaitingPage.validate()
     </a>
    </li>
    <li class="toctree-l2">
@@ -946,6 +946,11 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_exception_page.html">
+     WaitingPage.wait_exception_page
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_msg.html">
      WaitingPage.wait_msg
     </a>
@@ -958,6 +963,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_timeout.html">
      WaitingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_timeout_page.html">
+     WaitingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -1223,17 +1233,24 @@
 <h1>MatchingPage<a class="headerlink" href="#matchingpage" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="alfred3_interact.page.MatchingPage">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">alfred3_interact.page.</span></code><code class="sig-name descname"><span class="pre">MatchingPage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ping_interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.MatchingPage" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">alfred3_interact.page.</span></code><code class="sig-name descname"><span class="pre">MatchingPage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wait_msg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ping_interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.MatchingPage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">alfred3_interact.page.WaitingPage</span></code></a></p>
 <p>A page that provides a waiting screen and participant activity check
 while waiting for a match to complete.</p>
-<p>Apart from the activity ping, the behavior and usage of the
-MatchingPage is the same as in <a class="reference internal" href="alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>, i.e. you
+<p>The behavior and usage of the
+MatchingPage is similar to <a class="reference internal" href="alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>, i.e. you
 must overload the method <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html#alfred3_interact.page.MatchingPage.wait_for" title="alfred3_interact.page.MatchingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait_for()</span></code></a>, and as soon as <em>wait_for</em>
 returns <em>True</em>, participants are forwarded to the next page.</p>
+<p>A major difference lies in the fact the MatchingPage expects the
+timeouts to be handled by a <a class="reference internal" href="alfred3_interact.match.MatchMaker.html#alfred3_interact.match.MatchMaker" title="alfred3_interact.match.MatchMaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatchMaker</span></code></a> operating in the
+<em>wait_for</em> method. Thus, the MatchingPage does not have its own
+timeout.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>wait_msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Text to be displayed in the default layout.
+Defaults to None, in which case the text is
+“Waiting for other group members.”</p></li>
 <li><p><strong>ping_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The number of seconds in between two
 activity pings being sent to the server. If None (default),
 a ping is sent every three seconds. Can be defined as a class
@@ -1255,7 +1272,7 @@ attribute.</p></li>
 <td><p>A color to be used for the header of this page. Can be any color value understood by CSS, including hex and RGB. Can be defined as a class attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p>minimum_display_time (str)</p></td>
-<td><p>The minimal amount of time that the page must be displayed, before participants can move to the next page. Defaults to None. Can be defined as a class attribute.</p></td>
+<td><p>The minimal amount of time that the page must be displayed, before participants can move to the next page. Must be specified as a string with a unit of s (for seconds), or m (for minutes), for instance 30s. Defaults to None. Can be defined as a class attribute.</p></td>
 </tr>
 <tr class="row-odd"><td><p>minimum_display_time_msg (str)</p></td>
 <td><p>A page-specific message to be displayed, if participants try to move forward before the minimum display time has expired. Defaults to None, which means that the default message defined in config.conf will be used. Can be defined as a class attribute.</p></td>
@@ -1270,7 +1287,7 @@ attribute.</p></li>
 <td><p>Can be used to manually determine the level of experiment progress displayed in the experiments progress bar. Can be an int or float between 0 and 100. Defaults to None, which means that the experiment-wide setting is used (see <code class="xref py py-attr docutils literal notranslate"><span class="pre">ExperimentSession.progress_bar</span></code>). Can be defined as a class attribute.</p></td>
 </tr>
 <tr class="row-odd"><td><p>responsive_width (str)</p></td>
-<td><p>Custom values for definig the width of the page in percent of the screen width. Only takes effect, if the option <em>responsive</em> in section <em>layout</em> is true (which is the default). Must be a single string with 1 to 5 relative widths separated by commas, e.g. 60%, 50%. The first value refers to extra small (xs) screens, the following values to the next bigger ones. If the string contains less than five values, the last value will be used for all screens from that size on upward. The sizes are taken from Bootstrap and correspond to the five width attributes of a <code class="xref py py-class docutils literal notranslate"><span class="pre">RowLayout</span></code>. Can be defined as a class attribute.</p></td>
+<td><p>Custom values for definig the width of the page in percent of the screen width. Only takes effect, if the option <em>responsive</em> in section <em>layout</em> is true (which is the default). Must be a single string with 1 to 4 relative widths separated by commas, e.g. 60%, 50%. The first value refers to small (sm) screens, the following values to the next bigger ones. Extra small screens like mobile phones will always get 100% width. If the string contains less than four values, the last value will be used for all screens from that size on upward. The sizes are taken from Bootstrap and correspond to the five width attributes of a <code class="xref py py-class docutils literal notranslate"><span class="pre">RowLayout</span></code>. By default, responsive widths are - 100% on extra small screens (below 576px, not modifiable) - 85% on small screens (576-767px, think of tablets) - 75% on medium screens (768-991px, think of small laptops) - 65% on large screens (992-1199px) - 55% on extra large screens (1200px and larger) Can be defined as a class attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p>showif (dict)</p></td>
 <td><p>A dictionary, which can be used to define a simple set of conditions under which the member will be shown. The conditions take the form of key-value pairs, where each key is the name of an input element in the experiment and the value is the required input. Can be defined as a class attribute.</p></td>
@@ -1284,14 +1301,17 @@ attribute.</p></li>
 <tr class="row-odd"><td><p>vargs (dict)</p></td>
 <td><p>A dictionary that can be used to pass additional arguments to the page. The arguments are then available as an instance attribute. As a special feature, the instance attribute allows you to access the values of the dictionary not only via the usual square-bracket notation, but also via dot-notation. This argument fulfills a similar function as <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs do sometimes, but it makes sure that user-defined additional arguments will not collide with inherited keywords arguments. Can be defined as a class attribute.</p></td>
 </tr>
-<tr class="row-even"><td><p>wait_msg (str)</p></td>
-<td><p>Text to be displayed in the default layout. Defaults to None, in which case the text is Waiting for other group members.</p></td>
+<tr class="row-even"><td><p>wait_exception_page (alfred3.Page)</p></td>
+<td><p>A custom page to be displayed in case of an exception during waiting. Defaults to an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultWaitingExceptionPage</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>wait_sleep_time (int)</p></td>
 <td><p>Number of seconds in between two internal calls to <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html#alfred3_interact.page.MatchingPage.wait_for" title="alfred3_interact.page.MatchingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait_for()</span></code></a>. Defaults to None, in which case a call will be made every two seconds.</p></td>
 </tr>
 <tr class="row-even"><td><p>wait_timeout (int)</p></td>
 <td><p>Maximum waiting time in seconds. If <em>wait_for</em> does not return a <em>True</em>-like value within waiting time, the experiment session is aborted. Defaults to None, in which case the timeout is <code class="docutils literal notranslate"><span class="pre">60</span> <span class="pre">*</span> <span class="pre">20</span></code>, i.e. 20 minutes.</p></td>
+</tr>
+<tr class="row-odd"><td><p>wait_timeout_page (alfred3.Page)</p></td>
+<td><p>A custom page to be displayed in case of a waiting timeout. Defaults to an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultWaitingTimeoutPage</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1380,16 +1400,13 @@ attribute.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.uptree.html#alfred3_interact.page.MatchingPage.uptree" title="alfred3_interact.page.MatchingPage.uptree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uptree</span></code></a></p></td>
 <td><p>List of the parent section and the grandparent sections (recursive).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_elements.html#alfred3_interact.page.MatchingPage.validate_elements" title="alfred3_interact.page.MatchingPage.validate_elements"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_elements</span></code></a></p></td>
-<td><p>Returns <em>True</em>, if validation of all input elements passes, <em>False</em> otherwise.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.validate_page.html#alfred3_interact.page.MatchingPage.validate_page" title="alfred3_interact.page.MatchingPage.validate_page"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_page</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.validate.html#alfred3_interact.page.MatchingPage.validate" title="alfred3_interact.page.MatchingPage.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a></p></td>
 <td><p>Returns <em>True</em>, if the validation checks pass, <em>False</em> otherwise.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.visible.html#alfred3_interact.page.MatchingPage.visible" title="alfred3_interact.page.MatchingPage.visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visible</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.visible.html#alfred3_interact.page.MatchingPage.visible" title="alfred3_interact.page.MatchingPage.visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visible</span></code></a></p></td>
 <td><p>Returns the subset of members in the given attribute that should be shown.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html#alfred3_interact.page.MatchingPage.wait_for" title="alfred3_interact.page.MatchingPage.wait_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html#alfred3_interact.page.MatchingPage.wait_for" title="alfred3_interact.page.MatchingPage.wait_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for</span></code></a></p></td>
 <td><p>One this method returns a <em>True</em>-like value, the page automatically forwards participants to the next page.</p></td>
 </tr>
 </tbody>
@@ -1509,14 +1526,20 @@ attribute.</p></li>
 <tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.vargs.html#alfred3_interact.page.MatchingPage.vargs" title="alfred3_interact.page.MatchingPage.vargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vargs</span></code></a></p></td>
 <td><p>A dictionary of additional arguments passed on the class upon initialization.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html#alfred3_interact.page.MatchingPage.wait_msg" title="alfred3_interact.page.MatchingPage.wait_msg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_msg</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_exception_page.html#alfred3_interact.page.MatchingPage.wait_exception_page" title="alfred3_interact.page.MatchingPage.wait_exception_page"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_exception_page</span></code></a></p></td>
+<td><p>Abort page to be displayed on other exceptions during waiting</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html#alfred3_interact.page.MatchingPage.wait_msg" title="alfred3_interact.page.MatchingPage.wait_msg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_msg</span></code></a></p></td>
 <td><p>Text to be displayed in the default layout.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html#alfred3_interact.page.MatchingPage.wait_sleep_time" title="alfred3_interact.page.MatchingPage.wait_sleep_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_sleep_time</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html#alfred3_interact.page.MatchingPage.wait_sleep_time" title="alfred3_interact.page.MatchingPage.wait_sleep_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_sleep_time</span></code></a></p></td>
 <td><p>Number of seconds in between two internal calls to <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_for.html#alfred3_interact.page.MatchingPage.wait_for" title="alfred3_interact.page.MatchingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">wait_for()</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html#alfred3_interact.page.MatchingPage.wait_timeout" title="alfred3_interact.page.MatchingPage.wait_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_timeout</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html#alfred3_interact.page.MatchingPage.wait_timeout" title="alfred3_interact.page.MatchingPage.wait_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_timeout</span></code></a></p></td>
 <td><p>Maximum waiting time in seconds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html#alfred3_interact.page.MatchingPage.wait_timeout_page" title="alfred3_interact.page.MatchingPage.wait_timeout_page"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_timeout_page</span></code></a></p></td>
+<td><p>Abort page to be displayed on timeout</p></td>
 </tr>
 </tbody>
 </table>

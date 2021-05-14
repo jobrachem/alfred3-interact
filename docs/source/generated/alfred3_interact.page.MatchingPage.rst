@@ -69,10 +69,7 @@
       ~MatchingPage.uptree
    
    
-      ~MatchingPage.validate_elements
-   
-   
-      ~MatchingPage.validate_page
+      ~MatchingPage.validate
    
    
       ~MatchingPage.visible
@@ -129,9 +126,11 @@
          ~MatchingPage.unlinked_data
          ~MatchingPage.updated_elements
          ~MatchingPage.vargs
+         ~MatchingPage.wait_exception_page
          ~MatchingPage.wait_msg
          ~MatchingPage.wait_sleep_time
          ~MatchingPage.wait_timeout
+         ~MatchingPage.wait_timeout_page
       
    
    

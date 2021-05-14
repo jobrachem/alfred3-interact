@@ -69,10 +69,7 @@
       ~WaitingPage.uptree
    
    
-      ~WaitingPage.validate_elements
-   
-   
-      ~WaitingPage.validate_page
+      ~WaitingPage.validate
    
    
       ~WaitingPage.visible
@@ -128,9 +125,11 @@
          ~WaitingPage.unlinked_data
          ~WaitingPage.updated_elements
          ~WaitingPage.vargs
+         ~WaitingPage.wait_exception_page
          ~WaitingPage.wait_msg
          ~WaitingPage.wait_sleep_time
          ~WaitingPage.wait_timeout
+         ~WaitingPage.wait_timeout_page
       
    
    
