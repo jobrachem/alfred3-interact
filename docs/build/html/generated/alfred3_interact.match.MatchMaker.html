@@ -646,21 +646,6 @@
      MatchingPage.wait_msg
     </a>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html">
-     MatchingPage.wait_sleep_time
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
-     MatchingPage.wait_timeout
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
-     MatchingPage.wait_timeout_page
-    </a>
-   </li>
   </ul>
   <i class="fas fa-chevron-down">
   </i>
@@ -1243,7 +1228,8 @@ experiments.</p>
 <li><p><strong>*roles</strong> – A variable number of strings, indicating which roles
 will be appointed to members of the group. The number of
 roles determines the number of group members. All roles in a
-group must be unique.</p></li>
+group must be unique. Roles cannot start with numbers or
+contain spaces.</p></li>
 <li><p><strong>exp</strong> (<em>alfred3.experiment.ExperimentSession</em>) – The alfred3 experiment
 in which this matchmaker is used.</p></li>
 <li><p><strong>admin_pw</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Password for the MatchMaker admin view. If no

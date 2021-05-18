@@ -128,9 +128,6 @@
          ~MatchingPage.vargs
          ~MatchingPage.wait_exception_page
          ~MatchingPage.wait_msg
-         ~MatchingPage.wait_sleep_time
-         ~MatchingPage.wait_timeout
-         ~MatchingPage.wait_timeout_page
       
    
    
