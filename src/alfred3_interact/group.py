@@ -308,8 +308,11 @@ class Group:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if time.time() - self._operation_start > self.mm.group_timeout:
+        timeout = time.time() - self._operation_start > self.mm.group_timeout
+        if timeout or exc_type:
             self.data.active = False
+            self.exp.log.error(f"There was an error or timeout when operating on {self}. The \
+                group was deactivated.")
         self.data.busy = False
         self._save()
 

@@ -153,6 +153,21 @@ class MatchMakerIO:
             return MatchMakerData(**data)
         else:
             return None
+    
+
+    def __enter__(self):
+        return self.load_markbusy()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type:
+            self.mm.member.data.active = False
+            self.mm.member._save()
+            self.exp.abort(reason="matchmaker_error")
+            self.exp.log.error(f"There was an error in a locked MatchMaker operation. \
+                I deactivated the responsible member {self.mm.member} and released the lock.")
+        self.release()
+        self.mm._data = self.load()
+
 
 
 class MatchMaker:
@@ -405,7 +420,7 @@ class MatchMaker:
         """
         if not self._check_activation():
             return
-            
+
         self.member_timeout = member_timeout
         self.member = GroupMember(self)
         self.member._save()
@@ -625,43 +640,44 @@ class MatchMaker:
             self.log.debug("Returning. Found group.")
             return self.group_manager.find(member.data.group_id)
 
-        # returns None if MatchMaker is busy, marks as busy otherwise
-        data = self.io.load_markbusy()
-        if data is None:
-            self.log.debug("Returning. Data marked, MM is busy.")
-            return None
+        with self.io as data:
+            if data is None:
+                self.log.debug("Returning. Data marked, MM is busy.")
+                return None
 
+            waiting_members = self._get_waiting_members(ping_timeout)
+
+            if len(waiting_members) >= len(self.roles):
+                group = self._fill_group(data, waiting_members)
+                return group
+            
+            return None
+    
+    def _get_waiting_members(self, ping_timeout):
         waiting_members = list(self.member_manager.waiting(ping_timeout=ping_timeout))
         waiting_members = [m for m in waiting_members if m != self.member]
         waiting_members.insert(0, self.member)
+        return waiting_members
+    
+    def _fill_group(self, data, waiting_members):
+        self.log.debug("Filling group.")
+        roles = {role: None for role in self.roles}
+        group = Group(matchmaker=self, roles=roles)
 
-        if len(waiting_members) >= len(self.roles):
-            self.log.debug("Filling group.")
-            roles = {role: None for role in self.roles}
-            group = Group(matchmaker=self, roles=roles)
+        candidates = (m for m in waiting_members)
+        while not group.full:
+            group += next(candidates)
 
-            candidates = (m for m in waiting_members)
-            while not group.full:
-                group += next(candidates)
+        group._assign_all_roles(to_members=waiting_members)
+        group._save()
 
-            group._assign_all_roles(to_members=waiting_members)
-            group._save()
+        # update matchmaker data
+        for m in waiting_members:
+            data.members[m.data.session_id] = asdict(m.data)
+        self.io.save(data=data)
 
-            # update matchmaker data
-            for m in waiting_members:
-                data.members[m.data.session_id] = asdict(m.data)
-            self.io.save(data=data)
-
-            # release busy-lock
-            self.io.release()
-            self._data = self.io.load()
-            self.log.debug("Returning filled group.")
-            return group
-
-        else:  # if there were not enough members
-            self.io.release()
-            self._data = self.io.load()
-            return None
+        self.log.debug("Returning filled group.")
+        return group
 
     def _matching_timeout(self, group: Group, timeout_page):
         self.log.warning("Matchmaking timeout.")
