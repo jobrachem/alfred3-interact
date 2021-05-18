@@ -6,6 +6,7 @@ import time
 import json
 import copy
 import string
+import re
 from dataclasses import asdict
 
 from pymongo.collection import ReturnDocument
@@ -292,7 +293,7 @@ class MatchMaker:
         if len(roles) != len(set(roles)):
             raise ValueError("All roles in a group must be unique.")
 
-        self.roles = roles
+        self.roles = self._validate_roles(roles)
         self.matchmaker_id = id
         self.io = MatchMakerIO(self)
 
@@ -769,6 +770,15 @@ class MatchMaker:
             q["exp_version"] = self.exp_version
             q["matchmaker_id"] = self.matchmaker_id
             self.exp.db_misc.find_one_and_update(q, update={"$set": {"ping_timeout": ping_timeout}})
+    
+    def _validate_roles(self, roles):
+        p = re.compile(r"^\d|\s")
+        for role in roles:
+            if p.search(role):
+                raise ValueError(f"Error in role '{role}': Roles must not start with numbers \
+                    and must not contain spaces.")
+        
+        return roles
 
 
     def __str__(self):
