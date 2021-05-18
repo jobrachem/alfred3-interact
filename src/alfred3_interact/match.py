@@ -180,7 +180,8 @@ class MatchMaker:
         *roles: A variable number of strings, indicating which roles
             will be appointed to members of the group. The number of
             roles determines the number of group members. All roles in a
-            group must be unique.
+            group must be unique. Roles cannot start with numbers or 
+            contain spaces.
         exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
             in which this matchmaker is used.
         admin_pw (str): Password for the MatchMaker admin view. If no
