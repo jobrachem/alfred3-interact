@@ -293,7 +293,7 @@ class MatchMaker:
         if self.admin_pw:
             self.admin_mode = self._enable_admin_mode(self.exp)
         
-        self._check_activation()
+        
             
 
     @classmethod
@@ -403,6 +403,9 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
+        if not self._check_activation():
+            return
+            
         self.member_timeout = member_timeout
         self.member = GroupMember(self)
         self.member._save()
@@ -516,6 +519,8 @@ class MatchMaker:
                         self += al.Text(f"I was assigned to role '{role}'.")
 
         """
+        if not self._check_activation():
+            return
         
 
         if not saving_method(self.exp) == "mongo":
@@ -681,19 +686,25 @@ class MatchMaker:
 
     def _check_activation(self):
         if self.admin_mode:
-            return
+            return True
+        
+        if self.active:
+            return True
 
-        if not self.active:
-            self.log.info("MatchMaking session aborted (MatchMaker inactive).")
-            if self.inactive_page:
-                self.exp.abort(reason="matchmaker_inactive", page=self.inactive_page)
-            else:
-                self.exp.abort(
-                    reason="matchmaker_inactive",
-                    title="MatchMaking inactive",
-                    msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
-                    icon="user-times"
-                )
+        self.log.info("MatchMaking session aborted (MatchMaker inactive).")
+        self.exp._allow_append = True
+        if self.inactive_page:
+            self.exp.abort(reason="matchmaker_inactive", page=self.inactive_page)
+        else:
+            self.exp.abort(
+                reason="matchmaker_inactive",
+                title="MatchMaking inactive",
+                msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
+                icon="user-times"
+            )
+        self.exp._allow_append = False
+
+        return False
 
     def _save_infos(self):
         prefix = "interact"

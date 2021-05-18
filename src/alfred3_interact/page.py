@@ -279,7 +279,7 @@ class WaitingPage(al.NoNavigationPage):
 
 
 @inherit_kwargs
-class MatchingPage(WaitingPage):
+class MatchingPage(al.Page):
     """
     A page that provides a waiting screen and participant activity check
     while waiting for a match to complete.
@@ -303,6 +303,10 @@ class MatchingPage(WaitingPage):
             activity pings being sent to the server. If None (default),
             a ping is sent every three seconds. Can be defined as a class
             attribute.
+
+        wait_exception_page (alfred3.Page): A custom page to be displayed
+            in case of an exception during waiting. Defaults to an
+            instance of :class:`.DefaultWaitingExceptionPage`.
 
         {kwargs}
 
@@ -339,6 +343,9 @@ class MatchingPage(WaitingPage):
     #: "Waiting for other group members."
     wait_msg: str = "Waiting for other group members."
 
+    #: Abort page to be displayed on other exceptions during waiting
+    wait_exception_page = DefaultWaitingExceptionPage()
+
     #: The number of seconds in between two
     #: activity pings being sent to the server. If None (default),
     #: a ping is sent every three seconds. Can be defined as a class
@@ -349,6 +356,7 @@ class MatchingPage(WaitingPage):
         self,
         wait_msg: str = None,
         ping_interval: int = None,
+        wait_exception_page: al.Page = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -358,6 +366,9 @@ class MatchingPage(WaitingPage):
 
         if ping_interval is not None:
             self.ping_interval = ping_interval
+
+        if wait_exception_page is not None:
+            self.wait_exception_page = wait_exception_page
 
         self += Callback(self._wait_for, followup="forward")
 
@@ -397,8 +408,11 @@ class MatchingPage(WaitingPage):
             # In future versions, this behavior should be changed such that
             # the MatchingPage has full control over the timeout, the waiting,
             # and the abort page
-            self.log.exception("Exception caught and passed silently during waiting.")
-            pass
+            if self.exp.aborted:
+                pass
+            else:
+                self.log.exception("Exception in waiting function.")
+                self.exp.abort(reason="waiting error", page=self.wait_exception_page)
 
     def _ping(self):
         sid = self.exp.session_id
