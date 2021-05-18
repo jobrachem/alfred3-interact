@@ -287,7 +287,7 @@ class GroupMember:
 
     def __str__(self):
         gid = self.data.group_id[-4:] if self.group_id is not None else "-"
-        return f"{type(self).__name__}(role='{self.data.role}', session_id='{self.data.session_id[-4:]}', group='{gid}', start={self.start_time})"
+        return f"{type(self).__name__}(role='{self.data.role}', session_id='{self.data.session_id[-4:]}', group='{gid}', start='{self.start_time}')"
 
     def __repr__(self):
         return self.__str__()

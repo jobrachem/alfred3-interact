@@ -290,7 +290,7 @@ class Group:
         nactive = len(list(self.active_members()))
         nroles = len(self.data.roles)
 
-        return f"{type(self).__name__}(roles={roles}, {nactive}/{nroles} roles filled, id={self.group_id[-4:]})"
+        return f"{type(self).__name__}(roles={roles}, {nactive}/{nroles} roles filled, id='{self.group_id[-4:]}')"
 
     def __repr__(self):
         return self.__str__()
