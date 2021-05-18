@@ -279,7 +279,7 @@ class WaitingPage(al.NoNavigationPage):
 
 
 @inherit_kwargs
-class MatchingPage(al.Page):
+class MatchingPage(al.NoNavigationPage):
     """
     A page that provides a waiting screen and participant activity check
     while waiting for a match to complete.
