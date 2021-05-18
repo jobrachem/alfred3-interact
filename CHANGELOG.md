@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3-interact v0.1.4 (Released 2021-05-18)
+
+### Fixed v0.1.4
+
+- Version v0.1.3 introduced a bug on the `MatchingPage`: The page did not 
+  correctly hide its navigation buttons. This update fixes the bug.
+
 ## alfred3-interact v0.1.3 (Released 2021-05-18)
 
 ### Changed v0.1.3
