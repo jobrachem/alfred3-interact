@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.1.5 [unreleased]
+
+### Changed v0.1.5
+
+- Changed the way repeated calls are made during matchmaking (adressing in the process #1). Now, the `MatchingPage` and the `WaitingPage` operate almost identically, both using repeated AJAX calls originating from the client's browser. Hopefully, this will further increase the robustness of waiting and matchmaking.
+
+### Fixed v0.1.5
+
+- Fixed #7
+- Fixed #6
+
+
 ## alfred3-interact v0.1.4 (Released 2021-05-18)
 
 ### Fixed v0.1.4
