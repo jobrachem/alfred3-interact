@@ -387,7 +387,7 @@ class MatchingPage(WaitingPage):
 
                 def on_first_show(self):
                     role = self.exp.plugins.group.me.role
-                    self += al.Text(f"I was assigned to role '{role}'.")
+                    self += al.Text(f"I was assigned to role '{{role}}'.")
     """
     #: If *True*, the page will save signals of activity in the database
     #: for this experiment session. Important for MatchMaking, but usually
