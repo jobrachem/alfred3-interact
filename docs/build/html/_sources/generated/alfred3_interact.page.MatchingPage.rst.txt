@@ -97,6 +97,8 @@
          ~MatchingPage.elements
          ~MatchingPage.exp
          ~MatchingPage.experiment
+         ~MatchingPage.expiration_time
+         ~MatchingPage.expired
          ~MatchingPage.filled_input_elements
          ~MatchingPage.fixed_width
          ~MatchingPage.has_been_shown
@@ -110,7 +112,7 @@
          ~MatchingPage.name
          ~MatchingPage.parent
          ~MatchingPage.parent_name
-         ~MatchingPage.ping_interval
+         ~MatchingPage.ping
          ~MatchingPage.prefix_element_names
          ~MatchingPage.progress
          ~MatchingPage.responsive_width
@@ -128,6 +130,9 @@
          ~MatchingPage.vargs
          ~MatchingPage.wait_exception_page
          ~MatchingPage.wait_msg
+         ~MatchingPage.wait_sleep_time
+         ~MatchingPage.wait_timeout
+         ~MatchingPage.wait_timeout_page
       
    
    

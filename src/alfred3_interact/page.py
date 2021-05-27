@@ -16,6 +16,7 @@ from alfred3.exceptions import SessionTimeout
 
 from .match import MatchMaker
 from ._util import MatchingTimeout
+from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
 
@@ -130,20 +131,25 @@ class WaitingPage(al.NoNavigationPage):
     Args:
         wait_msg (str): Text to be displayed in the default layout.
             Defaults to None, in which case the text is
-            "Waiting for other group members."
+            "Waiting for other group members." Can be defined as a 
+            class attribute.
         wait_timeout (int): Maximum waiting time in seconds. If *wait_for*
             does not return a *True*-like value within waiting time, the experiment
             session is aborted. Defaults to None, in which case the
             timeout is ``60 * 20``, i.e. 20 minutes.
+            Can be defined as a class attribute.
         wait_sleep_time (int): Number of seconds in between two internal
             calls to :meth:`.wait_for`. Defaults to None, in which case
             a call will be made every two seconds.
+            Can be defined as a class attribute.
         wait_timeout_page (alfred3.Page): A custom page to be displayed
             in case of a waiting timeout. Defaults to an instance of
             :class:`.DefaultWaitingTimeoutPage`.
+            Can be defined as a class attribute.
         wait_exception_page (alfred3.Page): A custom page to be displayed
             in case of an exception during waiting. Defaults to an
             instance of :class:`.DefaultWaitingExceptionPage`.
+            Can be defined as a class attribute.
 
         {kwargs}
 
@@ -205,10 +211,15 @@ class WaitingPage(al.NoNavigationPage):
     wait_sleep_time: int = 2
 
     #: Abort page to be displayed on timeout
-    wait_timeout_page = DefaultWaitingTimeoutPage()
+    wait_timeout_page = None
 
     #: Abort page to be displayed on other exceptions during waiting
-    wait_exception_page = DefaultWaitingExceptionPage()
+    wait_exception_page = None
+
+    #: If *True*, the page will save signals of activity in the database
+    #: for this experiment session. Important for MatchMaking, but usually
+    #: not for ordinary waiting. Defaults to *False*
+    ping = False
 
     def __init__(
         self,
@@ -233,16 +244,58 @@ class WaitingPage(al.NoNavigationPage):
 
         if wait_timeout_page is not None:
             self.wait_timeout_page = wait_timeout_page
+        else:
+            self.wait_timeout_page = DefaultWaitingTimeoutPage()
 
         if wait_exception_page is not None:
             self.wait_exception_page = wait_exception_page
+        else:
+            self.wait_exception_page = DefaultWaitingExceptionPage()
+        
+        self += RepeatedCallback(
+            func=self._wait_for, 
+            interval=self.wait_sleep_time, 
+            followup="custom", 
+            custom_js="if (data) {move('forward')};"
+        )
 
-        self += Callback(self._wait_for, followup="forward")
+        #: Time of waiting start in seconds since epoch
+        #: We are not using the first show time here, because we want
+        #: to try to synchronize the waiting timeout with the displayed
+        #: Counter as best as possible. If we used the first show time,
+        #: that may be an earlier time point.
+        self.waiting_start: float = None
+        self.countup = al.CountUp(font_size=30, align="center")
 
+    
+    @property
+    def expiration_time(self) -> float:
+        """
+        float: Point in time at which the waiting page expires in 
+        seconds since epoch.
+        """
+        if not self.waiting_start:
+            return None
+        
+        return self.waiting_start + self.wait_timeout
+    
+
+    @property
+    def expired(self) -> bool:
+        """
+        bool: *True* if the page has exceeded its maximum waiting time.
+        """
+        if self.expiration_time:
+            now = time.time()
+            return now > self.expiration_time
+        else:
+            return False
+    
+    
     @abstractmethod
     def wait_for(self):
         """
-        One this method returns a *True*-like value, the page automatically
+        Once this method returns *True*, the page automatically
         forwards participants to the next page.
 
         It will be repeatedly called internally with the time between
@@ -251,65 +304,65 @@ class WaitingPage(al.NoNavigationPage):
         pass
 
     def _wait_for(self):
-        try:
-            start = time.time()
-
-            while not self.wait_for() and not self.exp.aborted:
-                time.sleep(self.wait_sleep_time)
-                if time.time() - start > self.wait_timeout:
-                    raise MatchingTimeout
-
-        except SessionTimeout:
-            pass  # the experiment handles session timeouts
-
-        except MatchingTimeout:
-            self.log.exception("Timeout on waiting page.")
+        """
+        This method gets called repeatedly via ajax callback from the
+        waiting page client-side. If it returns *True*, the experiment will move
+        on to the next page. Otherwise, the callback will try again
+        until the timeout is reached.
+        """
+        
+        if self.ping:
+            self._call_ping()
+        
+        if not self.waiting_start:
+            self.waiting_start = time.time()
+            self.countup.start_time = self.waiting_start
+        
+        if self.expired:
+            self.log.exception("Timeout on waiting page. Aborting experiment.")
             self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
-        except Exception as e:
-            self.log.exception("Exception in waiting function.")
+            return True
+        
+        try:
+            wait_status = self.wait_for()
+        
+        except NoMatch:
+            return False # return False so that the repeated callback will try again
+        
+        except Exception:
+            self.log.exception("Exception in waiting function. Aborting experiment.")
             self.exp.abort(reason="waiting error", page=self.wait_exception_page)
+            return True
+        
+        return wait_status
 
     def on_exp_access(self):
+        spinning_icon = al.icon("spinner", spin=True, size="90pt")
 
         self += al.VerticalSpace("100px")
-        self += al.Text(al.icon("spinner", spin=True, size="90pt"), align="center")
+        self += al.Text(spinning_icon, align="center")
         self += al.VerticalSpace("30px")
-        self += al.CountUp(font_size=30, align="center")
+        self += self.countup
         self += al.Text(self.wait_msg, align="center")
+    
+    def _call_ping(self):
+        sid = self.exp.session_id
+        query = {
+            "type": "match_maker",
+            f"members.{sid}.session_id": sid,
+        }
+        update = {"members": {sid: {"ping": time.time()}}}
+        self.exp.db_misc.find_one_and_update(query, update=[{"$set": update}])
 
 
 @inherit_kwargs
-class MatchingPage(al.NoNavigationPage):
+class MatchingPage(WaitingPage):
     """
-    A page that provides a waiting screen and participant activity check
-    while waiting for a match to complete.
-
-    The behavior and usage of the
-    MatchingPage is similar to :class:`.WaitingPage`, i.e. you
-    must overload the method :meth:`.wait_for`, and as soon as *wait_for*
-    returns *True*, participants are forwarded to the next page.
-
-    A major difference lies in the fact the MatchingPage expects the
-    timeouts to be handled by a :class:`.MatchMaker` operating in the
-    *wait_for* method. Thus, the MatchingPage does not have its own
-    timeout.
+    A waiting page for matchmaking.
 
     Args:
-        wait_msg (str): Text to be displayed in the default layout.
-            Defaults to None, in which case the text is
-            "Waiting for other group members."
-
-        ping_interval (int): The number of seconds in between two
-            activity pings being sent to the server. If None (default),
-            a ping is sent every three seconds. Can be defined as a class
-            attribute.
-
-        wait_exception_page (alfred3.Page): A custom page to be displayed
-            in case of an exception during waiting. Defaults to an
-            instance of :class:`.DefaultWaitingExceptionPage`.
-
         {kwargs}
-
+    
     Examples:
         ::
 
@@ -318,107 +371,27 @@ class MatchingPage(al.NoNavigationPage):
 
             exp = al.Experiment()
 
-            exp += al.Page(title="Landing page", name="landing")
-
+            @exp.setup
+            def setup(exp):
+                exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
+            
             @exp.member
-            class MatchPage(ali.WaitingPage):
-                title = "Making a Match"
+            class Match(ali.MatchingPage):
 
                 def wait_for(self):
-                    mm = ali.MatchMaker("a", "b", exp=self.exp)
-                    self.exp.plugins.group = mm.match_groupwise()
+                    self.exp.plugins.group = self.plugins.mm.match_groupwise()
                     return True
 
-
             @exp.member
-            class Success(al.Page):
-                title = "It's a Match!"
+            class Demo(al.Page):
+
+                def on_first_show(self):
+                    role = self.exp.plugins.group.me.role
+                    self += al.Text(f"I was assigned to role '{{role}}'.")
     """
+    #: If *True*, the page will save signals of activity in the database
+    #: for this experiment session. Important for MatchMaking, but usually
+    #: not for ordinary waiting. Defaults to *True*
+    ping = True
 
-    #: str: Page title
-    title = "Waiting"
-
-    #: Text to be displayed in the default layout.
-    #: Defaults to None, in which case the text is
-    #: "Waiting for other group members."
-    wait_msg: str = "Waiting for other group members."
-
-    #: Abort page to be displayed on other exceptions during waiting
-    wait_exception_page = DefaultWaitingExceptionPage()
-
-    #: The number of seconds in between two
-    #: activity pings being sent to the server. If None (default),
-    #: a ping is sent every three seconds. Can be defined as a class
-    #: attribute.
-    ping_interval: int = 3
-
-    def __init__(
-        self,
-        wait_msg: str = None,
-        ping_interval: int = None,
-        wait_exception_page: al.Page = None,
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-
-        if wait_msg is not None:
-            self.wait_msg = wait_msg
-
-        if ping_interval is not None:
-            self.ping_interval = ping_interval
-
-        if wait_exception_page is not None:
-            self.wait_exception_page = wait_exception_page
-
-        self += Callback(self._wait_for, followup="forward")
-
-    def on_exp_access(self):
-        self += al.VerticalSpace("100px")
-        self += al.Text(al.icon("spinner", spin=True, size="90pt"), align="center")
-        self += al.VerticalSpace("30px")
-        self += al.CountUp(font_size=30, align="center")
-        self += al.Text(self.wait_msg, align="center")
-        self += RepeatedCallback(
-            func=self._ping, interval=self.ping_interval, submit_first=False, followup="none"
-        )
-
-    @abstractmethod
-    def wait_for(self):
-        """
-        One this method returns a *True*-like value, the page automatically
-        forwards participants to the next page.
-
-        It will be repeatedly called internally with the time between
-        two calls defined by :attr:`.wait_sleep_time`.
-        """
-        pass
-
-    def _wait_for(self):
-        try:
-            self.wait_for()
-            return
-
-        except SessionTimeout:
-            pass  # the experiment handles session timeouts
-
-        except Exception:
-            # there might be exceptions in the waiting function if code
-            # that depends on the matchmaking is executed after a timeout
-            # in the matching function
-            # In future versions, this behavior should be changed such that
-            # the MatchingPage has full control over the timeout, the waiting,
-            # and the abort page
-            if self.exp.aborted:
-                pass
-            else:
-                self.log.exception("Exception in waiting function.")
-                self.exp.abort(reason="waiting error", page=self.wait_exception_page)
-
-    def _ping(self):
-        sid = self.exp.session_id
-        query = {
-            "type": "match_maker",
-            f"members.{sid}.session_id": sid,
-        }
-        update = {"members": {sid: {"ping": time.time()}}}
-        self.exp.db_misc.find_one_and_update(query, update=[{"$set": update}])
+    

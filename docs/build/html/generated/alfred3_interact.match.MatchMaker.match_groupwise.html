@@ -492,6 +492,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expiration_time.html">
+     MatchingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expired.html">
+     MatchingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.filled_input_elements.html">
      MatchingPage.filled_input_elements
     </a>
@@ -557,8 +567,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping_interval.html">
-     MatchingPage.ping_interval
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping.html">
+     MatchingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -644,6 +654,21 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
      MatchingPage.wait_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html">
+     MatchingPage.wait_sleep_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
+     MatchingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
+     MatchingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -791,6 +816,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expiration_time.html">
+     WaitingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expired.html">
+     WaitingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.filled_input_elements.html">
      WaitingPage.filled_input_elements
     </a>
@@ -853,6 +888,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.parent_name.html">
      WaitingPage.parent_name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.ping.html">
+     WaitingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -1218,29 +1258,15 @@
 <h1>MatchMaker.match_groupwise()<a class="headerlink" href="#matchmaker-match-groupwise" title="Permalink to this headline">¶</a></h1>
 <dl class="py method">
 <dt id="alfred3_interact.match.MatchMaker.match_groupwise">
-<code class="sig-prename descclassname"><span class="pre">MatchMaker.</span></code><code class="sig-name descname"><span class="pre">match_groupwise</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match_timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ping_timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="alfred3_interact.group.Group.html#alfred3_interact.group.Group" title="alfred3_interact.group.Group"><span class="pre">alfred3_interact.group.Group</span></a><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/match.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.match.MatchMaker.match_groupwise" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">MatchMaker.</span></code><code class="sig-name descname"><span class="pre">match_groupwise</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ping_timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="alfred3_interact.group.Group.html#alfred3_interact.group.Group" title="alfred3_interact.group.Group"><span class="pre">alfred3_interact.group.Group</span></a><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/match.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.match.MatchMaker.match_groupwise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Waits until there are enough participants for a full group, then
 matches them together.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>match_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – This timeout determines the maximum
-waiting time for a group to be complete. Defaults to
-1,800 (30 minutes). After expiration, the current experiment
-session is aborted and the group is marked as inactive.</p></li>
-<li><p><strong>ping_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of seconds after which an experiment
+<dd class="field-odd"><p><strong>ping_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of seconds after which an experiment
 session will be excluded from groupwise matching. This makes
 sure that only currently active sessions will be allocated
-to a group. Defaults to 15 (seconds).</p></li>
-<li><p><strong>timeout_page</strong> (<em>alfred3.page.Page</em>) – A custom page to display to
-participants if matchmaking times out. This will replace the
-default timeout page.</p></li>
-<li><p><strong>raise_exception</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – If True, the matchmaker will raise
-a <code class="xref py py-class docutils literal notranslate"><span class="pre">MatchingTimeout</span></code> exception instead of aborting
-the experiment if the matchmaking times out. This is useful,
-if you want to catch the exception and customize the
-experiment’s behavior in this case. Defaults to False.</p></li>
-</ul>
+to a group. Defaults to 15 (seconds).</p>
 </dd>
 </dl>
 <p>This method is the correct choice if group members exchange data
@@ -1248,14 +1274,9 @@ in real time. Roles are assigned randomly.</p>
 <p class="rubric">Notes</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Note that you should use a <a class="reference internal" href="alfred3_interact.page.MatchingPage.html#alfred3_interact.page.MatchingPage" title="alfred3_interact.page.MatchingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatchingPage</span></code></a> for
-groupwise matching. This will not only provide a nice waiting
-screen for participants while they wait for a match, it
-will also make sure that participants who close the
-experiment tab will not be included in the matchmaking process.</p>
-<p>If you do not use a MatchingPage, the MatchMaker cannot
-distinguish active from inactive participants and
-discard even active participants.</p>
+<p>Note that you must use a <a class="reference internal" href="alfred3_interact.page.MatchingPage.html#alfred3_interact.page.MatchingPage" title="alfred3_interact.page.MatchingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatchingPage</span></code></a> for
+groupwise matching. Outside of a MatchingPage, groupwise
+matching will not work.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>

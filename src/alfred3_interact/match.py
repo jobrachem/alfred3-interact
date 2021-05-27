@@ -10,7 +10,6 @@ import re
 from dataclasses import asdict
 
 from pymongo.collection import ReturnDocument
-from alfred3.page import Page
 from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.experiment import ExperimentSession
 from alfred3.exceptions import SessionTimeout
@@ -23,8 +22,7 @@ from .data import MatchMakerData
 from ._util import saving_method
 from ._util import MatchingError
 from ._util import BusyGroup
-from ._util import MatchingTimeout
-
+from ._util import NoMatch
 
 class MatchMakerIO:
     def __init__(self, matchmaker):
@@ -455,48 +453,25 @@ class MatchMaker:
 
     def match_groupwise(
         self,
-        match_timeout: int = 60 * 30,
-        ping_timeout: int = 15,
-        timeout_page=None,
-        raise_exception: bool = False,
+        ping_timeout: int = 15
     ) -> Group:
         """
         Waits until there are enough participants for a full group, then
         matches them together.
 
         Args:
-            match_timeout (int): This timeout determines the maximum 
-                waiting time for a group to be complete. Defaults to 
-                1,800 (30 minutes). After expiration, the current experiment
-                session is aborted and the group is marked as inactive.
             ping_timeout (int): Number of seconds after which an experiment
                 session will be excluded from groupwise matching. This makes
                 sure that only currently active sessions will be allocated
                 to a group. Defaults to 15 (seconds).
-            timeout_page (alfred3.page.Page): A custom page to display to
-                participants if matchmaking times out. This will replace the
-                default timeout page.
-            raise_exception (bool): If True, the matchmaker will raise
-                a :class:`.MatchingTimeout` exception instead of aborting
-                the experiment if the matchmaking times out. This is useful,
-                if you want to catch the exception and customize the
-                experiment's behavior in this case. Defaults to False.
 
         This method is the correct choice if group members exchange data
         in real time. Roles are assigned randomly.
 
         Notes:
-            .. important:: Note that you should use a :class:`.MatchingPage` for 
-                groupwise matching. This will not only provide a nice waiting
-                screen for participants while they wait for a match, it 
-                will also make sure that participants who close the
-                experiment tab will not be included in the matchmaking process.
-
-                If you do not use a MatchingPage, the MatchMaker cannot
-                distinguish active from inactive participants and
-                discard even active participants.
-
-
+            .. important:: Note that you must use a :class:`.MatchingPage` for 
+                groupwise matching. Outside of a MatchingPage, groupwise
+                matching will not work.
 
         See Also:
             - See :class:`.MatchingPage` for a special page class that
@@ -538,47 +513,39 @@ class MatchMaker:
         """
         if not self._check_activation():
             return
-        
 
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
 
+        if self.member and self.group:
+            self.log.info(f"match_groupwise was called, but {self.member} was already matched to \
+                {self.group}. Returning group.")
+            return self.group
+
         self._set_ping_timeout(ping_timeout)
 
-        self.member = GroupMember(self)
-        self.member._save()
-        start = time.time()
+        self.member = self._init_member()
+        
+        self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
 
-        i = 0
-        while not self.group:
-            matching_expired = (time.time() - start) > match_timeout
-            session_expired = self.member.expired
-            if matching_expired or session_expired:
-                break
+        if not self.group:
+            raise NoMatch
 
-            self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
-
-            if not self.group:
-
-                if (i == 0) or (i % 10 == 0):
-                    msg = f"Incomplete group in groupwise matching. Waiting. Member: {self.member}"
-                    self.log.debug(msg)
-
-                i += 1
-                time.sleep(1)
-
-        if matching_expired:
-            self.log.error("Groupwise matchmaking timed out.")
-            if raise_exception:
-                raise MatchingTimeout
-            else:
-                return self._matching_timeout(self.group, timeout_page)
-        elif session_expired:
+        
+        self.log.info(f"{self.group} filled in groupwise match.")
+        self._save_infos()
+        return self.group
+    
+    def _init_member(self):
+        if self.member:
+            return self.member
+        
+        member = GroupMember(self)
+        member._save()
+        if member.expired:
             raise SessionTimeout
         else:
-            self.log.info(f"{self.group} filled in groupwise match.")
-            self._save_infos()
-            return self.group
+            return member
 
     def toggle_activation(self) -> str:
         """

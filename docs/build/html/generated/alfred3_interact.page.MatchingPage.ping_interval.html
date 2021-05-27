@@ -38,8 +38,6 @@
     <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="MatchingPage.prefix_element_names" href="alfred3_interact.page.MatchingPage.prefix_element_names.html" />
-    <link rel="prev" title="MatchingPage.parent_name" href="alfred3_interact.page.MatchingPage.parent_name.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -74,7 +72,7 @@
   API Reference
  </span>
 </p>
-<ul class="current nav sidenav_l1">
+<ul class="nav sidenav_l1">
  <li class="toctree-l1 collapsible-parent">
   <a class="reference internal" href="alfred3_interact.match.MatchMaker.html">
    MatchMaker
@@ -351,11 +349,11 @@
   <i class="fas fa-chevron-down">
   </i>
  </li>
- <li class="toctree-l1 current active collapsible-parent">
+ <li class="toctree-l1 collapsible-parent">
   <a class="reference internal" href="alfred3_interact.page.MatchingPage.html">
    MatchingPage
   </a>
-  <ul class="current collapse-ul">
+  <ul class="collapse-ul">
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.added_to_experiment.html">
      MatchingPage.added_to_experiment()
@@ -492,6 +490,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expiration_time.html">
+     MatchingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expired.html">
+     MatchingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.filled_input_elements.html">
      MatchingPage.filled_input_elements
     </a>
@@ -556,9 +564,9 @@
      MatchingPage.parent_name
     </a>
    </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     MatchingPage.ping_interval
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping.html">
+     MatchingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -644,6 +652,21 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
      MatchingPage.wait_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html">
+     MatchingPage.wait_sleep_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
+     MatchingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
+     MatchingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -791,6 +814,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expiration_time.html">
+     WaitingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expired.html">
+     WaitingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.filled_input_elements.html">
      WaitingPage.filled_input_elements
     </a>
@@ -853,6 +886,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.parent_name.html">
      WaitingPage.parent_name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.ping.html">
+     WaitingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -1216,15 +1254,6 @@
                 
   <div class="section" id="matchingpage-ping-interval">
 <h1>MatchingPage.ping_interval<a class="headerlink" href="#matchingpage-ping-interval" title="Permalink to this headline">¶</a></h1>
-<dl class="py attribute">
-<dt id="alfred3_interact.page.MatchingPage.ping_interval">
-<code class="sig-prename descclassname"><span class="pre">MatchingPage.</span></code><code class="sig-name descname"><span class="pre">ping_interval</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.MatchingPage.ping_interval" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of seconds in between two
-activity pings being sent to the server. If None (default),
-a ping is sent every three seconds. Can be defined as a class
-attribute.</p>
-</dd></dl>
-
 </div>
 
 
@@ -1233,8 +1262,6 @@ attribute.</p>
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="alfred3_interact.page.MatchingPage.parent_name.html" title="previous page">MatchingPage.parent_name</a>
-    <a class='right-next' id="next-link" href="alfred3_interact.page.MatchingPage.prefix_element_names.html" title="next page">MatchingPage.prefix_element_names</a>
 
         </div>
         

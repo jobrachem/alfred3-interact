@@ -348,7 +348,9 @@ class GroupManager:
 
     def notfull(self, ongoing_sessions_ok=True) -> Iterator[Group]:
         if ongoing_sessions_ok:
-            return (g for g in self.active() if not g.full)
+            for g in self.active():
+                if not g.full:
+                    yield g
         else:
             for g in self.active():
                 if not g.full and not any(g.ongoing_roles()):

@@ -97,6 +97,8 @@
          ~WaitingPage.elements
          ~WaitingPage.exp
          ~WaitingPage.experiment
+         ~WaitingPage.expiration_time
+         ~WaitingPage.expired
          ~WaitingPage.filled_input_elements
          ~WaitingPage.fixed_width
          ~WaitingPage.has_been_shown
@@ -110,6 +112,7 @@
          ~WaitingPage.name
          ~WaitingPage.parent
          ~WaitingPage.parent_name
+         ~WaitingPage.ping
          ~WaitingPage.prefix_element_names
          ~WaitingPage.progress
          ~WaitingPage.responsive_width

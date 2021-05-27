@@ -47,6 +47,7 @@ class SharedGroupData(UserDict):
         self.data = doc["shared_data"]
     
     def _push_local(self):
+        self.group.data.shared_data = self.data
         self.group._save()
     
     def _fetch(self):
