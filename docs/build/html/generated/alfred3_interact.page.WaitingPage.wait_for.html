@@ -492,6 +492,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expiration_time.html">
+     MatchingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.expired.html">
+     MatchingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.filled_input_elements.html">
      MatchingPage.filled_input_elements
     </a>
@@ -557,8 +567,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping_interval.html">
-     MatchingPage.ping_interval
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.ping.html">
+     MatchingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -644,6 +654,21 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_msg.html">
      MatchingPage.wait_msg
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_sleep_time.html">
+     MatchingPage.wait_sleep_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout.html">
+     MatchingPage.wait_timeout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.MatchingPage.wait_timeout_page.html">
+     MatchingPage.wait_timeout_page
     </a>
    </li>
   </ul>
@@ -791,6 +816,16 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expiration_time.html">
+     WaitingPage.expiration_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.expired.html">
+     WaitingPage.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.filled_input_elements.html">
      WaitingPage.filled_input_elements
     </a>
@@ -853,6 +888,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="alfred3_interact.page.WaitingPage.parent_name.html">
      WaitingPage.parent_name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alfred3_interact.page.WaitingPage.ping.html">
+     WaitingPage.ping
     </a>
    </li>
    <li class="toctree-l2">
@@ -1219,7 +1259,7 @@
 <dl class="py method">
 <dt id="alfred3_interact.page.WaitingPage.wait_for">
 <em class="property"><span class="pre">abstract</span> </em><code class="sig-prename descclassname"><span class="pre">WaitingPage.</span></code><code class="sig-name descname"><span class="pre">wait_for</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/jobrachem/alfred3-interact/blob/main/src/alfred3_interact/page.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alfred3_interact.page.WaitingPage.wait_for" title="Permalink to this definition">¶</a></dt>
-<dd><p>One this method returns a <em>True</em>-like value, the page automatically
+<dd><p>Once this method returns <em>True</em>, the page automatically
 forwards participants to the next page.</p>
 <p>It will be repeatedly called internally with the time between
 two calls defined by <a class="reference internal" href="alfred3_interact.page.WaitingPage.wait_sleep_time.html#alfred3_interact.page.WaitingPage.wait_sleep_time" title="alfred3_interact.page.WaitingPage.wait_sleep_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">wait_sleep_time</span></code></a>.</p>
