@@ -24,7 +24,7 @@ from ._util import saving_method
 from ._util import MatchingError
 from ._util import BusyGroup
 from ._util import MatchingTimeout
-from ._util import NoMatch
+
 
 class MatchMakerIO:
     def __init__(self, matchmaker):
@@ -455,7 +455,10 @@ class MatchMaker:
 
     def match_groupwise(
         self,
-        ping_timeout: int = 15
+        match_timeout: int = 60 * 30,
+        ping_timeout: int = 15,
+        timeout_page=None,
+        raise_exception: bool = False,
     ) -> Group:
         """
         Waits until there are enough participants for a full group, then
@@ -535,31 +538,15 @@ class MatchMaker:
         """
         if not self._check_activation():
             return
+        
 
         if not saving_method(self.exp) == "mongo":
             raise MatchingError("Must use a database for groupwise matching.")
 
-        if self.member and self.group:
-            self.log.info(f"match_groupwise was called, but {self.member} was already matched to \
-                {self.group}. Returning group.")
-            return self.group
-
         self._set_ping_timeout(ping_timeout)
 
-        self.member = self._init_member()
-        
-        self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
-
-        if not self.group:
-            raise NoMatch
-
-        
-        self.log.info(f"{self.group} filled in groupwise match.")
-        self._save_infos()
-        return self.group
-
-
-
+        self.member = GroupMember(self)
+        self.member._save()
         start = time.time()
 
         i = 0
@@ -592,17 +579,6 @@ class MatchMaker:
             self.log.info(f"{self.group} filled in groupwise match.")
             self._save_infos()
             return self.group
-    
-    def _init_member(self):
-        if self.member:
-            return self.member
-        
-        member = GroupMember(self)
-        member._save()
-        if member.expired:
-            raise SessionTimeout
-        else:
-            return member
 
     def toggle_activation(self) -> str:
         """
