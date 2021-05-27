@@ -22,3 +22,6 @@ class MatchingError(Exception):
 
 class BusyGroup(Exception):
     pass
+
+class NoMatch(Exception):
+    pass
