@@ -462,38 +462,18 @@ class MatchMaker:
         matches them together.
 
         Args:
-            match_timeout (int): This timeout determines the maximum 
-                waiting time for a group to be complete. Defaults to 
-                1,800 (30 minutes). After expiration, the current experiment
-                session is aborted and the group is marked as inactive.
             ping_timeout (int): Number of seconds after which an experiment
                 session will be excluded from groupwise matching. This makes
                 sure that only currently active sessions will be allocated
                 to a group. Defaults to 15 (seconds).
-            timeout_page (alfred3.page.Page): A custom page to display to
-                participants if matchmaking times out. This will replace the
-                default timeout page.
-            raise_exception (bool): If True, the matchmaker will raise
-                a :class:`.MatchingTimeout` exception instead of aborting
-                the experiment if the matchmaking times out. This is useful,
-                if you want to catch the exception and customize the
-                experiment's behavior in this case. Defaults to False.
 
         This method is the correct choice if group members exchange data
         in real time. Roles are assigned randomly.
 
         Notes:
-            .. important:: Note that you should use a :class:`.MatchingPage` for 
-                groupwise matching. This will not only provide a nice waiting
-                screen for participants while they wait for a match, it 
-                will also make sure that participants who close the
-                experiment tab will not be included in the matchmaking process.
-
-                If you do not use a MatchingPage, the MatchMaker cannot
-                distinguish active from inactive participants and
-                discard even active participants.
-
-
+            .. important:: Note that you must use a :class:`.MatchingPage` for 
+                groupwise matching. Outside of a MatchingPage, groupwise
+                matching will not work.
 
         See Also:
             - See :class:`.MatchingPage` for a special page class that
