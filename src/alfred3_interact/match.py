@@ -10,7 +10,6 @@ import re
 from dataclasses import asdict
 
 from pymongo.collection import ReturnDocument
-from alfred3.page import Page
 from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.experiment import ExperimentSession
 from alfred3.exceptions import SessionTimeout
@@ -23,7 +22,6 @@ from .data import MatchMakerData
 from ._util import saving_method
 from ._util import MatchingError
 from ._util import BusyGroup
-from ._util import MatchingTimeout
 from ._util import NoMatch
 
 class MatchMakerIO:
@@ -537,41 +535,6 @@ class MatchMaker:
         self.log.info(f"{self.group} filled in groupwise match.")
         self._save_infos()
         return self.group
-
-
-
-        start = time.time()
-
-        i = 0
-        while not self.group:
-            matching_expired = (time.time() - start) > match_timeout
-            session_expired = self.member.expired
-            if matching_expired or session_expired:
-                break
-
-            self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
-
-            if not self.group:
-
-                if (i == 0) or (i % 10 == 0):
-                    msg = f"Incomplete group in groupwise matching. Waiting. Member: {self.member}"
-                    self.log.debug(msg)
-
-                i += 1
-                time.sleep(1)
-
-        if matching_expired:
-            self.log.error("Groupwise matchmaking timed out.")
-            if raise_exception:
-                raise MatchingTimeout
-            else:
-                return self._matching_timeout(self.group, timeout_page)
-        elif session_expired:
-            raise SessionTimeout
-        else:
-            self.log.info(f"{self.group} filled in groupwise match.")
-            self._save_infos()
-            return self.group
     
     def _init_member(self):
         if self.member:
