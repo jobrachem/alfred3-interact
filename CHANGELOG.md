@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed v0.1.5
 
-- Changed the way repeated calls are made during matchmaking (adressing in the process #1). Now, the `MatchingPage` and the `WaitingPage` operate almost identically, both using repeated AJAX calls originating from the client's browser. Hopefully, this will further increase the robustness of waiting and matchmaking.
+- Changed the way repeated calls are made during matchmaking (adressing in the process #1). Now, the `MatchingPage` and the `WaitingPage` operate almost identically, both using repeated AJAX calls originating from the client's browser. Hopefully, this will further increase the robustness of waiting and matchmaking. **This removes the arguments 'match_timeout', 'timeout_page', and 'raise_exception' from `match_groupwise`**
 
 ### Fixed v0.1.5
 
