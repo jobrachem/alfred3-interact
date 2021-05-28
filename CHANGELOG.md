@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.1.6
+
+### Changed v0.1.6
+
+- The admin view now includes the start date of each member's session.
+
+### Fixed v0.1.6
+
+- Improved the fix of #6. The fix in v0.1.5 was incomplete.
+- Fixed a bug in ping handling of groupwise matching.
+
+
 ## alfred3_interact v0.1.5 (Released 2021-05-27)
 
 ### Changed v0.1.5
