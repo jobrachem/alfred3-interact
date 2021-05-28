@@ -526,9 +526,11 @@ class MatchMaker:
 
         self.member = self._init_member()
         
+        self.log.debug("Trying match")
         self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
 
         if not self.group:
+            self.log.debug("No match found.")
             raise NoMatch
 
         
@@ -600,19 +602,16 @@ class MatchMaker:
             return group
 
     def _do_match_groupwise(self, ping_timeout):
-        member = self.member._load_if_notbusy()
-        if member is None:
-            self.log.debug("Returning. Member not found, MM is busy.")
-            return None
-
-        elif member.matched:
-            self.log.debug("Returning. Found group.")
-            return self.group_manager.find(member.data.group_id)
 
         with self.io as data:
             if data is None:
                 self.log.debug("Returning. Data marked, MM is busy.")
                 return None
+
+            self.member = self.member._load()
+            if self.member.matched:
+                self.log.debug("Returning. Found group.")
+                return self.group_manager.find(self.member.data.group_id)
 
             waiting_members = self._get_waiting_members(ping_timeout)
 
@@ -620,12 +619,17 @@ class MatchMaker:
                 group = self._fill_group(data, waiting_members)
                 return group
             
+            self.log.debug("Returning. Not enough active members.")
+            self.log.debug(f"Active members: {waiting_members}")
             return None
     
     def _get_waiting_members(self, ping_timeout):
         waiting_members = list(self.member_manager.waiting(ping_timeout=ping_timeout))
+        self.log.debug(f"Full waiting members list: {waiting_members}")
         waiting_members = [m for m in waiting_members if m != self.member]
+        self.log.debug(f"Filtered waiting members list: {waiting_members}")
         waiting_members.insert(0, self.member)
+        self.log.debug(f"Changed waiting members list: {waiting_members}")
         return waiting_members
     
     def _fill_group(self, data, waiting_members):
@@ -635,15 +639,19 @@ class MatchMaker:
 
         candidates = (m for m in waiting_members)
         while not group.full:
-            group += next(candidates)
+            m = next(candidates)
+            self.log.debug(f"Filling group with {m}")
+            group += m
 
         group._assign_all_roles(to_members=waiting_members)
         group._save()
 
         # update matchmaker data
         for m in waiting_members:
+            self.log.debug(f"Member {m} is being updated.")
             data.members[m.data.session_id] = asdict(m.data)
         self.io.save(data=data)
+        self.log.debug(f"List of active members: {list(self.member_manager.active())}")
 
         self.log.debug("Returning filled group.")
         return group
