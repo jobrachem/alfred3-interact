@@ -262,7 +262,7 @@ class Group:
 
     def _save_local(self):
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(asdict(self.data), f, sort_keys=True, indent=4)
+            json.dump(asdict(self.data), f, indent=4)
 
     def _save_mongo(self):
         q = {}
