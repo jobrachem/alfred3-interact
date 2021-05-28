@@ -3,6 +3,7 @@ Functionality related to group members.
 """
 
 import time
+import datetime
 import json
 from dataclasses import asdict
 
@@ -75,6 +76,14 @@ class GroupMember:
         str: Session start-time in human-readbale format (H:M:S)
         """
         return time.strftime("%H:%M:%S", time.localtime(self.timestamp))
+    
+    @property
+    def start_day(self) -> str:
+        """
+        str: Session start-day in human-readbale format (yyyy-mm-dd)
+        """
+        date = datetime.date.fromtimestamp(self.timestamp)
+        return date.isoformat()
     
     @property
     def last_move(self) -> str:
