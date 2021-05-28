@@ -216,7 +216,6 @@ class Group:
                 continue
             else:
                 member = self.manager.find(id=member_id)
-                self.mm.log.warning(f"{member}, active: {member.active}")
                 if member.active:
                     yield role
 
