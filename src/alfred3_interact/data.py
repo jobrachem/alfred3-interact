@@ -28,6 +28,11 @@ class SharedGroupData(UserDict):
         super().__init__(*args, **kwargs)
         self.group = group
         self._db = self.group.exp.db_misc
+
+        if self.group.data.shared_data:
+            self.data = self.group.data.shared_data
+        
+        self.data["__group_id"] = self.group.group_id
     
     def _push_remote(self):
         doc = self._db.find_one_and_update(
@@ -36,15 +41,16 @@ class SharedGroupData(UserDict):
             projection={"shared_data": True, "_id": False},
             return_document=ReturnDocument.AFTER
             )
-        
-        self.data = doc["shared_data"]
+        if doc is not None:
+            self.data = doc["shared_data"]
     
     def _fetch_remote(self):
         doc = self._db.find_one(
             filter={"group_id": self.group.group_id},
             projection={"shared_data": True, "_id": False},
             )
-        self.data = doc["shared_data"]
+        if doc is not None:
+            self.data = doc["shared_data"]
     
     def _push_local(self):
         self.group.data.shared_data = self.data
@@ -58,10 +64,6 @@ class SharedGroupData(UserDict):
         self._push()
     
     def _push(self):
-        self.data["__group_id"] = self.group.group_id
-        self.data["__last_change"] = time.time()
-
-
         if saving_method(self.group.exp) == "mongo":
             self._push_remote()
         elif saving_method(self.group.exp) == "local":
@@ -80,11 +82,13 @@ class SharedGroupData(UserDict):
     def __setitem__(self, key, item):
         self._fetch()
         super().__setitem__(key, item)
+        self.data["__last_change"] = time.time()
         self._push()
     
     def __delitem__(self, key):
         self._fetch()
         super().__delitem__(key)
+        self.data["__last_change"] = time.time()
         self._push()
 
 
