@@ -3,6 +3,7 @@ Functionality related to group members.
 """
 
 import time
+import datetime
 import json
 from dataclasses import asdict
 
@@ -75,6 +76,14 @@ class GroupMember:
         str: Session start-time in human-readbale format (H:M:S)
         """
         return time.strftime("%H:%M:%S", time.localtime(self.timestamp))
+    
+    @property
+    def start_day(self) -> str:
+        """
+        str: Session start-day in human-readbale format (yyyy-mm-dd)
+        """
+        date = datetime.date.fromtimestamp(self.timestamp)
+        return date.isoformat()
     
     @property
     def last_move(self) -> str:
@@ -251,15 +260,15 @@ class GroupMember:
         if not self.session_id in mm["members"]:
             raise MatchingError
 
-    def _load_if_notbusy(self):
+    def _load(self):
         """
         Returns an updated version of self, if the corresponsing matchmaker
         is not busy.
         """
         if saving_method(self.exp) == "local":
-            mm = self._load_if_notbusy_local()
+            mm = self._load_local()
         elif saving_method(self.exp) == "mongo":
-            mm = self._load_if_notbusy_mongo()
+            mm = self._load_mongo()
 
         if mm is None:
             return None
@@ -267,22 +276,16 @@ class GroupMember:
         self.data = GroupMemberData(**mm["members"][self.session_id])
         return self
 
-    def _load_if_notbusy_local(self):
+    def _load_local(self):
         with open(self._path, "r", encoding="utf-8") as f:
-            mm = json.load(f)
+            return json.load(f)
 
-        if mm["busy"]:
-            return None
-        else:
-            return mm
-
-    def _load_if_notbusy_mongo(self):
+    def _load_mongo(self):
         q = {}
         q["type"] = self.mm._DATA_TYPE
         q["matchmaker_id"] = self.mm.matchmaker_id
         q["exp_id"] = self.exp.exp_id
         q["exp_version"] = self.mm.exp_version
-        q["busy"] = False
         return self.exp.db_misc.find_one(q)
 
     def __str__(self):
@@ -322,8 +325,8 @@ class MemberManager:
     def waiting(self, ping_timeout: int):
         now = time.time()
         for m in self.active():
-            ping_timeout = now - m.ping > ping_timeout
-            if not m.matched and not ping_timeout:
+            member_ping_timeout = now - m.ping > ping_timeout
+            if not m.matched and not member_ping_timeout:
                 yield m
 
     def find(self, id: str):

@@ -62,9 +62,9 @@ class Group:
         self._operation_start = None
 
         self._shared_data = SharedGroupData(group=self)
-        self._save()
         self._shared_data._fetch()
         self.exp.append_plugin_data_query(self._plugin_data_query)
+        self._save()
     
     @property
     def _plugin_data_query(self):
@@ -216,7 +216,6 @@ class Group:
                 continue
             else:
                 member = self.manager.find(id=member_id)
-                self.mm.log.warning(f"{member}, active: {member.active}")
                 if member.active:
                     yield role
 
