@@ -152,7 +152,7 @@ class GroupMember:
             The values are the user inputs. 
         """
         d = dm.flatten(self.session_data).items()
-        return {k: v for k, v in d if k not in dm._metadata and k not in dm.client_data}
+        return {k: v for k, v in d if k not in dm._metadata_keys and k not in dm._client_data_keys}
 
     @property
     def session_data(self) -> dict:
