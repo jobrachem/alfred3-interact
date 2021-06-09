@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.1.8 (Released 2021-06-09)
+
+### Changed
+
+- alfred3_interact was updated for compatibility to alfred3 v2.1.5
+
 ## alfred3_interact v0.1.7 (Released 2021-05-28)
 
 ### Fixed v0.1.7
