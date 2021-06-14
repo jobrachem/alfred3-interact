@@ -3,7 +3,7 @@ Soome basic utilities.
 """
 
 
-def saving_method(exp) -> bool:
+def saving_method(exp) -> str:
     if not exp.secrets.getboolean("mongo_saving_agent", "use"):
         if exp.config.getboolean("local_saving_agent", "use"):
             return "local"
