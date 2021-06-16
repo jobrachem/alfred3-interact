@@ -6,7 +6,7 @@ import json
 import random
 import time
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, List
 from dataclasses import asdict
 
 from .member import MemberManager
@@ -66,6 +66,12 @@ class Group:
         self.exp.append_plugin_data_query(self._plugin_data_query)
         self._save()
     
+    @property
+    def sessions(self) -> List[str]:
+        members = self.members()
+        ids = [m.session_id for m in members]
+        return ids
+
     @property
     def _plugin_data_query(self):
         f = {"exp_id": self.exp.exp_id, "type": "match_group"}
