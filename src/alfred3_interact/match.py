@@ -538,6 +538,30 @@ class MatchMaker:
         self._save_infos()
         return self.group
     
+
+    def check_activation(self):
+        """
+        Verifies that the MatchMaker is active and aborts the experiment
+        if necessary. 
+        
+        If the MatchMaker not active, the current experiment session is 
+        aborted, and the *abort_page* specified on initialization of 
+        the MatchMaker will be shown to participants.
+
+        The matching methods :meth:`.match_groupwise` and 
+        :meth:`.match_stepwise` will check for activation themselves,
+        when called. But this may be at a point in the experiment where
+        participants have made considerable progress. So it may be
+        useful to manually check for activation at an earlier stage.
+
+        As a general rule of thumb, it may be sensible to check activation
+        on first hiding of the landing page of an experiment. This way,
+        participants still get a nice welcoming screen, but do not invest
+        too much time before the experiment is cancelled.
+
+        """
+        self._check_activation()
+
     def _init_member(self):
         if self.member:
             return self.member
