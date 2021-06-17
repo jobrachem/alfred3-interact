@@ -21,7 +21,6 @@ from .group import GroupManager
 from .member import GroupMember
 from .member import MemberManager
 from .data import MatchMakerData
-from .quota import GroupCounter
 from ._util import saving_method
 from ._util import MatchingError
 from ._util import BusyGroup
@@ -157,6 +156,7 @@ class MatchMakerIO:
             return MatchMakerData(**data)
         else:
             return None
+    
 
     def __enter__(self):
         return self.load_markbusy()
@@ -166,14 +166,11 @@ class MatchMakerIO:
             self.mm.member.data.active = False
             self.mm.member._save()
             self.exp.abort(reason="matchmaker_error")
-            self.exp.log.error(
-                (
-                    "There was an error in a locked MatchMaker operation. "
-                    f"I deactivated the responsible member {self.mm.member} and released the lock."
-                )
-            )
+            self.exp.log.error(f"There was an error in a locked MatchMaker operation. \
+                I deactivated the responsible member {self.mm.member} and released the lock.")
         self.release()
         self.mm._data = self.load()
+
 
 
 class MatchMaker:
@@ -185,7 +182,7 @@ class MatchMaker:
         *roles: A variable number of strings, indicating which roles
             will be appointed to members of the group. The number of
             roles determines the number of group members. All roles in a
-            group must be unique. Roles cannot start with numbers or
+            group must be unique. Roles cannot start with numbers or 
             contain spaces.
         exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
             in which this matchmaker is used.
@@ -208,34 +205,6 @@ class MatchMaker:
         admin_param (str): Name of the URL parameter used to start the
             admin mode. Defaults to the matchmaker id.
 
-        max_groups (int): Maximum number of groups to accept. If the
-            target number is reached, the experiment will be aborted
-            upon matching additional groups. What's more, you can use
-            :meth:`.check_group_number` at any time to abort the
-            experiment at an earlier time.
-
-            .. versionadded:: 0.1.9
-
-        max_groups_mode (str): Can be one of 'strict' or 'inclusive'.
-
-            If 'strict', the experiment will only be aborted if the
-            maximum number of groups is *fully finished*.
-
-            If 'inclusive', the experiment will also be aborted if
-            there are enough finished *and ongoing* sessions to
-            potentially reach the maximum number of groups.
-
-            While 'strict' mode might lead to participants being turned
-            away before the experiment is really complete, 'inclusive'
-            mode might lead to more data being collected than necessary.
-
-            Defaults to 'strict'.
-
-            .. versionadded:: 0.1.9
-
-    .. versionchanged:: 0.1.9
-       Added the parameters *max_groups* and *max_groups_mode* and the
-       method :meth:`.check_group_number`.
 
     Notes:
         See :meth:`.match_stepwise` and :meth:`.match_groupwise` for
@@ -250,9 +219,9 @@ class MatchMaker:
             - See :class:`.MatchingPage` for a special page class that
               offers a nice waiting screen and automatic forwarding upon
               achieving a match.
-
+            
             - See :class:`.WaitingPage` for a special page class that
-              offers a nice waiting screen for synchronization in an
+              offers a nice waiting screen for synchronization in an 
               ongoing experiment. This is useful to pause at some points
               in the experiment and wait for all group members to arrive
               at a specified point in the experiment.
@@ -271,15 +240,15 @@ class MatchMaker:
             def setup(exp):
                 mm = ali.MatchMaker("role1", "role2", exp=exp)
                 exp.plugins.group = mm.match_stepwise()
-
-
+            
+            
             @exp.member
             class Success(al.Page):
                 title = "Match successful"
 
                 def on_exp_access(self):
                     group = self.exp.plugins.group
-
+                    
                     txt = f"You have successfully matched to role: {group.me.role}"
                     self += al.Text(txt, align="center")
 
@@ -300,15 +269,12 @@ class MatchMaker:
         inactive_page=None,
         admin_pw: str = None,
         admin_param: str = None,
-        max_groups: int = None,
-        max_groups_mode: str = "strict",
     ):
         self.exp = exp
-
+        
         if exp.start_time:
             raise MatchingError("MatchMaker must be initialized during experiment setup.")
-
-        self.respect_version = respect_version
+        
         self.exp_version = self.exp.version if respect_version else ""
         self.log = QueuedLoggingInterface(base_logger="alfred3")
         self.log.add_queue_logger(self, __name__)
@@ -317,9 +283,6 @@ class MatchMaker:
         self.admin_param = admin_param if admin_param is not None else id
         self.admin_pw = admin_pw
         self.admin_mode = False
-
-        self.max_groups = max_groups
-        self.max_groups_mode = max_groups_mode
 
         self.member_timeout = None
 
@@ -345,9 +308,12 @@ class MatchMaker:
         self.member = None
 
         self.exp.abort_functions.append(self._deactivate_session)
-
+        
         if self.admin_pw:
             self.admin_mode = self._enable_admin_mode(self.exp)
+        
+        
+            
 
     @classmethod
     def from_size(cls, n: int, **kwargs):
@@ -412,9 +378,7 @@ class MatchMaker:
         self._data.members[self.member.session_id] = asdict(self.member.data)
         return self._data
 
-    def match_stepwise(
-        self, member_timeout: int = None, ongoing_sessions_ok: bool = False
-    ) -> Group:
+    def match_stepwise(self, member_timeout: int = None, ongoing_sessions_ok: bool = False) -> Group:
         """
         Assigns participants to groups and roles one-by-one without
         waiting for a group to be full.
@@ -430,7 +394,7 @@ class MatchMaker:
             ongoing_sessions_ok (bool): If False, new members will only
                 be added to a group if all previous members of that group
                 have finished their experiment sessions. This can prevent
-                session losses in case
+                session losses in case 
 
 
         Roles are assigned to members in the order in which they
@@ -500,10 +464,12 @@ class MatchMaker:
                 self.log.info(f"Session matched to role '{self.member.role}' in {group}.")
 
             self._save_infos()
-            self._count_group()
             return self.group
 
-    def match_groupwise(self, ping_timeout: int = 15) -> Group:
+    def match_groupwise(
+        self,
+        ping_timeout: int = 15
+    ) -> Group:
         """
         Waits until there are enough participants for a full group, then
         matches them together.
@@ -518,7 +484,7 @@ class MatchMaker:
         in real time. Roles are assigned randomly.
 
         Notes:
-            .. important:: Note that you must use a :class:`.MatchingPage` for
+            .. important:: Note that you must use a :class:`.MatchingPage` for 
                 groupwise matching. Outside of a MatchingPage, groupwise
                 matching will not work.
 
@@ -526,9 +492,9 @@ class MatchMaker:
             - See :class:`.MatchingPage` for a special page class that
               offers a nice waiting screen and automatic forwarding upon
               achieving a match.
-
+            
             - See :class:`.WaitingPage` for a special page class that
-              offers a nice waiting screen for synchronization in an
+              offers a nice waiting screen for synchronization in an 
               ongoing experiment. This is useful to pause at some points
               in the experiment and wait for all group members to arrive
               at a specified point in the experiment.
@@ -544,7 +510,7 @@ class MatchMaker:
                 @exp.setup
                 def setup(exp):
                     exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
-
+                
                 @exp.member
                 class Match(ali.MatchingPage):
 
@@ -567,16 +533,14 @@ class MatchMaker:
             raise MatchingError("Must use a database for groupwise matching.")
 
         if self.member and self.group:
-            self.log.info(
-                f"match_groupwise was called, but {self.member} was already matched to \
-                {self.group}. Returning group."
-            )
+            self.log.info(f"match_groupwise was called, but {self.member} was already matched to \
+                {self.group}. Returning group.")
             return self.group
 
         self._set_ping_timeout(ping_timeout)
 
         self.member = self._init_member()
-
+        
         self.log.debug("Trying match")
         self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
 
@@ -584,22 +548,22 @@ class MatchMaker:
             self.log.debug("No match found.")
             raise NoMatch
 
+        
         self.log.info(f"{self.group} filled in groupwise match.")
         self._save_infos()
-        self._count_group()
-
         return self.group
+    
 
     def check_activation(self):
         """
         Verifies that the MatchMaker is active and aborts the experiment
-        if necessary.
-
-        If the MatchMaker not active, the current experiment session is
-        aborted, and the *abort_page* specified on initialization of
+        if necessary. 
+        
+        If the MatchMaker not active, the current experiment session is 
+        aborted, and the *abort_page* specified on initialization of 
         the MatchMaker will be shown to participants.
 
-        The matching methods :meth:`.match_groupwise` and
+        The matching methods :meth:`.match_groupwise` and 
         :meth:`.match_stepwise` will check for activation themselves,
         when called. But this may be at a point in the experiment where
         participants have made considerable progress. So it may be
@@ -613,50 +577,10 @@ class MatchMaker:
         """
         self._check_activation()
 
-    def check_group_number(self, abort_page=None, raise_exception: bool = False):
-        """
-        Aborts the experiment if the maximum number of groups
-        is already present.
-
-        Groups that have already been counted will never be aborted by
-        this method.
-
-        Args:
-            abort_page (alfred3.Page): You can reference a custom
-                page to be displayed to new participants, if the
-                experiment is full.
-            raise_exception (bool): If True, the function raises
-                the :class:`.AllConditionsFull` exception instead of
-                automatically aborting the experiment if the maximum
-                number of groups is reached. This allows you to catch
-                the exception and customize the experiment's behavior
-                in this case.
-
-        .. versionadded:: 0.1.9
-
-        Raises:
-            alfred3.exceptions.AllConditionsFull: If raise_exception is
-                True and the maximum number of groups is reached.
-        """
-        if self.max_groups is None:
-            return
-
-        counter = GroupCounter(self, abort_page=abort_page)
-
-        if counter.find_slot([self.exp.session_id]):
-            return
-
-        counter.abort_if_full(raise_exception=raise_exception)
-
-    def _count_group(self):
-        if self.max_groups:
-            counter = GroupCounter(self)
-            counter.count_group()
-
     def _init_member(self):
         if self.member:
             return self.member
-
+        
         member = GroupMember(self)
         member._save()
         if member.expired:
@@ -733,11 +657,11 @@ class MatchMaker:
             if len(waiting_members) >= len(self.roles):
                 group = self._fill_group(data, waiting_members)
                 return group
-
+            
             self.log.debug("Returning. Not enough active members.")
             self.log.debug(f"Active members: {waiting_members}")
             return None
-
+    
     def _get_waiting_members(self, ping_timeout):
         waiting_members = list(self.member_manager.waiting(ping_timeout=ping_timeout))
         self.log.debug(f"Full waiting members list: {waiting_members}")
@@ -746,7 +670,7 @@ class MatchMaker:
         waiting_members.insert(0, self.member)
         self.log.debug(f"Changed waiting members list: {waiting_members}")
         return waiting_members
-
+    
     def _fill_group(self, data, waiting_members):
         self.log.debug("Filling group.")
         roles = {role: None for role in self.roles}
@@ -795,7 +719,7 @@ class MatchMaker:
     def _check_activation(self):
         if self.admin_mode:
             return True
-
+        
         if self.active:
             return True
 
@@ -808,7 +732,7 @@ class MatchMaker:
                 reason="matchmaker_inactive",
                 title="MatchMaking inactive",
                 msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
-                icon="user-times",
+                icon="user-times"
             )
         self.exp._allow_append = False
 
@@ -834,10 +758,7 @@ class MatchMaker:
         """
         from alfred3_interact.page import PasswordPage, AdminPage
 
-        if (
-            exp.urlargs.get(self.admin_param, False) == "admin"
-            and not exp.session_status == "admin"
-        ):
+        if exp.urlargs.get(self.admin_param, False) == "admin" and not exp.session_status == "admin":
             exp.session_timeout = None
             exp.config.read_dict({"data": {"save_data": False}})
             exp.config.read_dict({"layout": {"show_progress": False}})
@@ -854,7 +775,7 @@ class MatchMaker:
             exp._allow_append = False
 
             return True
-
+        
         else:
             return False
 
@@ -863,20 +784,17 @@ class MatchMaker:
             q = {"type": "match_maker", "exp_id": self.exp.exp_id}
             q["exp_version"] = self.exp_version
             q["matchmaker_id"] = self.matchmaker_id
-            self.exp.db_misc.find_one_and_update(
-                q, update={"$set": {"ping_timeout": ping_timeout}}
-            )
-
+            self.exp.db_misc.find_one_and_update(q, update={"$set": {"ping_timeout": ping_timeout}})
+    
     def _validate_roles(self, roles):
         p = re.compile(r"^\d|\s")
         for role in roles:
             if p.search(role):
-                raise ValueError(
-                    f"Error in role '{role}': Roles must not start with numbers \
-                    and must not contain spaces."
-                )
-
+                raise ValueError(f"Error in role '{role}': Roles must not start with numbers \
+                    and must not contain spaces.")
+        
         return roles
+
 
     def __str__(self):
         return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"
