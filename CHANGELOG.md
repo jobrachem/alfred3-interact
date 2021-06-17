@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MatchMaker.check_activation`
 - You can now tell the `MatchMaker` to collect only a certain number
   of groups with the arguments `max_groups` and `max_groups_mode`.
-  Check out the documentation for more!
+  Check out the documentation for more! **NOTE that this feature requires
+  alfred3 v2.1.7 or newer!**
 - New method `MatchMaker.check_group_number` gives you the possibility
   to check for the number of collected groups and abort the experiment
   if necessary at any time in the experiment.
-- New attribute `MatchMaker.full` return *True* if the maximum number of
+- New attribute `MatchMaker.full` returns *True* if the maximum number of
   groups has been reached.
 
 #### Group
