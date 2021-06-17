@@ -5,29 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## alfred3_interact v0.2.0 [unreleased]
+## alfred3_interact v0.1.9 [unreleased]
 
 ### Added
 
 #### MatchMaker
 
-- `MatchMaker.check_activation`
-- You can now tell the `MatchMaker` to collect only a certain number
-  of groups with the arguments `max_groups` and `max_groups_mode`.
-  Check out the documentation for more! **NOTE that this feature requires
-  alfred3 v2.1.7 or newer!**
-- New method `MatchMaker.check_group_number` gives you the possibility
-  to check for the number of collected groups and abort the experiment
-  if necessary at any time in the experiment.
-- New attribute `MatchMaker.full` returns *True* if the maximum number of
-  groups has been reached.
-
-#### Group
-
-- `Group.sessions`
+- New method `MatchMaker.check_activation` allows you to check whether
+  the MatchMaker is activated at any time during in an experiment. This
+  can be useful, if tha actual matching takes place at some later point
+  in an experiment: In this case, it is sensible to only allow 
+  participants to progress, if they will actually be matched.
 
 #### Chat
-- `room`
+
+- New argument `room` for `ChatElement` and `Group.chat`. This argument
+  offers a convenient way to create distinct chat-rooms for the same
+  group of participants. Just enter a string as the group name; you may,
+  for instance, want to use a page name.
+
 
 ## alfred3_interact v0.1.8 (Released 2021-06-09)
 
