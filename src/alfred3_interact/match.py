@@ -10,9 +10,11 @@ import re
 from dataclasses import asdict
 
 from pymongo.collection import ReturnDocument
+from packaging import version
 from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.experiment import ExperimentSession
 from alfred3.exceptions import SessionTimeout
+from alfred3 import __version__ as alfred_version
 
 from .group import Group
 from .group import GroupManager
@@ -25,6 +27,7 @@ from ._util import MatchingError
 from ._util import BusyGroup
 from ._util import NoMatch
 
+ALFRED_VERSION = version.parse(alfred_version)
 
 class MatchMakerIO:
     def __init__(self, matchmaker):
