@@ -340,17 +340,6 @@ class MatchMaker:
         return cls(*roles, **kwargs)
 
     @property
-    def full(self) -> bool:
-        """
-        bool: *True*, if the maximum number of groups has been reached.
-        Returns *False*, if no maximum number has been defined.
-        """
-        if not self.max_groups:
-            return False
-
-        return GroupCounter(self).full
-
-    @property
     def active(self) -> bool:
         """
         Returns *True*, if the MatchMaker is active.
