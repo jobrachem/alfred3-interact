@@ -252,8 +252,6 @@ class MatchMaker:
                     txt = f"You have successfully matched to role: {group.me.role}"
                     self += al.Text(txt, align="center")
 
-
-
     """
 
     _TIMEOUT_MSG = "MatchMaking timeout"
