@@ -165,8 +165,8 @@ class MatchMakerIO:
         if exc_type:
             self.mm.member.data.active = False
             self.mm.member._save()
-            self.exp.abort(reason="matchmaker_error")
-            self.exp.log.error(f"There was an error in a locked MatchMaker operation. \
+            self.mm.exp.abort(reason="matchmaker_error")
+            self.mm.exp.log.error(f"There was an error in a locked MatchMaker operation. \
                 I deactivated the responsible member {self.mm.member} and released the lock.")
         self.release()
         self.mm._data = self.load()
