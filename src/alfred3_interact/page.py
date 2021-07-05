@@ -15,7 +15,7 @@ from alfred3._helper import inherit_kwargs
 from alfred3.exceptions import SessionTimeout
 
 from .match import MatchMaker
-from ._util import MatchingTimeout
+from ._util import MatchingTimeout, MatchingError
 from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
@@ -216,11 +216,6 @@ class WaitingPage(al.NoNavigationPage):
     #: Abort page to be displayed on other exceptions during waiting
     wait_exception_page = None
 
-    #: If *True*, the page will save signals of activity in the database
-    #: for this experiment session. Important for MatchMaking, but usually
-    #: not for ordinary waiting. Defaults to *False*
-    ping = False
-
     def __init__(
         self,
         *args,
@@ -291,6 +286,9 @@ class WaitingPage(al.NoNavigationPage):
         else:
             return False
     
+    @property
+    def passed_time(self) -> float:
+        return time.time() - self.waiting_start
     
     @abstractmethod
     def wait_for(self):
@@ -311,16 +309,12 @@ class WaitingPage(al.NoNavigationPage):
         until the timeout is reached.
         """
         
-        if self.ping:
-            self._call_ping()
-        
         if not self.waiting_start:
             self.waiting_start = time.time()
             self.countup.start_time = self.waiting_start
         
         if self.expired:
-            self.log.exception("Timeout on waiting page. Aborting experiment.")
-            self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
+            self.on_expire()
             return True
         
         try:
@@ -335,6 +329,10 @@ class WaitingPage(al.NoNavigationPage):
             return True
         
         return wait_status
+    
+    def on_expire(self):
+        self.log.exception("Timeout on waiting page. Aborting experiment.")
+        self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
 
     def on_exp_access(self):
         spinning_icon = al.icon("spinner", spin=True, size="90pt")
@@ -345,15 +343,6 @@ class WaitingPage(al.NoNavigationPage):
         self += self.countup
         self += al.Text(self.wait_msg, align="center")
     
-    def _call_ping(self):
-        sid = self.exp.session_id
-        query = {
-            "type": "match_maker",
-            f"members.{sid}.session_id": sid,
-        }
-        update = {"members": {sid: {"ping": time.time()}}}
-        self.exp.db_misc.find_one_and_update(query, update=[{"$set": update}])
-
 
 @inherit_kwargs
 class MatchingPage(WaitingPage):
@@ -389,9 +378,5 @@ class MatchingPage(WaitingPage):
                     role = self.exp.plugins.group.me.role
                     self += al.Text(f"I was assigned to role '{{role}}'.")
     """
-    #: If *True*, the page will save signals of activity in the database
-    #: for this experiment session. Important for MatchMaking, but usually
-    #: not for ordinary waiting. Defaults to *True*
-    ping = True
 
     

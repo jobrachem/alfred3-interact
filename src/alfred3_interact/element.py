@@ -236,7 +236,7 @@ class ViewMembers(Element):
         super().added_to_experiment(exp)
         
         self.render_url = self.exp.ui.add_callable(self.render_table_body)
-        cols = ["Session", "Status", "Condition", "Last Page", "Start Day", "Start Time", "Last Move", "Group", "Role"]
+        cols = ["Session", "Condition", "Last Page", "Start Day", "Start Time", "Last Move", "Group", "Role", "Status", "Last ping"]
         js = self.view_js.render(name=self.name, render_url=self.render_url, refresh_interval=self.refresh_interval, cols=cols)
         self.add_js(js)
 
@@ -247,23 +247,35 @@ class ViewMembers(Element):
         d["members"] = self.match_maker.member_manager.members()
         return d
     
+    def _shorten_last_page(self, member) -> str:
+        last_page = member.info.last_page
+        if len(last_page) < 20:
+            return last_page
+        else:
+            return last_page[:17] + "..."
+
     def render_table_body(self):
 
         members = self.match_maker.member_manager.members()
         tbody = []
         for m in members:
-            last_page = m.last_page if len(m.last_page) < 20 else m.last_page[:17] + "..."
+            if not m.status.matched:
+                last_ping = round(time.time() - m.data.ping, 1)
+                last_ping = f"{last_ping}s ago"
+            else:
+                last_ping = "(already matched)"
 
             d = {}
-            d["Session"] = m.session_id[-4:]
-            d["Status"] = m.status
-            d["Condition"] = self._condition_of(m.session_id)
-            d["Last Page"] = last_page
-            d["Start Day"] = m.start_day
-            d["Start Time"] = m.start_time
-            d["Last Move"] = m.last_move
-            d["Group"] = m.group_id[-4:] if m.group_id else "-"
-            d["Role"] = m.role
+            d["Session"] = m.data.session_id[-4:]
+            d["Condition"] = self._condition_of(m.data.session_id)
+            d["Last Page"] = self._shorten_last_page(m)
+            d["Start Day"] = m.info.start_day
+            d["Start Time"] = m.info.start_time
+            d["Last Move"] = m.info.last_move
+            d["Group"] = m.data.group_id[-4:] if m.data.group_id else "-"
+            d["Role"] = m.data.role
+            d["Status"] = m.status.print_status()
+            d["Last ping"] = last_ping
             tbody.append(d)
 
         return {"data": tbody}

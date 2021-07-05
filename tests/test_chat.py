@@ -1,12 +1,25 @@
 import pytest
-import alfred3 as al
 from alfred3_interact.chat import ChatManager
+from alfred3.testutil import get_exp_session, clear_db
 
-from ._util import exp, secrets
+from dotenv import load_dotenv
+load_dotenv()
+
+@pytest.fixture
+def exp(tmp_path):
+    script = "tests/res/script-hello_world.py"
+    secrets = "tests/res/secrets-default.conf"
+    exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
+    
+    yield exp
+
+    clear_db()
 
 @pytest.fixture
 def chat(exp):
-    c = ChatManager(exp, "testing_chat")
+    exp._start()
+    exp._save_data(sync=True)
+    c = ChatManager(exp, "testing_chat", encrypt=False)
     yield c
     exp.db_misc.delete_many(c._query)
 
@@ -27,10 +40,9 @@ def test_post_one_message(chat, exp):
 
 def test_load_one_message(chat):
     chat.post_message("test")
-    rv = chat.load_messages()
+    chat.load_messages()
 
     assert len(chat.data["messages"]) == 1
-    assert rv == "init"
 
 def test_load_two_messages(chat):
     chat.post_message("test")
@@ -47,12 +59,11 @@ def test_load_stepwise(chat):
     chat.post_message("test")
     rv = chat.load_messages()
     assert len(chat.data["messages"]) == 2
-    assert rv == "append"
 
 def test_pass(chat):
     chat.post_message("test")
     chat.load_messages()
-    rv = chat.load_messages()
-    assert rv == "pass"
+    chat.load_messages()
+    assert len(chat.data["messages"]) == 1
 
     
