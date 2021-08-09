@@ -54,6 +54,9 @@
       ~WaitingPage.on_exp_access
    
    
+      ~WaitingPage.on_expire
+   
+   
       ~WaitingPage.on_first_hide
    
    
@@ -112,7 +115,7 @@
          ~WaitingPage.name
          ~WaitingPage.parent
          ~WaitingPage.parent_name
-         ~WaitingPage.ping
+         ~WaitingPage.passed_time
          ~WaitingPage.prefix_element_names
          ~WaitingPage.progress
          ~WaitingPage.responsive_width

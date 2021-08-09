@@ -21,28 +21,19 @@
       ~Group.active_members
    
    
-      ~Group.active_or_finished_members
+      ~Group.active_other_members
    
    
       ~Group.chat
    
    
-      ~Group.get_member_by_id
-   
-   
-      ~Group.get_member_by_role
-   
-   
       ~Group.members
    
    
-      ~Group.ongoing_roles
-   
-   
-      ~Group.open_roles
-   
-   
       ~Group.other_members
+   
+   
+      ~Group.takes_members
    
 
    
@@ -57,10 +48,12 @@
       :toctree:
 
       
-         ~Group.DATA_TYPE
+         ~Group.finished
          ~Group.full
+         ~Group.group_id
          ~Group.me
-         ~Group.path
+         ~Group.nactive
+         ~Group.nfinished
          ~Group.shared_data
          ~Group.you
       

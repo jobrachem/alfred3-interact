@@ -1,12 +1,13 @@
 import pytest
-import alfred3 as al
 from alfred3_interact.chat import ChatManager
-
-from ._util import exp, secrets
+from alfred3_interact.element import Chat
+from alfred3 import Page
 
 @pytest.fixture
 def chat(exp):
-    c = ChatManager(exp, "testing_chat")
+    exp._start()
+    exp._save_data(sync=True)
+    c = ChatManager(exp, "testing_chat", encrypt=False)
     yield c
     exp.db_misc.delete_many(c._query)
 
@@ -27,10 +28,9 @@ def test_post_one_message(chat, exp):
 
 def test_load_one_message(chat):
     chat.post_message("test")
-    rv = chat.load_messages()
+    chat.load_messages()
 
     assert len(chat.data["messages"]) == 1
-    assert rv == "init"
 
 def test_load_two_messages(chat):
     chat.post_message("test")
@@ -45,14 +45,23 @@ def test_load_stepwise(chat):
     assert len(chat.data["messages"]) == 1
     
     chat.post_message("test")
-    rv = chat.load_messages()
+    chat.load_messages()
     assert len(chat.data["messages"]) == 2
-    assert rv == "append"
 
 def test_pass(chat):
     chat.post_message("test")
     chat.load_messages()
-    rv = chat.load_messages()
-    assert rv == "pass"
+    chat.load_messages()
+    assert len(chat.data["messages"]) == 1
 
-    
+
+def test_chat_element(exp):
+    p = Page(name="test")
+    chat = Chat("testchat")
+    p += chat
+
+    exp += p
+
+    chat.prepare_web_widget()
+    assert chat.template_data
+
