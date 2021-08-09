@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.1.9 [unreleased]
+
+### Added
+
+#### MatchMaker
+
+- New method `MatchMaker.check_activation` allows you to check whether
+  the MatchMaker is activated at any time during in an experiment. This
+  can be useful, if tha actual matching takes place at some later point
+  in an experiment: In this case, it is sensible to only allow 
+  participants to progress, if they will actually be matched.
+
+#### Chat
+
+- New argument `room` for `ChatElement` and `Group.chat`. This argument
+  offers a convenient way to create distinct chat-rooms for the same
+  group of participants. Just enter a string as the group name; you may,
+  for instance, want to use a page name.
+
+
+## alfred3_interact v0.1.8 (Released 2021-06-09)
+
+### Changed
+
+- alfred3_interact was updated for compatibility to alfred3 v2.1.5
+
 ## alfred3_interact v0.1.7 (Released 2021-05-28)
 
 ### Fixed v0.1.7
@@ -28,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed v0.1.5
 
-- Changed the way repeated calls are made during matchmaking (adressing in the process #1). Now, the `MatchingPage` and the `WaitingPage` operate almost identically, both using repeated AJAX calls originating from the client's browser. Hopefully, this will further increase the robustness of waiting and matchmaking.
+- Changed the way repeated calls are made during matchmaking (adressing in the process #1). Now, the `MatchingPage` and the `WaitingPage` operate almost identically, both using repeated AJAX calls originating from the client's browser. Hopefully, this will further increase the robustness of waiting and matchmaking. **This removes the arguments 'match_timeout', 'timeout_page', and 'raise_exception' from `match_groupwise`**
 
 ### Fixed v0.1.5
 

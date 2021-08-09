@@ -16,6 +16,8 @@ class ChatManager:
         exp (alfred.experiment.ExperimentSession): The experiment session
             to which the chat belongs.
         chat_id (str): Unique identifier for the chat.
+        room (str): Shorthand for creating individual rooms of the same
+            chat.
         nickname (str): Nickname for the identification of the current
             session.
         colors (dict): Dictionary of colors for identifying participants
@@ -50,12 +52,14 @@ class ChatManager:
         exp,
         chat_id: str,
         nickname: str = None,
+        room: str = "",
         colors: dict = None,
         encrypt: bool = True,
         ignore_aborted_sessions: bool = True,
     ):
         self.exp = exp
-        self.chat_id = chat_id
+        room = "_room-" + room if room != "" else ""
+        self.chat_id = chat_id + room
         self.colors = colors
         self.encrypt = encrypt
         self.ignore_aborted_sessions = ignore_aborted_sessions

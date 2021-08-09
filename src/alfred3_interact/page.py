@@ -4,18 +4,11 @@ Specialized pages for interactive experiments.
 
 import time
 from abc import abstractmethod
-from functools import wraps
-
-from jinja2 import Template
 
 import alfred3 as al
-from alfred3.element.core import Element
-from alfred3.element.misc import Callback, RepeatedCallback
+from alfred3.element.misc import RepeatedCallback
 from alfred3._helper import inherit_kwargs
-from alfred3.exceptions import SessionTimeout
 
-from .match import MatchMaker
-from ._util import MatchingTimeout
 from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
@@ -122,7 +115,7 @@ class WaitingPage(al.NoNavigationPage):
     your own design.
 
     Once the :meth:`.wait_for` method returns a *True*-like value (i.e.,
-    a value for which ``bool(value) == True)`` holds, the
+    a value for which ``bool(value) == True`` holds), the
     WaitingPage will proceed to the next page automatically.
 
     .. important:: The :meth:`.wait_for` method *must* return a value,
@@ -155,6 +148,36 @@ class WaitingPage(al.NoNavigationPage):
 
     Examples:
 
+        How to use the WaitingPage for matching::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
+            
+            @exp.member
+            class Success(al.Page):
+
+                def on_first_show(self):
+                    group = self.exp.plugins.group
+                    role = group.me.role
+                    
+                    self += al.Text(f"Successfully matched to role: {{role}}")
+
+
         The example demonstrates how to use the waiting page in
         an ongoing experiment to wait until a group member has proceeded
         to a certain point in the experiment (more precisely, until a
@@ -168,8 +191,17 @@ class WaitingPage(al.NoNavigationPage):
 
             @exp.setup
             def setup(exp):
-                mm = ali.MatchMaker("a", "b", exp=exp)
-                exp.plugins.group = mm.match_stepwise()
+                spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
 
 
             @exp.member
@@ -185,9 +217,13 @@ class WaitingPage(al.NoNavigationPage):
                 def wait_for(self):
                     you = self.exp.plugins.group.you
                     return you.values.get("el1", False)
-
-            exp += al.Page(title="Waiting successful", name="success")
-
+            
+            
+            @exp.member
+            class SyncSuccess(al.Page):
+                
+                def on_first_show(self):
+                    self += al.Text("Successfully synced.")
 
     """
 
@@ -215,11 +251,6 @@ class WaitingPage(al.NoNavigationPage):
 
     #: Abort page to be displayed on other exceptions during waiting
     wait_exception_page = None
-
-    #: If *True*, the page will save signals of activity in the database
-    #: for this experiment session. Important for MatchMaking, but usually
-    #: not for ordinary waiting. Defaults to *False*
-    ping = False
 
     def __init__(
         self,
@@ -291,6 +322,9 @@ class WaitingPage(al.NoNavigationPage):
         else:
             return False
     
+    @property
+    def passed_time(self) -> float:
+        return time.time() - self.waiting_start
     
     @abstractmethod
     def wait_for(self):
@@ -311,16 +345,12 @@ class WaitingPage(al.NoNavigationPage):
         until the timeout is reached.
         """
         
-        if self.ping:
-            self._call_ping()
-        
         if not self.waiting_start:
             self.waiting_start = time.time()
             self.countup.start_time = self.waiting_start
         
         if self.expired:
-            self.log.exception("Timeout on waiting page. Aborting experiment.")
-            self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
+            self.on_expire()
             return True
         
         try:
@@ -335,6 +365,10 @@ class WaitingPage(al.NoNavigationPage):
             return True
         
         return wait_status
+    
+    def on_expire(self):
+        self.log.exception("Timeout on waiting page. Aborting experiment.")
+        self.exp.abort(reason="timeout", page=self.wait_timeout_page)
 
     def on_exp_access(self):
         spinning_icon = al.icon("spinner", spin=True, size="90pt")
@@ -345,15 +379,6 @@ class WaitingPage(al.NoNavigationPage):
         self += self.countup
         self += al.Text(self.wait_msg, align="center")
     
-    def _call_ping(self):
-        sid = self.exp.session_id
-        query = {
-            "type": "match_maker",
-            f"members.{sid}.session_id": sid,
-        }
-        update = {"members": {sid: {"ping": time.time()}}}
-        self.exp.db_misc.find_one_and_update(query, update=[{"$set": update}])
-
 
 @inherit_kwargs
 class MatchingPage(WaitingPage):
@@ -367,31 +392,31 @@ class MatchingPage(WaitingPage):
         ::
 
             import alfred3 as al
-            import alfred3_interact as ali
+                import alfred3_interact as ali
 
-            exp = al.Experiment()
+                exp = Experiment()
 
-            @exp.setup
-            def setup(exp):
-                exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
-            
-            @exp.member
-            class Match(ali.MatchingPage):
+                @exp.setup
+                def setup(exp):
+                    spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                    exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+                
+                @exp.member
+                class Match(ali.MatchingPage):
 
-                def wait_for(self):
-                    self.exp.plugins.group = self.plugins.mm.match_groupwise()
-                    return True
+                    def wait_for(self):
+                        group = self.exp.plugins.mm.match()
+                        self.exp.plugins.group = group
+                        return True
+                
+                @exp.member
+                class Success(al.Page):
 
-            @exp.member
-            class Demo(al.Page):
-
-                def on_first_show(self):
-                    role = self.exp.plugins.group.me.role
-                    self += al.Text(f"I was assigned to role '{{role}}'.")
+                    def on_first_show(self):
+                        group = self.exp.plugins.group
+                        role = group.me.role
+                        
+                        self += al.Text(f"Successfully matched to role: {{role}}")
     """
-    #: If *True*, the page will save signals of activity in the database
-    #: for this experiment session. Important for MatchMaking, but usually
-    #: not for ordinary waiting. Defaults to *True*
-    ping = True
 
     
