@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.2.0 [unreleased]
+
+### Changed
+
+This update includes a major overhaul of the library. We changed the
+MatchMaker's interface and functionality in such a way that it is now
+able to randomize between different group specifications. Those group
+specifications can be used to limit the number of similar groups to be
+created. The functionality can be found in the following classes and
+methods:
+
+- `ParallelSpec`: Blueprint for groups in which all members are active
+   in parallel.
+- `SequentialSpec`: Blueprint for groups in which members are active
+   in sequence.
+- `IndividualSpec`: Blueprint for individuals, useful if you want to
+   mix individual and group conditions.
+- `MatchMaker.match_random`
+- `MatchMaker.match_chain` 
+- `MatchMaker.match_to`
+
+Please take a look at the documentation for more information and examples
+on how to use the new functionality.
+
 ## alfred3_interact v0.1.9 [unreleased]
 
 ### Added
