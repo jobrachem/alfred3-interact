@@ -1,5 +1,5 @@
 import pytest
-from .util import get_exp_session, clear_db
+from alfred3.testutil import get_exp_session, clear_db
 
 
 from dotenv import load_dotenv
