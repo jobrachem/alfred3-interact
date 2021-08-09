@@ -115,7 +115,7 @@ class WaitingPage(al.NoNavigationPage):
     your own design.
 
     Once the :meth:`.wait_for` method returns a *True*-like value (i.e.,
-    a value for which ``bool(value) == True)`` holds, the
+    a value for which ``bool(value) == True`` holds), the
     WaitingPage will proceed to the next page automatically.
 
     .. important:: The :meth:`.wait_for` method *must* return a value,
@@ -148,6 +148,36 @@ class WaitingPage(al.NoNavigationPage):
 
     Examples:
 
+        How to use the WaitingPage for matching::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
+            
+            @exp.member
+            class Success(al.Page):
+
+                def on_first_show(self):
+                    group = self.exp.plugins.group
+                    role = group.me.role
+                    
+                    self += al.Text(f"Successfully matched to role: {{role}}")
+
+
         The example demonstrates how to use the waiting page in
         an ongoing experiment to wait until a group member has proceeded
         to a certain point in the experiment (more precisely, until a
@@ -161,8 +191,17 @@ class WaitingPage(al.NoNavigationPage):
 
             @exp.setup
             def setup(exp):
-                mm = ali.MatchMaker("a", "b", exp=exp)
-                exp.plugins.group = mm.match_stepwise()
+                spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
 
 
             @exp.member
@@ -178,9 +217,13 @@ class WaitingPage(al.NoNavigationPage):
                 def wait_for(self):
                     you = self.exp.plugins.group.you
                     return you.values.get("el1", False)
-
-            exp += al.Page(title="Waiting successful", name="success")
-
+            
+            
+            @exp.member
+            class SyncSuccess(al.Page):
+                
+                def on_first_show(self):
+                    self += al.Text("Successfully synced.")
 
     """
 
@@ -349,27 +392,31 @@ class MatchingPage(WaitingPage):
         ::
 
             import alfred3 as al
-            import alfred3_interact as ali
+                import alfred3_interact as ali
 
-            exp = al.Experiment()
+                exp = Experiment()
 
-            @exp.setup
-            def setup(exp):
-                exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
-            
-            @exp.member
-            class Match(ali.MatchingPage):
+                @exp.setup
+                def setup(exp):
+                    spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                    exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+                
+                @exp.member
+                class Match(ali.MatchingPage):
 
-                def wait_for(self):
-                    self.exp.plugins.group = self.plugins.mm.match_groupwise()
-                    return True
+                    def wait_for(self):
+                        group = self.exp.plugins.mm.match()
+                        self.exp.plugins.group = group
+                        return True
+                
+                @exp.member
+                class Success(al.Page):
 
-            @exp.member
-            class Demo(al.Page):
-
-                def on_first_show(self):
-                    role = self.exp.plugins.group.me.role
-                    self += al.Text(f"I was assigned to role '{{role}}'.")
+                    def on_first_show(self):
+                        group = self.exp.plugins.group
+                        role = group.me.role
+                        
+                        self += al.Text(f"Successfully matched to role: {{role}}")
     """
 
     

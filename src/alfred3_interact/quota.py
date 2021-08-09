@@ -6,8 +6,9 @@ import typing as t
 
 from alfred3.data_manager import DataManager as dm, saving_method
 from alfred3.quota import Slot, SessionQuota, QuotaData, SlotManager
+from alfred3._helper import inherit_kwargs
 
-from .group import GroupManager, GroupType
+from .group import GroupType
 
 
 @dataclass
@@ -303,9 +304,13 @@ class GroupSlotManager:
         return slots[i]
 
 
+@inherit_kwargs(exclude=["session_ids"])
 class ParallelGroupQuota(SessionQuota):
     """
     Manages quota for parallel groups.
+    
+    Args:
+        {kwargs}
     """
 
     group_type = GroupType.PARALLEL
@@ -346,9 +351,13 @@ class ParallelGroupQuota(SessionQuota):
                 raise e
     
 
+@inherit_kwargs(exclude=["session_ids"])
 class SequentialGroupQuota(ParallelGroupQuota):
     """
     Manages quota for sequential groups.
+
+    Args:
+        {kwargs}
     """
     group_type = GroupType.SEQUENTIAL
 
@@ -376,20 +385,6 @@ class SequentialGroupQuota(ParallelGroupQuota):
             else:
                 raise e
     
-    # @property
-    # def nincomplete(self) -> int:
-    #     """
-    #     int: Number of slots in which no group is finished and at least
-    #     one group has open roles that can be filled.
-    #     """
-    #     with self.io as data:
-    #         return self._nincomplete(data)
-    
-    # def _nincomplete(self, data) -> int:
-    #     slot_manager = self._slot_manager(data)
-    #     incomplete_slots = list(slot_manager.incomplete_slots(self.exp))
-    #     return len(incomplete_slots)
-    
     @property
     def full(self) -> bool:
         """
@@ -412,11 +407,7 @@ class SequentialGroupQuota(ParallelGroupQuota):
             if self.inclusive:
                 return False
             
-            # # Even exclusive quota is not full, if there are still incomplete groups
-            # if self._nincomplete(data) > 0:
-            #     return False
-            
-            # Now: Exclusive quota with pending slots and all groups in 
+            # Exclusive quota with pending slots and all groups in 
             # those slots are complete. Thus, the quota is full
             return True
 

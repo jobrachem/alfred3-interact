@@ -22,6 +22,7 @@ from ._util import MatchingError, BusyGroup
 from ._util import saving_method
 from .element import Chat
 
+
 class GroupType:
     SEQUENTIAL = "sequential_group"
     PARALLEL = "parallel_group"
@@ -33,7 +34,7 @@ class GroupData:
     exp_version: str
     matchmaker_id: str
     roles: dict
-    group_type: str 
+    group_type: str
     spec_name: str
     group_id: str = field(default_factory=lambda: "group-" + uuid4().hex)
     members: list = field(default_factory=list)
@@ -408,6 +409,67 @@ class GroupMemberManager(GroupHelper):
 
 
 class Group:
+    """
+    The group object holds members and keeps track of their roles.
+
+    The group's main task is providing access to the group members
+    via their roles. Most importantly, the group offers the attributes
+    :attr:`.me` and :attr:`.you`. Beyond that, you can use dot notation,
+    using any member's role like an attribute on the group. The group will
+    return a :class:`.GroupMember` object for the member inhabiting that
+    role.
+
+    Typically, you will not initialize a group object yourself, but
+    receive it as a result of the matchmaking process via :class:`.MatchMaker`
+
+    See Also:
+        See :class:`.GroupMember` for information about member objects.
+
+    Examples:
+        
+        In this basic example, we access both group members through their
+        roles and print their inputs on the last page::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+            @exp.member
+            class Demo:
+
+                def on_exp_access(self):
+                    self += al.TextEntry(leftlab="Enter some text", force_input=True, name="el1")
+            
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
+            
+            @exp.member
+            class Success(al.Page):
+
+                def on_first_show(self):
+                    group = self.exp.plugins.group
+                    role = group.me.role
+                    
+                    self += al.Text(f"Successfully matched to role: {role}")
+
+                    a = group.a
+                    b = group.b
+
+                    self += al.Text(f"Values of group member a: {a.values}")
+                    self += al.Text(f"Values of group member b: {b.values}")
+                    
+    """
     def __init__(self, matchmaker, **data):
         self.mm = matchmaker
         self.exp = self.mm.exp
@@ -458,15 +520,28 @@ class Group:
 
     @property
     def group_id(self) -> str:
+        """
+        str: Unique group identification number.
+        """
         return self.data.group_id
 
     @property
     def full(self) -> bool:
+        """
+        bool: Indicates whether all roles in the group are filled. Counts only
+        active and finished members.
+        """
         nactive = self.groupmember_manager.nactive
         nfinished = self.groupmember_manager.nfinished
         return nactive + nfinished == len(self.data.roles)
 
     def takes_members(self, ongoing_sessions_ok: bool = False):
+        """
+        Indicates whether the group accepts members.
+
+        Returns:
+            bool
+        """
         open_roles = len(list(self.roles.open()))
         pending_roles = len(list(self.roles.pending()))
 
@@ -476,28 +551,50 @@ class Group:
 
     @property
     def finished(self) -> bool:
+        """
+        bool: Indicates whether all group members have finished their
+        experiment sessions.
+        """
         nfinished = self.groupmember_manager.nfinished
         return nfinished == len(self.data.roles)
 
     @property
-    def nfinished(self):
+    def nfinished(self) -> int:
+        """
+        int: Number of group members who have finished their experiment
+        session.
+        """
         return self.groupmember_manager.nfinished
 
     @property
-    def nactive(self):
+    def nactive(self) -> int:
+        """
+        int: Number of group members currently working on the experiment.
+        """
         return self.groupmember_manager.nactive
 
     @property
     def shared_data(self):
+        """
+        DEPRECATED shared group data dictionary.
+        """
         self._shared_data._fetch()
         return self._shared_data
 
     @property
     def me(self) -> GroupMember:
+        """
+        GroupMember: :class:`.GroupMember` object for the own session.
+        Useful to access the own role.
+        """
         return self.groupmember_manager.me
 
     @property
     def you(self) -> GroupMember:
+        """
+        GroupMember: :class:`.GroupMember`  object for
+        the *other* participant in a dyad (i.e. a two-member-group).
+        """
         return self.groupmember_manager.you
 
     def chat(self, **kwargs) -> Chat:
@@ -523,15 +620,54 @@ class Group:
         return Chat(chat_id=chat_id, nickname=nickname, **kwargs)
 
     def members(self) -> Iterator[GroupMember]:
+        """
+        A generator, iterating over *all* members of the group.
+        Yields :class:`.GroupMember` objects.
+
+        Yields:
+            :class:`.GroupMember`
+        
+        See Also:
+            - :meth:`.active_members`
+            - :meth:`.other_members`
+        
+        """
         return self.groupmember_manager.members()
 
     def active_members(self) -> Iterator[GroupMember]:
+        """
+        A generator, iterating over all *active* members of the
+        group. Yields :class:`.GroupMember` objects.
+
+        Yields:
+            :class:`.GroupMember`
+
+        See Also:
+            - :attr:`.GroupMember.active`
+        """
         return self.groupmember_manager.active_members()
 
     def other_members(self) -> Iterator[GroupMember]:
+        """
+        A generator, iterating over the group members
+        except for :attr:`.me`. Yields :class:`.GroupMember` objects.
+
+        Yields:
+            :class:`.GroupMember`        
+        """
         return self.groupmember_manager.other_members()
 
     def active_other_members(self) -> Iterator[GroupMember]:
+        """
+        A generator, iterating over all *active* members of the
+        group except for :attr:`.me`. Yields :class:`.GroupMember` objects.
+
+        Yields:
+            :class:`.GroupMember`
+        
+        See Also:
+            - :attr:`.GroupMember.active`
+        """
         return self.groupmember_manager.active_other_members()
 
     def __repr__(self):
@@ -582,8 +718,10 @@ class Group:
         if exc_type:
             tb = "".join(format_exception(exc_type, exc_value, tb))
             self.exp.log.error(
-                (f"There was an error when operating on {self}: {exc_value}." 
-                "The group was deactivated.\n{tb}")
+                (
+                    f"There was an error when operating on {self}: {exc_value}."
+                    "The group was deactivated.\n{tb}"
+                )
             )
             self.data.active = False
             self.io.save()
@@ -610,10 +748,10 @@ class GroupManager:
 
         if self.spec_name is not None:
             q["spec_name"] = self.spec_name
-        
+
         if self.group_type is not None:
             q["group_type"] = self.group_type
-        
+
         return q
 
     @property
@@ -640,7 +778,10 @@ class GroupManager:
             else:
                 with open(fpath, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                    if d["exp_version"] == self.mm.exp_version and d["spec_name"] == self.spec_name:
+                    if (
+                        d["exp_version"] == self.mm.exp_version
+                        and d["spec_name"] == self.spec_name
+                    ):
                         yield d
 
     def _mongo_groups(self) -> Iterator[dict]:

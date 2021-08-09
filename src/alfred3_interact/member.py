@@ -243,6 +243,21 @@ class GroupMemberInfo(MemberHelper):
 
 
 class GroupMember:
+    """
+    The group member object grants access to a member's experiment data.
+    
+    The group member object's most important job is to provide easy
+    access to the member's experiment data through the following
+    attributes. They provide the same objects as the corresponding
+    attributes of the :class:`alfred3.experiment.ExperimentSession`
+    object:
+
+    - :attr:`.values`
+    - :attr:`.session_data`
+    - :attr:`.metadata`
+    - :attr:`.client_data`
+    - :attr:`.adata`
+    """
     def __init__(self, matchmaker, **data):
 
         self.mm = matchmaker
@@ -266,18 +281,39 @@ class GroupMember:
 
     @property
     def role(self) -> str:
+        """
+        str: The member's role.
+        """
         return self.data.role
 
     @property
     def matched(self) -> bool:
+        """
+        bool: Indicates whether the member is associated with a group.
+        """
         return self.status.matched
     
     @property
     def group_id(self) -> str:
+        """
+        str: If the member is associated with a group, this property
+        returns the group id.
+        """
         return self.data.group_id
 
     @property
     def values(self) -> dict:
+        """
+        dict: Flat dictionary of input element values.
+
+        Gives access to the member's experiment inputs.
+        
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.values`. The keys are
+            the names of input elements in the member's experiment session.
+            The values are the user inputs. 
+        """
         projection = {}
         projection.update({key: False for key in dm._client_data_keys})
         projection.update({key: False for key in dm._metadata_keys})
@@ -287,30 +323,68 @@ class GroupMember:
     
     @property
     def session_data(self) -> dict:
+        """
+        dict: Full dictionary of experiment session data.
+
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.session_data`.
+        """
         return self.expdata.load()
 
     @property
     def client_data(self) -> dict:
+        """
+        dict: Dictionary of client data.
+
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.client_data`.
+        """
         client_data = list(dm._client_data_keys)
         return self.expdata.load(client_data)
 
     @property
     def metadata(self) -> dict:
+        """
+        dict: Dictionary of experiment metadata.
+
+        See Also:
+            The dict works just like
+            :attr:`alfred3.experiment.ExperimentSession.metadata`.
+        """
         metadata = list(dm._metadata_keys)
         return self.expdata.load(metadata)
 
     @property
     def move_history(self) -> dict:
+        """
+        dict: Dictionary of movement history.
+
+        See Also:
+            The dict works just like
+            :attr:`alfred3.experiment.ExperimentSession.move_history`.
+        """
         data = self.expdata.load(["exp_move_history"])
         return data["exp_move_history"]
 
     @property
     def adata(self) -> dict:
+        """
+        dict: Dictionary of additional data.
+
+        See Also:
+            The dict works just like 
+            :attr:`alfred3.experiment.ExperimentSession.adata`.
+        """
         data = self.expdata.load(["additional_data"])
         return data["additional_data"]
 
     @property
     def additional_data(self) -> dict:
+        """
+        dict: Alias for :attr:`.adata`
+        """
         return self.adata
 
     def __repr__(self) -> str:
