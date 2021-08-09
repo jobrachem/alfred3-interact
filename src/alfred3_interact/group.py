@@ -354,14 +354,14 @@ class GroupMemberManager(GroupHelper):
 
     @property
     def nactive(self) -> int:
-        self.group.load()
+        self.group.data = self.group.io.load()
         members = self.group.data.members
         active = list(self.manager.find_active_sessions(members))
         return len(active)
 
     @property
     def nfinished(self) -> int:
-        self.group.load()
+        self.group.data = self.group.io.load()
         members = self.group.data.members
         finished = list(self.manager.find_finished_sessions(members))
         return len(finished)
@@ -499,9 +499,6 @@ class Group:
     @property
     def you(self) -> GroupMember:
         return self.groupmember_manager.you
-
-    def load(self):
-        self.data = self.io.load()
 
     def chat(self, **kwargs) -> Chat:
         """
