@@ -129,3 +129,4 @@ dmypy.json
 tests/exp/
 .DS_Store
 tests/test_testing.py
+cov_html/
