@@ -1,38 +1,6 @@
 import pytest
-import alfred3_interact as ali
-from alfred3.testutil import get_exp_session, clear_db, get_json
 from alfred3_interact.testutil import get_group
 from alfred3.data_manager import DataManager as dm
-
-from dotenv import load_dotenv
-load_dotenv()
-
-@pytest.fixture
-def exp(tmp_path):
-    script = "tests/res/script-hello_world.py"
-    secrets = "tests/res/secrets-default.conf"
-    exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
-    
-    yield exp
-
-    clear_db()
-
-@pytest.fixture
-def exp_factory(tmp_path):
-    def expf():
-        script = "tests/res/script-hello_world.py"
-        secrets = "tests/res/secrets-default.conf"
-        exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
-        return exp
-    
-    yield expf
-
-    clear_db()
-
-@pytest.fixture
-def group(exp):
-    yield get_group(exp, ["a", "b"], inclusive=False)
-
 
 class TestMember:
 

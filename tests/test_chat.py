@@ -1,19 +1,7 @@
 import pytest
 from alfred3_interact.chat import ChatManager
-from alfred3.testutil import get_exp_session, clear_db
-
-from dotenv import load_dotenv
-load_dotenv()
-
-@pytest.fixture
-def exp(tmp_path):
-    script = "tests/res/script-hello_world.py"
-    secrets = "tests/res/secrets-default.conf"
-    exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
-    
-    yield exp
-
-    clear_db()
+from alfred3_interact.element import Chat
+from alfred3 import Page
 
 @pytest.fixture
 def chat(exp):
@@ -57,7 +45,7 @@ def test_load_stepwise(chat):
     assert len(chat.data["messages"]) == 1
     
     chat.post_message("test")
-    rv = chat.load_messages()
+    chat.load_messages()
     assert len(chat.data["messages"]) == 2
 
 def test_pass(chat):
@@ -66,4 +54,14 @@ def test_pass(chat):
     chat.load_messages()
     assert len(chat.data["messages"]) == 1
 
-    
+
+def test_chat_element(exp):
+    p = Page(name="test")
+    chat = Chat("testchat")
+    p += chat
+
+    exp += p
+
+    chat.prepare_web_widget()
+    assert chat.template_data
+

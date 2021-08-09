@@ -4,18 +4,11 @@ Specialized pages for interactive experiments.
 
 import time
 from abc import abstractmethod
-from functools import wraps
-
-from jinja2 import Template
 
 import alfred3 as al
-from alfred3.element.core import Element
-from alfred3.element.misc import Callback, RepeatedCallback
+from alfred3.element.misc import RepeatedCallback
 from alfred3._helper import inherit_kwargs
-from alfred3.exceptions import SessionTimeout
 
-from .match import MatchMaker
-from ._util import MatchingTimeout, MatchingError
 from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
@@ -332,7 +325,7 @@ class WaitingPage(al.NoNavigationPage):
     
     def on_expire(self):
         self.log.exception("Timeout on waiting page. Aborting experiment.")
-        self.exp.abort(reason=MatchMaker._TIMEOUT_MSG, page=self.wait_timeout_page)
+        self.exp.abort(reason="timeout", page=self.wait_timeout_page)
 
     def on_exp_access(self):
         spinning_icon = al.icon("spinner", spin=True, size="90pt")

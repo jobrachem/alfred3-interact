@@ -1,48 +1,8 @@
 import pytest
 import alfred3_interact as ali
-from alfred3.testutil import get_exp_session, clear_db, get_json
+from alfred3_interact.spec import SequentialSpec
 from alfred3_interact.testutil import get_group
 
-from dotenv import load_dotenv
-load_dotenv()
-
-@pytest.fixture
-def exp(tmp_path):
-    script = "tests/res/script-hello_world.py"
-    secrets = "tests/res/secrets-default.conf"
-    exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
-    
-    yield exp
-
-    clear_db()
-
-@pytest.fixture
-def exp_factory(tmp_path):
-    def expf():
-        script = "tests/res/script-hello_world.py"
-        secrets = "tests/res/secrets-default.conf"
-        exp = get_exp_session(tmp_path, script_path=script, secrets_path=secrets)
-        return exp
-    
-    yield expf
-
-    clear_db()
-
-@pytest.fixture
-def lexp(tmp_path):
-    script = "tests/res/script-hello_world.py"
-    exp = get_exp_session(tmp_path, script_path=script, secrets_path=None)
-    
-    yield exp
-
-@pytest.fixture
-def lexp_factory(tmp_path):
-    def lexp():
-        script = "tests/res/script-hello_world.py"
-        exp = get_exp_session(tmp_path, script_path=script, secrets_path=None)
-        
-        return exp
-    yield lexp
 
 @pytest.fixture
 def group(exp):
@@ -58,6 +18,10 @@ def test_clear(exp):
     """
     print(exp)
 
+
+def test_group_chat(group):
+    chat = group.chat()
+    assert chat
 
 class TestGroupMemberAccess:
 
@@ -86,8 +50,8 @@ class TestGroupMemberAccess:
         exp2 = exp_factory()
         exp3 = exp_factory()
 
-        group1 = get_group(exp1, ["a", "b"], ongoing_sessions_ok=True)
-        group2 = get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
+        get_group(exp1, ["a", "b"], ongoing_sessions_ok=True)
+        get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
 
         exp1._start()
         exp1.abort("test")
@@ -129,18 +93,21 @@ class TestGroupMemberAccess:
         assert group1.nactive == group2.nactive == 0
 
 class TestTakesMembers:
+    
     def test_new_group(self, exp_factory):
 
         exp = exp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
         
         assert not group.takes_members(ongoing_sessions_ok=False)
 
     def test_finished_exp(self, exp_factory):
         exp = exp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.finish()
@@ -149,8 +116,9 @@ class TestTakesMembers:
 
     def test_aborted_exp(self, exp_factory):
         exp = exp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.abort("test")
@@ -162,8 +130,9 @@ class TestTakesMembers:
         exp = exp_factory()
         exp._session_timeout = 0.1
 
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.abort("test")
@@ -174,8 +143,9 @@ class TestTakesMembers:
     
     def test_group_full(self, exp_factory):
         exp1 = exp_factory()
-        mm1 = ali.MatchMaker("a", "b", exp=exp1)
-        group1 = mm1.match_stepwise(ongoing_sessions_ok=False)
+        spec1 = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm1 = ali.MatchMaker(spec1, exp=exp1)
+        group1 = mm1.match_to("test")
 
         exp1._start()
         exp1.finish()
@@ -183,8 +153,9 @@ class TestTakesMembers:
         assert group1.takes_members(ongoing_sessions_ok=False)
 
         exp2 = exp_factory()
-        mm2 = ali.MatchMaker("a", "b", exp=exp2)
-        group2 = mm2.match_stepwise(ongoing_sessions_ok=False)
+        spec2 = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm2 = ali.MatchMaker(spec2, exp=exp2)
+        group2 = mm2.match_to("test")
 
         assert group1 == group2
 
@@ -198,15 +169,17 @@ class TestTakesMembersLocal:
     def test_new_group(self, lexp_factory):
 
         exp = lexp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
         
         assert not group.takes_members(ongoing_sessions_ok=False)
     
     def test_finished_exp(self, lexp_factory, tmp_path):
         exp = lexp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.finish()
@@ -215,8 +188,9 @@ class TestTakesMembersLocal:
     
     def test_aborted_exp(self, lexp_factory):
         exp = lexp_factory()
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.abort("test")
@@ -229,8 +203,9 @@ class TestTakesMembersLocal:
         exp = lexp_factory()
         exp._session_timeout = 0.1
 
-        mm = ali.MatchMaker("a", "b", exp=exp)
-        group = mm.match_stepwise(ongoing_sessions_ok=False)
+        spec = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm = ali.MatchMaker(spec, exp=exp)
+        group = mm.match_to("test")
 
         exp._start()
         exp.abort("test")
@@ -241,8 +216,9 @@ class TestTakesMembersLocal:
 
     def test_group_full(self, lexp_factory):
         exp1 = lexp_factory()
-        mm1 = ali.MatchMaker("a", "b", exp=exp1)
-        group1 = mm1.match_stepwise(ongoing_sessions_ok=False)
+        spec1 = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm1 = ali.MatchMaker(spec1, exp=exp1)
+        group1 = mm1.match_to("test")
 
         exp1._start()
         exp1.finish()
@@ -250,8 +226,9 @@ class TestTakesMembersLocal:
         assert group1.takes_members(ongoing_sessions_ok=False)
 
         exp2 = lexp_factory()
-        mm2 = ali.MatchMaker("a", "b", exp=exp2)
-        group2 = mm2.match_stepwise(ongoing_sessions_ok=False)
+        spec2 = SequentialSpec("a", "b", nslots=2, name="test", ongoing_sessions_ok=False)
+        mm2 = ali.MatchMaker(spec2, exp=exp2)
+        group2 = mm2.match_to("test")
 
         assert group1 == group2
 
@@ -295,7 +272,7 @@ class TestSharedData:
         exp2 = exp_factory()
 
         group1 = get_group(exp1, ["a", "b"], ongoing_sessions_ok=True)
-        group2 = get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
+        get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
 
         group1.shared_data["test"] = []
         group1.shared_data["test"].append("test")
@@ -308,7 +285,7 @@ class TestSharedData:
         exp3 = exp_factory()
 
         group1 = get_group(exp1, ["a", "b"], ongoing_sessions_ok=True)
-        group2 = get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
+        get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
 
         group1.shared_data["test"] = "test"
 

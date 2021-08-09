@@ -14,7 +14,7 @@ from alfred3.data_manager import DataManager as dm
 
 from .chat import ChatManager
 
-jenv = Environment(loader=PackageLoader(__name__, "templates"))
+jenv = Environment(loader=PackageLoader("alfred3_interact", "templates"))
 
 @inherit_kwargs(exclude=["height"])
 class Chat(Element):
