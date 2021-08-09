@@ -38,7 +38,7 @@ class TestGroupMemberAccess:
         group1 = get_group(exp1, ["a", "b"], ongoing_sessions_ok=True)
         group2 = get_group(exp2, ["a", "b"], ongoing_sessions_ok=True)
 
-        group1.load()
+        group1.data = group1.io.load()
         assert group1.me.data.role == "a"
         assert group1.you.data.role == "b"
 
@@ -159,7 +159,7 @@ class TestTakesMembers:
 
         assert group1 == group2
 
-        group1.load()
+        group1.data = group1.io.load()
         assert not group1.takes_members(ongoing_sessions_ok=False)
         assert not group2.takes_members(ongoing_sessions_ok=False)
 
@@ -234,7 +234,7 @@ class TestTakesMembersLocal:
 
         assert group1.me.data.role != group2.me.data.role
 
-        group1.load()
+        group1.data = group1.io.load()
         assert not group1.takes_members(ongoing_sessions_ok=False)
         assert not group2.takes_members(ongoing_sessions_ok=False)
 
