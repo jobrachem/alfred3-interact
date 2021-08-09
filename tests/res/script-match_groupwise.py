@@ -5,14 +5,14 @@ exp = al.Experiment()
 
 @exp.setup
 def setup(exp):
-
-    exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp, admin_pw="test")
+    spec = ali.ParallelSpec("a", "b", nslots=10, name="test", exp=exp)
+    exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
 
 @exp.member
 class Match(ali.MatchingPage):
 
     def wait_for(self):
-        group = self.exp.plugins.mm.match_groupwise()
+        group = self.exp.plugins.mm.match_to("test")
         self.exp.plugins.group = group
         return True
 
