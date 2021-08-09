@@ -106,7 +106,7 @@ class TestSequentialLocal:
         assert group1 == group2
         assert group1.me.data.role != group2.me.data.role
         
-        group1.load()
+        group1.data = group1.io.load()
         assert group1.full and group2.full
 
         exp3 = lexp_factory()
@@ -199,7 +199,7 @@ class TestSequentialOngoingOk:
         exp1._save_data(sync=True)
         assert exp1.session_expired
         
-        group1.load()
+        group1.data = group1.io.load()
         assert group1.groupmember_manager.nactive == 1
 
         exp3 = exp_factory()
@@ -239,7 +239,7 @@ class TestSequentialOngoingOk:
         exp2._save_data(sync=True)
         assert exp2.session_expired
         
-        group2.load()
+        group2.data = group2.io.load()
         assert group2.groupmember_manager.nactive == 1
 
         exp3 = exp_factory()
