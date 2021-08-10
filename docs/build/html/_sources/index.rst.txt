@@ -58,6 +58,9 @@ API Reference Overview
    ~alfred3_interact.member.GroupMember
    ~alfred3_interact.page.WaitingPage
    ~alfred3_interact.element.Chat
+   ~alfred3_interact.quota.ParallelGroupQuota
+   ~alfred3_interact.quota.SequentialGroupQuota
+   ~alfred3_interact.quota.MetaQuota
 
 Indices and tables
 ==================
