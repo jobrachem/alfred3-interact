@@ -1,5 +1,6 @@
 from .page import WaitingPage
 from .page import MatchingPage
+from .page import MatchMakerAdmin
 
 from .match import MatchMaker
 from .spec import ParallelSpec

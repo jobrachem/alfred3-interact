@@ -3,6 +3,7 @@ Specialized pages for interactive experiments.
 """
 
 import time
+import operator
 from abc import abstractmethod
 
 import alfred3 as al
@@ -12,40 +13,15 @@ from alfred3._helper import inherit_kwargs
 from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
-
-class PasswordPage(al.WidePage):
-    def __init__(self, password: str, match_maker_id: str, **kwargs):
+class MatchMakerAdmin(al.WidePage):
+    def __init__(self, matchmaker_location: str, **kwargs):
         super().__init__(**kwargs)
-        self.password = password
-        self.match_maker_id = match_maker_id
-
-    def on_exp_access(self):
-        self += al.HideNavigation()
-        self += al.Text(f"Matchmaker ID: {self.match_maker_id}", align="center")
-        self += al.VerticalSpace("50px")
-        self += al.PasswordEntry(
-            toplab="Password", password=self.password, width="narrow", name="pw", align="center"
-        )
-
-        self += al.SubmittingButtons(
-            "Submit", align="center", name="pw_submit", width="narrow", button_style="btn-primary"
-        )
-
-        # enables submit via enter-press for password field
-        self += al.JavaScript(
-            code="""$('#pw').on("keydown", function(event) {
-        if (event.key == "Enter") {
-            $("#alt-submit").attr("name", "move");
-            $("#alt-submit").val("forward");
-            $("#form").submit();
-            }});"""
-        )
-
-
-class AdminPage(al.WidePage):
-    def __init__(self, match_maker, **kwargs):
-        super().__init__(**kwargs)
-        self.match_maker = match_maker
+        self.matchmaker_location = matchmaker_location
+        self.match_maker = None
+    
+    def added_to_experiment(self, exp):
+        self.match_maker = operator.attrgetter(self.matchmaker_location)(exp)
+        super().added_to_experiment(exp)
 
     def on_exp_access(self):
         self += al.Text(f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center")
