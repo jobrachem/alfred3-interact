@@ -260,7 +260,7 @@ class ViewMembers(Element):
         tbody = []
         for m in members:
             if not m.status.matched:
-                last_ping = round(time.time() - m.data.ping, 1)
+                last_ping = int(time.time() - m.data.ping)
                 last_ping = f"{last_ping}s ago"
             else:
                 last_ping = "(already matched)"
