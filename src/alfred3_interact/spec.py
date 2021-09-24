@@ -393,3 +393,5 @@ class IndividualSpec(SequentialSpec):
         self.name = name
         self.nslots = nslots
         self.count = count
+        self.respect_version = respect_version
+        self.inclusive = inclusive
