@@ -1,6 +1,7 @@
 from .page import WaitingPage
 from .page import MatchingPage
-from .page import MatchMakerAdmin
+from .page import MatchMakerMonitoring
+from .page import MatchMakerActivation
 
 from .match import MatchMaker
 from .spec import ParallelSpec

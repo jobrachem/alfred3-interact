@@ -7,13 +7,17 @@ import operator
 from abc import abstractmethod
 
 import alfred3 as al
+from alfred3 import admin
 from alfred3.element.misc import RepeatedCallback
 from alfred3._helper import inherit_kwargs
 
 from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
-class MatchMakerAdmin(al.WidePage):
+
+class MatchMakerActivation(admin.ModeratorPage):
+    title = "MatchMaker Activation"
+
     def __init__(self, matchmaker_location: str, **kwargs):
         super().__init__(**kwargs)
         self.matchmaker_location = matchmaker_location
@@ -26,7 +30,22 @@ class MatchMakerAdmin(al.WidePage):
     def on_exp_access(self):
         self += al.Text(f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center")
         self += ToggleMatchMakerActivation(match_maker=self.match_maker, align="center")
-        self += al.VerticalSpace("30px")
+
+
+class MatchMakerMonitoring(admin.MonitoringPage):
+    title = "MatchMaker Monitoring"
+
+    def __init__(self, matchmaker_location: str, **kwargs):
+        super().__init__(**kwargs)
+        self.matchmaker_location = matchmaker_location
+        self.match_maker = None
+    
+    def added_to_experiment(self, exp):
+        self.match_maker = operator.attrgetter(self.matchmaker_location)(exp)
+        super().added_to_experiment(exp)
+
+    def on_exp_access(self):
+        self += al.Text(f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center")
         self += ViewMembers(match_maker=self.match_maker, name="view_mm")
         self += al.VerticalSpace("30px")
         self += al.Text(
@@ -35,8 +54,6 @@ class MatchMakerAdmin(al.WidePage):
             width="full",
         )
 
-        self += al.HideNavigation()
-        self += al.WebExitEnabler()
         self += al.Style(code=f"#view_mm {{font-size: 85%;}}")
 
         # datatables javascript package
