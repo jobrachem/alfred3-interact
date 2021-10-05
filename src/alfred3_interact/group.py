@@ -597,6 +597,13 @@ class Group:
         """
         return self.groupmember_manager.you
 
+    @property
+    def spec_name(self) -> str:
+        """
+        str: Name of the spec that was used to create this group.
+        """
+        return self.data.spec_name
+
     def chat(self, **kwargs) -> Chat:
         """
         Shortcut for creating a group chat.
