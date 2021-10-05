@@ -15,7 +15,65 @@ from ._util import NoMatch
 from .element import ViewMembers, ToggleMatchMakerActivation
 
 
-class MatchMakerActivation(admin.ModeratorPage):
+@inherit_kwargs
+class MatchMakerActivation(admin.OperatorPage):
+    """
+    Admin page for toggling MatchMaker activation.
+
+    A deactivated MatchMaker will abort the experiment when MatchMaking
+    is tried. You can use :attr:`.MatchMaker.active` and 
+    :meth:`.MatchMaker.check_activation` to manually check for activation.
+    The former simply returns a boolean value, indicating the MatchMaker's
+    status. The latter one will automatically abort the experiment, if
+    the MatchMaker is inactive.
+
+    .. note:: This page requires operator access (level 2) to the admin mode.
+
+    Args:
+        matchmaker_location (str): A string that provides a way for the
+            page to access a MatchMaker instance.
+        {kwargs}
+
+
+    Examples:
+
+        To activate the admin mode, we need to set passwords for all three
+        admin levels in *secrets.conf*::
+
+            # secrets.conf
+            [general]
+            adminpass_lvl1 = demo
+            adminpass_lvl2 = use-better-passwords
+            adminpass_lvl3 = to-protect-access
+
+        We add the activation page to the experiment's admin mode. Because 
+        we attach the MatchMaker to ``exp.plugins.mm``, we provide the
+        ``"plugins.mm"`` as the value for *matchmaker_location*::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = al.Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec = ali.SequentialSpec("role1", "role2", nslots=10, name="demo")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+
+            exp.admin += ali.MatchMakerActivation("plugins.mm", name="activate")
+
+            exp += al.ForwardOnlySection(name="main")
+
+            @exp.member(of_section="main")
+            class Match(ali.WaitingPage):
+                
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
+
+    """
+
     title = "MatchMaker Activation"
 
     def __init__(self, matchmaker_location: str, **kwargs):
@@ -32,7 +90,57 @@ class MatchMakerActivation(admin.ModeratorPage):
         self += ToggleMatchMakerActivation(match_maker=self.match_maker, align="center")
 
 
-class MatchMakerMonitoring(admin.MonitoringPage):
+@inherit_kwargs
+class MatchMakerMonitoring(admin.SpectatorPage):
+    """
+    Admin page for monitoring a MatchMaker's work.
+
+    Displays tabular information about a MatchMaker's work.
+
+    Args:
+        matchmaker_location (str): A string that provides a way for the
+            page to access a MatchMaker instance.
+        {kwargs}
+
+    Examples:
+
+        To activate the admin mode, we need to set passwords for all three
+        admin levels in *secrets.conf*::
+
+            # secrets.conf
+            [general]
+            adminpass_lvl1 = demo
+            adminpass_lvl2 = use-better-passwords
+            adminpass_lvl3 = to-protect-access
+
+        We add the monitoring page to the experiment's admin mode. Because 
+        we attach the MatchMaker to ``exp.plugins.mm``, we provide the
+        ``"plugins.mm"`` as the value for *matchmaker_location*::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = al.Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec = ali.SequentialSpec("role1", "role2", nslots=10, name="demo")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+
+            exp.admin += ali.MatchMakerMonitoring("plugins.mm", name="monitor")
+
+            exp += al.ForwardOnlySection(name="main")
+
+            @exp.member(of_section="main")
+            class Match(ali.WaitingPage):
+                
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match()
+                    self.exp.plugins.group = group
+                    return True
+    
+    """
+
     title = "MatchMaker Monitoring"
 
     def __init__(self, matchmaker_location: str, **kwargs):
@@ -112,7 +220,7 @@ class WaitingPage(al.NoNavigationPage):
     WaitingPage will proceed to the next page automatically.
 
     .. important:: The :meth:`.wait_for` method *must* return a value,
-        otherwise you will wait indefinitely.
+        otherwise you will always run into the timeout.
 
     Args:
         wait_msg (str): Text to be displayed in the default layout.

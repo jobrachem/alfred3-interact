@@ -1,3 +1,7 @@
+"""
+Interfaces for defining groups.
+"""
+
 from abc import ABC, abstractmethod
 from dataclasses import asdict
 import re
@@ -176,8 +180,6 @@ class ParallelSpec(Spec):
         nslots (int): Maximum number of groups that should be created
             based on this spec.
         name (str): A unique identifier for the spec.
-        exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
-            in which this matchmaker is used.
         respect_version (bool): If True, the matchmaking will only include
             sessions that run on the same experiment version. This setting
             makes sure that there's no strange behavior if you make
@@ -283,8 +285,6 @@ class SequentialSpec(ParallelSpec):
         nslots (int): Maximum number of groups that should be created
             based on this spec.
         name (str): A unique identifier for the spec.
-        exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
-            in which this matchmaker is used.
         respect_version (bool): If True, the matchmaking will only include
             sessions that run on the same experiment version. This setting
             makes sure that there's no strange behavior if you make
@@ -367,8 +367,6 @@ class IndividualSpec(SequentialSpec):
         nslots (int): Maximum number of sessions that should be created
             based on this spec.
         name (str): A unique identifier for the spec.
-        exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
-            in which this matchmaker is used.
         respect_version (bool): If True, the quota will only include
             sessions that run on the same experiment version. This setting
             makes sure that there's no strange behavior if you make
