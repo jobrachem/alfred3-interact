@@ -97,6 +97,8 @@ class MatchMakerMonitoring(admin.SpectatorPage):
 
     Displays tabular information about a MatchMaker's work.
 
+    .. note:: This page requires spectator access (level 1) to the admin mode.
+
     Args:
         matchmaker_location (str): A string that provides a way for the
             page to access a MatchMaker instance.

@@ -762,9 +762,8 @@ class MatchMaker:
         aborted, and the *abort_page* specified on initialization of
         the MatchMaker will be shown to participants.
 
-        The matching methods :meth:`.match_groupwise` and
-        :meth:`.match_stepwise` will check for activation themselves,
-        when called. But this may be at a point in the experiment where
+        The matching methods will check for activation themselves,
+        when called. But this may happen at a point in the experiment where
         participants have made considerable progress. So it may be
         useful to manually check for activation at an earlier stage.
 
