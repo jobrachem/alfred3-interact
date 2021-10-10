@@ -393,3 +393,4 @@ class IndividualSpec(SequentialSpec):
         self.count = count
         self.respect_version = respect_version
         self.inclusive = inclusive
+        self.ongoing_sessions_ok = False
