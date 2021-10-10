@@ -68,6 +68,9 @@ API Reference Overview
    ~alfred3_interact.page.MatchMakerActivation
    ~alfred3_interact.page.MatchMakerMonitoring
    ~alfred3_interact.element.Chat
+   ~alfred3_interact.quota.ParallelGroupQuota
+   ~alfred3_interact.quota.SequentialGroupQuota
+   ~alfred3_interact.quota.MetaQuota
 
 Indices and tables
 ==================
