@@ -3,7 +3,7 @@
 Alfred3-interact is a plugin for [alfred3](https://github.com/ctreffe/alfred).
 It allows for the creation of interactive web experiments, predominantly 
 in the social sciences. As prerequisites,
-you need to have **Python 3.7** or newer and **alfred3 v2.0** or newer installed.
+you need to have **Python 3.7** or newer and **alfred3 v2.2.0** or newer installed.
 
 ## Installation
 
@@ -18,12 +18,13 @@ Documentation for alfred3_interact is avaialable here: [Link to docs](https://jo
 ## Quick example
 
 Below is an example `script.py` for creating an experiment with an
-asynchronous exchange of data between participants via *stepwise* matching:
+asynchronous exchange of data between participants matching:
 
-1. Initialize the `MatchMaker` during experiment setup
-2. Find a group via `MatchMaker.match_stepwise` and bind it to the
+1. Initialize a group spec and the `alfred3_interact.MatchMaker` during experiment setup
+2. Use a `alfred3_interact.WaitingPage` for matchmaking inside its `wait_for` hook method.
+3. Find a group via `MatchMaker.match` and bind it to the
    experiment plugins object.
-3. Now the group object is available in sections, pages, and elements
+4. Now the group object is available in sections, pages, and elements
    through the experiment session object. You can use it to access data
    from other participants in the same group.
 
@@ -36,8 +37,17 @@ exp = al.Experiment()
 
 @exp.setup
 def setup(exp):
-    mm = ali.MatchMaker("role1", "role2", exp=exp)
-    exp.plugins.group = mm.match_stepwise()
+    spec = ali.SequentialSpec("role1", "role2", nslots = 10, name="mygroup")
+    exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+
+
+@exp.member
+class Match(ali.WaitingPage):
+    
+    def wait_for(self):
+        group = self.exp.plugins.mm.match()
+        self.exp.plugins.group = group
+        return True
 
 
 @exp.member
