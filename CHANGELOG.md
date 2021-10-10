@@ -31,8 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     You can use group specs to control the maximum number of groups that 
     should be created based on a specific spec via their parameter `nslots`.
   
-  - 
-
 - We changed the admin facilities to use the new admin mode introduced 
   in alfred3 v2.2.0. You can now add `alfred3_interact.MatchMakerActivation`
   and `alfred3_interact.MatchMakerMonitoring` to your experiment 
