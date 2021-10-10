@@ -287,7 +287,13 @@ class ViewMembers(Element):
         q["exp_session_id"] = sid
 
         pro = {"exp_condition": True}
-        doc = self.exp.db_main.find_one(q, projection=pro)
+        try:
+            doc = self.exp.db_main.find_one(q, projection=pro)
+        except AttributeError:
+            for doc in self.exp.all_exp_data:
+                if doc["exp_session_id"]:
+                    break
+                
         return doc["exp_condition"]
 
 class ToggleMatchMakerActivation(Element):
