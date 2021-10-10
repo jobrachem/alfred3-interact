@@ -83,11 +83,21 @@ class TestWaitingPage:
         assert exp.aborted
     
     def test_expire_browser(self, running_app, driver):
+        """
+        Only valid when being run on its own. Will sometimes fail if another test that 
+        uses the selenium driver ran shortly before. Run again individually
+        to see whether there is an actual problem with the code.
+        """
         driver.get("http://localhost:5000/start")
         time.sleep(10)
         assert "Sorry, waiting took too long" in driver.page_source
     
     def test_refresh_browser(self, running_app, driver):
+        """
+        Only valid when being run on its own. Will sometimes fail if another test that 
+        uses the selenium driver ran shortly before. Run again individually
+        to see whether there is an actual problem with the code.
+        """
         driver.get("http://localhost:5000/start")
         time.sleep(4)
         driver.refresh()
