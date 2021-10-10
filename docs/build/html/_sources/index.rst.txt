@@ -28,18 +28,23 @@ All of these methods return :class:`.Group` objects, which allow you to
 reference individual participants and their corresponding 
 :class:`.GroupMember` objects based on their role in the group. 
 
-Within the experiment, you can define waiting points for synchronizing
+Within an experiment, you can define waiting points for synchronizing
 multiple participants' progress through the :class:`.WaitingPage`.
-We also provide a :class:`.Chat` element. This element can be comfortably 
-used as a group chat through the shortcut :meth:`.Group.chat`, but also
-independently of groups. 
-
-Note that individual sessions can belong to multiple groups at once. 
-You can use multiple MatchMakers in the same experiment.
+We also provide a :class:`.Chat` element, which can be comfortably 
+used as a group chat through the shortcut :meth:`.Group.chat`. The chat
+can also be used independently of groups. 
 
 Equipped with this narrative information, you can dive into the API
 documentation and examples to see in more detail how to use 
 alfred3_interact in your alfred3 experiments.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: How To
+
+   howto_match
+   howto_condition
+   howto_admin
 
 API Reference Overview
 -----------------------
@@ -57,6 +62,8 @@ API Reference Overview
    ~alfred3_interact.group.Group
    ~alfred3_interact.member.GroupMember
    ~alfred3_interact.page.WaitingPage
+   ~alfred3_interact.page.MatchMakerActivation
+   ~alfred3_interact.page.MatchMakerMonitoring
    ~alfred3_interact.element.Chat
    ~alfred3_interact.quota.ParallelGroupQuota
    ~alfred3_interact.quota.SequentialGroupQuota

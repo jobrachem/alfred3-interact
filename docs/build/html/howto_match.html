@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to use the MatchMaker &#8212; alfred3_interact</title>
+    <title>How To Create an Interactive Experiment &#8212; alfred3_interact</title>
     
   <link rel="stylesheet" href="_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
 
@@ -38,6 +38,8 @@
     <script src="_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to create groups of different conditions" href="howto_condition.html" />
+    <link rel="prev" title="alfred3-interact: Interactive web-experiments" href="index.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -68,6 +70,28 @@
 </form>
 <nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
     <p class="caption collapsible-parent">
+ <span class="caption-text">
+  How To
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   How To Create an Interactive Experiment
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="howto_condition.html">
+   How to create groups of different conditions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="howto_admin.html">
+   How To Use the Admin Tools
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
  <span class="caption-text">
   API Reference
  </span>
@@ -282,6 +306,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.group.Group.shared_data.html">
      Group.shared_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="generated/alfred3_interact.group.Group.spec_name.html">
+     Group.spec_name
     </a>
    </li>
    <li class="toctree-l2">
@@ -1075,6 +1104,36 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i>
+            Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#step-1-preparations">
+   Step 1: Preparations
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#step-2-make-a-match">
+   Step 2: Make a Match
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#step-3-work-with-the-group">
+   Step 3: Work with the Group
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#step-4-use-a-waitingpage-for-syncing">
+   Step 4: Use a WaitingPage for Syncing
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
         </div>
     </div>
 </div>
@@ -1083,97 +1142,421 @@
         
               <div>
                 
-  <div class="section" id="how-to-use-the-matchmaker">
-<h1>How to use the MatchMaker<a class="headerlink" href="#how-to-use-the-matchmaker" title="Permalink to this headline">¶</a></h1>
-<p>First, you initialize the MatchMaker with the roles that you
-need and the experiment session object:</p>
+  <div class="section" id="how-to-create-an-interactive-experiment">
+<span id="htmatch"></span><h1>How To Create an Interactive Experiment<a class="headerlink" href="#how-to-create-an-interactive-experiment" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="step-1-preparations">
+<h2>Step 1: Preparations<a class="headerlink" href="#step-1-preparations" title="Permalink to this headline">¶</a></h2>
+<p>To create an interactive experiment, you start by defining group specs.
+These are like blueprints that organize some important information about
+groups like the number of members and the names of the roles to allocate.
+Let’s define a <a class="reference internal" href="generated/alfred3_interact.spec.ParallelSpec.html#alfred3_interact.spec.ParallelSpec" title="alfred3_interact.spec.ParallelSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelSpec</span></code></a> that lets us create groups of
+participants who interact in real-time with each other. Because we will
+need access to an initialized <code class="xref py py-class docutils literal notranslate"><span class="pre">alfred3.experiment.ExperimentSession</span></code>
+object later, we use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">alfred3.Experiment.setup()</span></code> decorator:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
-<span class="kn">from</span> <span class="nn">alfred3_interact</span> <span class="kn">import</span> <span class="n">MatchMaker</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
 
 <span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
 
 <span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">MatchMaker</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span> <span class="c1"># Initialize the MatchMaker</span>
-
-<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span><span class="p">)</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Next, you use either <code class="xref py py-meth docutils literal notranslate"><span class="pre">match_stepwise()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">match_groupwise()</span></code>
-to match the experiment session to a group. Both methods return
-a <a class="reference internal" href="generated/alfred3_interact.group.Group.html#alfred3_interact.group.Group" title="alfred3_interact.group.Group"><code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code></a> object, which is the gateway to the data of all
-group members. You should include this group in the “plugins”
-attribute of the experiment session:</p>
+<p>Here, we define a spec that will be used to create groups with three
+members, which will be assigned to the roles “role1”, “role2”, and “role3”.
+By setting <code class="docutils literal notranslate"><span class="pre">nslots=5</span></code>, we allocate five group slots to this spec.
+That means, we determine that our spec will stop being used
+for new groups as soon as we have five fully finished groups. The argument
+<code class="docutils literal notranslate"><span class="pre">name=&quot;myspec&quot;</span></code> is a mandatory identifier that will allow us to associate
+each group with the spec that was used to create it. Spec names have to
+be unique within one MatchMaker and are your go-to solution if you want
+to place groups in different experimental conditions. There are some
+optional arguments that
+can be used to finetune the spec’s behavior with regard to managing group
+slots. These are explained in the API documentation of the individual
+classes.</p>
+<p>The currently available specs are:</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/alfred3_interact.spec.SequentialSpec.html#alfred3_interact.spec.SequentialSpec" title="alfred3_interact.spec.SequentialSpec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequentialSpec</span></code></a></p></td>
+<td><p>Interface for defining a sequential group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/alfred3_interact.spec.ParallelSpec.html#alfred3_interact.spec.ParallelSpec" title="alfred3_interact.spec.ParallelSpec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParallelSpec</span></code></a></p></td>
+<td><p>Interface for defining a parallel group.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/alfred3_interact.spec.IndividualSpec.html#alfred3_interact.spec.IndividualSpec" title="alfred3_interact.spec.IndividualSpec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IndividualSpec</span></code></a></p></td>
+<td><p>Interface for defining an ‘individual group spec’.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The spec alone does not make the experiment interactive - for this, we
+need an instance of <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.html#alfred3_interact.match.MatchMaker" title="alfred3_interact.match.MatchMaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatchMaker</span></code></a>. The MatchMaker takes any number
+of specs and uses them to create groups. We need access to our spec object
+(or objects – you can use more than one spec, but more on that later),
+which is why we initialize the MatchMaker in the setup function aswell.
+We bind our matchmaker instance to the ExperimentSession instance <code class="docutils literal notranslate"><span class="pre">exp</span></code>
+in its dedicated place for “plugin stuff”,
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">alfred3.ExperimentSession.plugins</span></code>, because we want to have easy
+access to the MatchMaker later on:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
-<span class="kn">from</span> <span class="nn">alfred3_interact</span> <span class="kn">import</span> <span class="n">MatchMaker</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
 
 <span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
 
 <span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
-    <span class="n">mm</span> <span class="o">=</span> <span class="n">MatchMaker</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">match_stepwise</span><span class="p">()</span> <span class="c1"># Assign and return a group</span>
-
-<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span><span class="p">)</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The group object offers the attribute <a class="reference internal" href="generated/alfred3_interact.group.Group.me.html#alfred3_interact.group.Group.me" title="alfred3_interact.group.Group.me"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.me</span></code></a>, which always
-refers to the <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.html#alfred3_interact.member.GroupMember" title="alfred3_interact.member.GroupMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupMember</span></code></a> object of the current experiment
-session - most importantly, this attribute can be used to get to know
-the role of the present session:</p>
+</div>
+<div class="section" id="step-2-make-a-match">
+<h2>Step 2: Make a Match<a class="headerlink" href="#step-2-make-a-match" title="Permalink to this headline">¶</a></h2>
+<p>We are now ready to implement the actual matchmaking process. This
+process required a <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>. This page allows us to
+repeatedly check whether we have enough active participants to form a
+group while greeting waiting participants with a pleasant (and customizable)
+waiting screen. Because we are creating a minimal demo experiment in this
+tutorial, our first page is a waiting page.</p>
+<p>We define it much like we would define any ordinary page, but we use
+the special hook <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.wait_for.html#alfred3_interact.page.WaitingPage.wait_for" title="alfred3_interact.page.WaitingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">WaitingPage.wait_for()</span></code></a> to define behavior that
+should be executed repeatedly until we reach a state of success. Inside
+the function, we signal success simply by returning <em>True</em> – once a return
+value of <em>True</em> is observed, the WaitingPage will automatically forward
+participants to the next page. The WaitingPage can be used not only for
+matchmaking, but also to implement points of synchronization in an
+experiment – but more on that later.</p>
+<p>To make a match, we will use the MatchMaker’s <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.match.html#alfred3_interact.match.MatchMaker.match" title="alfred3_interact.match.MatchMaker.match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">MatchMaker.match()</span></code></a>
+method, which returns a <a class="reference internal" href="generated/alfred3_interact.group.Group.html#alfred3_interact.group.Group" title="alfred3_interact.group.Group"><code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code></a> instance upon successful matching
+and raises a <code class="xref py py-class docutils literal notranslate"><span class="pre">NoMatch</span></code> exception otherwise. The NoMatch exception
+is a signal that gets handled by the WaitingPage.</p>
+<p>We use a <code class="xref py py-class docutils literal notranslate"><span class="pre">alfred3.ForwardOnlySection</span></code> to limit movements to forward
+moves, because moing back to a WaitingPage does not make much sense here.
+Let’s see the code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
-<span class="kn">from</span> <span class="nn">alfred3_interact</span> <span class="kn">import</span> <span class="n">MatchMaker</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
 
 <span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
 
 <span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
-    <span class="n">mm</span> <span class="o">=</span> <span class="n">MatchMaker</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">match_stepwise</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">me</span><span class="o">.</span><span class="n">role</span><span class="p">)</span> <span class="c1"># Print own role</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
 
-<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span><span class="p">)</span>
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>Beyond “me”, the group object offers <a class="reference internal" href="generated/alfred3_interact.group.Group.you.html#alfred3_interact.group.Group.you" title="alfred3_interact.group.Group.you"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.you</span></code></a>, which always
-refers to the other participant <em>in groups of size two</em> (it cannot
-be used in bigger groups). On top of that, all members of a group
-can be referenced through the group via their role:</p>
+<p>Like the MatchMaker instance, we bind the group instance to our ExperimentSession’s
+plugin attribute for future reference.
+Because <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.match.html#alfred3_interact.match.MatchMaker.match" title="alfred3_interact.match.MatchMaker.match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">MatchMaker.match()</span></code></a> raises an exception if there are not
+enough participants active, the function returns <em>True</em> only if a match
+was successful. By default, a WaitingPage will try to reach a successful
+call to its <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.wait_for.html#alfred3_interact.page.WaitingPage.wait_for" title="alfred3_interact.page.WaitingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">WaitingPage.wait_for()</span></code></a> method for 20 minutes. If it
+does not reach a successful call, the experiment will be aborted. Let us
+use a shorter timeout of 10 minutes by overriding the page’s
+<a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.wait_timeout.html#alfred3_interact.page.WaitingPage.wait_timeout" title="alfred3_interact.page.WaitingPage.wait_timeout"><code class="xref py py-attr docutils literal notranslate"><span class="pre">WaitingPage.wait_timeout</span></code></a> attribute:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
-<span class="kn">from</span> <span class="nn">alfred3_interact</span> <span class="kn">import</span> <span class="n">MatchMaker</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
 
 <span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
 
 <span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
-    <span class="n">mm</span> <span class="o">=</span> <span class="n">MatchMaker</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">match_stepwise</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="c1"># Accessing the GroupMember with role &quot;a&quot;</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
 
-<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span><span class="p">)</span>
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+    <span class="n">wait_timeout</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span> <span class="c1"># timeout in seconds</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>The <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.html#alfred3_interact.member.GroupMember" title="alfred3_interact.member.GroupMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupMember</span></code></a> object then serves as a gateway to the
-data collected in a specific member’s session. For example,
-<a class="reference internal" href="generated/alfred3_interact.member.GroupMember.values.html#alfred3_interact.member.GroupMember.values" title="alfred3_interact.member.GroupMember.values"><code class="xref py py-attr docutils literal notranslate"><span class="pre">GroupMember.values</span></code></a> offers access to the values of all
-input elements that have been filled by the referenced member.</p>
-<p>You can complete the matchmaking process in the
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">alfred3.experiment.Experiment.setup()</span></code>
-hook, but it is usually advisable to use the
-<a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.wait_for.html#alfred3_interact.page.WaitingPage.wait_for" title="alfred3_interact.page.WaitingPage.wait_for"><code class="xref py py-meth docutils literal notranslate"><span class="pre">WaitingPage.wait_for()</span></code></a> hook of a <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>. That
-way you have two advantages. First, you have more control over the
-exact moment in which you want to allow participants into the
-matchmaking process (for example, after they read initial
-instructions). Second, the WaitingPage offers a nice visual display
-that informs participants about the ongoing matchmaking and about
-how much time has passed.</p>
-<p>After successful matchmaking, you can use the <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>
-throughout the experiment whenever you need to make sure that group
-members have progressed to a certain point in the experiment. For
-example, role “b” may need some data from role “a” on their fith page.
-So, before the fith page, you place a WaitingPage that will pause “b“‘s
-session until “a” has progressed far enough through the experiment,
-so that the required data is available.</p>
+<p>To customize the content of your WaitingPage, you can override its default
+<a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.on_exp_access.html#alfred3_interact.page.WaitingPage.on_exp_access" title="alfred3_interact.page.WaitingPage.on_exp_access"><code class="xref py py-meth docutils literal notranslate"><span class="pre">WaitingPage.on_exp_access()</span></code></a> hook specification. If you simply want
+to display a different message but keep the overall design, you can
+also just override the <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.wait_msg.html#alfred3_interact.page.WaitingPage.wait_msg" title="alfred3_interact.page.WaitingPage.wait_msg"><code class="xref py py-attr docutils literal notranslate"><span class="pre">WaitingPage.wait_msg</span></code></a>. For more finetuning,
+take a look at the API documentation at <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage" title="alfred3_interact.page.WaitingPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">WaitingPage</span></code></a>.</p>
+<p>We used <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.match.html#alfred3_interact.match.MatchMaker.match" title="alfred3_interact.match.MatchMaker.match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">MatchMaker.match()</span></code></a> here to conduct the actual match, but
+you have more options that may be useful in pratice:</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_to</span></code></p></td>
+<td><p>Matches participants to a group based on a specific spec.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_random</span></code></p></td>
+<td><p>Conducts a match to a random feasible group specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">match_chain</span></code></p></td>
+<td><p>Offers prioritized matchmaking based on multiple specs.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="step-3-work-with-the-group">
+<h2>Step 3: Work with the Group<a class="headerlink" href="#step-3-work-with-the-group" title="Permalink to this headline">¶</a></h2>
+<p>The group object is your gateway to connecting data from multiple sessions.
+We will look at a few ways it can be used. First, let us add a page with
+a simple text input element for demonstration purposes. We add it before
+the WaitingPage to make sure that each member of our group has completed
+this element when matching:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
+
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DemoInput</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Match Successful&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_exp_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">TextEntry</span><span class="p">(</span>
+            <span class="n">toplab</span><span class="o">=</span><span class="s2">&quot;What is your favourite meal?&quot;</span><span class="p">,</span> <span class="n">force_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;meal&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;not at all&quot;</span><span class="p">,</span> <span class="s2">&quot;okay&quot;</span><span class="p">,</span> <span class="s2">&quot;very much&quot;</span><span class="p">]</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">SingleChoiceButtons</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">choices</span><span class="p">,</span>
+            <span class="n">toplab</span><span class="o">=</span><span class="s2">&quot;How much do you think other people like this food?&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;rating&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+    <span class="n">wait_timeout</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span> <span class="c1"># timeout in seconds</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>Now, we will add a third page on which we use the group instance to
+display some information about our group. We use <a class="reference internal" href="generated/alfred3_interact.group.Group.spec_name.html#alfred3_interact.group.Group.spec_name" title="alfred3_interact.group.Group.spec_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.spec_name</span></code></a>
+to identify the group’s spec. This can allow us to distinguish groups
+in different conditions. Apart from that, we will mainly access the group
+members’ <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.html#alfred3_interact.member.GroupMember" title="alfred3_interact.member.GroupMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupMember</span></code></a> instances through the group. These objects
+in turn offer access to each member’s experiment data. We can always refer
+to the current session’s member object via <a class="reference internal" href="generated/alfred3_interact.group.Group.me.html#alfred3_interact.group.Group.me" title="alfred3_interact.group.Group.me"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.me</span></code></a>. In a dyad
+(i.e. a group with exactly two members), we can refer to the other member
+via <a class="reference internal" href="generated/alfred3_interact.group.Group.you.html#alfred3_interact.group.Group.you" title="alfred3_interact.group.Group.you"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.you</span></code></a>. Additionally, we can always refer to each group
+member by using its role name like an attribute with the group. For example,
+to reference the group member of role “role1”, we refer to <code class="docutils literal notranslate"><span class="pre">group.role1</span></code>,
+if <code class="docutils literal notranslate"><span class="pre">group</span></code> is our group instance. We can iterate over all members of the
+group with the generator <a class="reference internal" href="generated/alfred3_interact.group.Group.members.html#alfred3_interact.group.Group.members" title="alfred3_interact.group.Group.members"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Group.members()</span></code></a> and over all members
+<em>except</em> <a class="reference internal" href="generated/alfred3_interact.group.Group.me.html#alfred3_interact.group.Group.me" title="alfred3_interact.group.Group.me"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Group.me</span></code></a> via <code class="xref py py-meth docutils literal notranslate"><span class="pre">Group.other_members()</span></code>.</p>
+<p>Now let us see these referencing steps in practice. Because the group
+object does not exist before the matchmaking on the WaitingPage has
+been completed, we cannot use a <code class="xref py py-meth docutils literal notranslate"><span class="pre">alfred3.Page.on_exp_access()</span></code> hook.
+Instead, we use <code class="xref py py-meth docutils literal notranslate"><span class="pre">alfred3.Page.on_first_show()</span></code>, which runs when
+a page is first shown:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
+
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DemoInput</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Match Successful&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_exp_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">TextEntry</span><span class="p">(</span>
+            <span class="n">toplab</span><span class="o">=</span><span class="s2">&quot;What is your favourite meal?&quot;</span><span class="p">,</span> <span class="n">force_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;meal&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;not at all&quot;</span><span class="p">,</span> <span class="s2">&quot;okay&quot;</span><span class="p">,</span> <span class="s2">&quot;very much&quot;</span><span class="p">]</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">SingleChoiceButtons</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">choices</span><span class="p">,</span>
+            <span class="n">toplab</span><span class="o">=</span><span class="s2">&quot;How much do you think other people like this food?&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;rating&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+    <span class="n">wait_timeout</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span> <span class="c1"># timeout in seconds</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DemoAccess</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Demo Page for Group Access&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_first_show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="c1"># get group object</span>
+
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This group way created based on: </span><span class="si">{</span><span class="n">g</span><span class="o">.</span><span class="n">spec_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># access current session</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;My own role in this group is: </span><span class="si">{</span><span class="n">g</span><span class="o">.</span><span class="n">me</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">VerticalSpace</span><span class="p">(</span><span class="s2">&quot;20px&quot;</span><span class="p">)</span>
+
+        <span class="c1"># iterate over other members</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">other_members</span><span class="p">():</span>
+            <span class="n">fav_meal</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;meal&quot;</span><span class="p">)</span>
+            <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Member with role &#39;</span><span class="si">{</span><span class="n">member</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">&#39; entered &#39;</span><span class="si">{</span><span class="n">fav_meal</span><span class="si">}</span><span class="s2">&#39; as their favourite meal.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">VerticalSpace</span><span class="p">(</span><span class="s2">&quot;20px&quot;</span><span class="p">)</span>
+
+        <span class="c1"># access member via role</span>
+        <span class="n">r1_rating</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">role1</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;rating&quot;</span><span class="p">)</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Role1&#39;s rating was: </span><span class="si">{</span><span class="n">r1_rating</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-4-use-a-waitingpage-for-syncing">
+<h2>Step 4: Use a WaitingPage for Syncing<a class="headerlink" href="#step-4-use-a-waitingpage-for-syncing" title="Permalink to this headline">¶</a></h2>
+<p>When programming an interactive experiment, you will repeatedly find
+yourself wanting to include a kind of check point where the experiment
+pauses for all participants until they have reached similar progress.
+This can be achieved by WaitingPages. We start with an earlier, smaller
+version of our demo experiment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
+
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>To this experiment, we add a page with an input element <em>after</em> the
+waiting page and another page that accesses the inputs made by all
+group members. If we do not synchronize the experiment between the
+former and the latter page, we may encounter the following situation:
+Participants of “role1” and “role2” are still thinking about their input.
+Meanwhile, the participant of “role3” is quick and moves on to the next
+page. Because “role1” and “role2” have not commited their inputs, the
+display for “role3” cannot display their values, even though that is
+necessary for an orderly experiment session. The page may even crash,
+because we cannot access the values that we seek. To prevent these issues,
+we add a waiting page in between the input and the accessing calls. This
+will pause the experiment for faster participants until all required values
+are present:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alfred3</span> <span class="k">as</span> <span class="nn">al</span>
+<span class="kn">import</span> <span class="nn">alfred3_interact</span> <span class="k">as</span> <span class="nn">ali</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">Experiment</span><span class="p">()</span>
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">setup</span>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">ParallelSpec</span><span class="p">(</span><span class="s2">&quot;role1&quot;</span><span class="p">,</span> <span class="s2">&quot;role2&quot;</span><span class="p">,</span> <span class="s2">&quot;role3&quot;</span><span class="p">,</span> <span class="n">nslots</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myspec&quot;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">ali</span><span class="o">.</span><span class="n">MatchMaker</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">exp</span><span class="o">=</span><span class="n">exp</span><span class="p">)</span>
+
+<span class="n">exp</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">ForwardOnlySection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">InputPage</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Input Page&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_exp_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">TextEntry</span><span class="p">(</span><span class="s2">&quot;What&#39;s your favourite drink?&quot;</span><span class="p">,</span> <span class="n">force_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drink&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Sync</span><span class="p">(</span><span class="n">ali</span><span class="o">.</span><span class="n">WaitingPage</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns True, if a value for &#39;drink&#39; is present for each</span>
+<span class="sd">        group member.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span>
+        <span class="n">drinks</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;drink&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">drinks</span><span class="p">)</span>
+
+
+<span class="nd">@exp</span><span class="o">.</span><span class="n">member</span><span class="p">(</span><span class="n">of_section</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">View</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">Page</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;View Inputs&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_first_show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">group</span>
+
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">():</span>
+            <span class="bp">self</span> <span class="o">+=</span> <span class="n">al</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Member of role &#39;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">&#39; entered &#39;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;drink&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; as their favourite drink.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You are now ready to create your first interactive experiments. Make
+sure to check out the API documentation for the relevant classes, especially
+<a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.html#alfred3_interact.match.MatchMaker" title="alfred3_interact.match.MatchMaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatchMaker</span></code></a>, <a class="reference internal" href="generated/alfred3_interact.group.Group.html#alfred3_interact.group.Group" title="alfred3_interact.group.Group"><code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code></a>, and <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.html#alfred3_interact.member.GroupMember" title="alfred3_interact.member.GroupMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupMember</span></code></a> for more
+detailed information.</p>
+</div>
 </div>
 
 
@@ -1182,6 +1565,8 @@ so that the required data is available.</p>
         
         <div class='prev-next-bottom'>
             
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">alfred3-interact: Interactive web-experiments</a>
+    <a class='right-next' id="next-link" href="howto_condition.html" title="next page">How to create groups of different conditions</a>
 
         </div>
         

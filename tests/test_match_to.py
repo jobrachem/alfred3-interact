@@ -250,7 +250,6 @@ class TestSequentialOngoingOk:
         assert group2.me.data.role == group3.me.data.role
 
 
-
 class TestParallel:
 
     def test_match_raise(self, exp):
@@ -292,6 +291,7 @@ class TestParallel:
 
         with pytest.raises(NoMatch):
             mm2.match_to("test")
+
 
 class TestParallelQuota:
 

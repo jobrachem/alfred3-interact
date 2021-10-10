@@ -352,7 +352,7 @@ class MatchMaker:
 
     def match(self) -> Group:
         """
-        Shorthand method for condicting a match, if there is only a single
+        Shorthand method for conducting a match if there is only a single
         spec.
 
         Raises:
@@ -362,7 +362,7 @@ class MatchMaker:
                 part of a normal matching process.
         
         Returns:
-            Group: If matching was successful.
+            Group: The group object.
         
         Examples:
             
@@ -473,7 +473,7 @@ class MatchMaker:
                 part of a normal matching process.
         
         Returns:
-            Group: If matching was successful.
+            Group: The group object.
         
         See Also:
             :meth:`.match_chain`
@@ -558,7 +558,7 @@ class MatchMaker:
                 selects a random spec for matching. Defaults to *True*.
             **spectimes: Specifications of spec timeboxes. Specified by
                 ``specname=time``, where *time* is the length of the spec's 
-                time box in seconds and it will be no surprise to you that
+                time box in seconds and
                 *specname* is the spec's name. 
                 For the last spec, the value for ``time`` is irrelevant, 
                 as it will be included until the MatchMaking process 
@@ -572,7 +572,7 @@ class MatchMaker:
                 part of a normal matching process.
         
         Returns:
-            Group: If matching was successful.
+            Group: The group object.
         
         Examples:
 
@@ -762,9 +762,8 @@ class MatchMaker:
         aborted, and the *abort_page* specified on initialization of
         the MatchMaker will be shown to participants.
 
-        The matching methods :meth:`.match_groupwise` and
-        :meth:`.match_stepwise` will check for activation themselves,
-        when called. But this may be at a point in the experiment where
+        The matching methods will check for activation themselves,
+        when called. But this may happen at a point in the experiment where
         participants have made considerable progress. So it may be
         useful to manually check for activation at an earlier stage.
 

@@ -6,6 +6,8 @@ from flask import request, Blueprint
 from selenium import webdriver
 import alfred3_interact as ali
 from alfred3.testutil import get_app
+from alfred3.testutil import clear_db
+from alfred3.testutil import forward
 
 
 testing = Blueprint("test", __name__)
@@ -35,6 +37,19 @@ def running_app(tmp_path):
     t = threading.Thread(target=app.run, kwargs={"port": 5000, "use_reloader": False})
     t.start()
     yield app
+
+
+@pytest.fixture
+def admin_client(tmp_path):
+    script = "tests/res/script-admin.py"
+    secrets = "tests/res/secrets-default.conf"
+    
+    app = get_app(tmp_path, script_path=script, secrets_path=secrets)
+
+    with app.test_client() as client:
+        yield client
+
+    clear_db()
 
 class TestWaitingPage:
 
@@ -68,11 +83,21 @@ class TestWaitingPage:
         assert exp.aborted
     
     def test_expire_browser(self, running_app, driver):
+        """
+        Only valid when being run on its own. Will sometimes fail if another test that 
+        uses the selenium driver ran shortly before. Run again individually
+        to see whether there is an actual problem with the code.
+        """
         driver.get("http://localhost:5000/start")
         time.sleep(10)
         assert "Sorry, waiting took too long" in driver.page_source
     
     def test_refresh_browser(self, running_app, driver):
+        """
+        Only valid when being run on its own. Will sometimes fail if another test that 
+        uses the selenium driver ran shortly before. Run again individually
+        to see whether there is an actual problem with the code.
+        """
         driver.get("http://localhost:5000/start")
         time.sleep(4)
         driver.refresh()
@@ -82,55 +107,23 @@ class TestWaitingPage:
 
 class TestAdminPage:
 
-    def test_page_works(self, exp):
-        spec = ali.ParallelSpec("a", "b", name="test", nslots=3)
-        mm = ali.MatchMaker(spec, exp=exp)
-        page = ali.page.AdminPage(mm, name="admin")
-        exp += page
-        exp._start()
-        exp.jump("admin")
+    def test_monitoring(self, admin_client):
+        rv = admin_client.get("/start?admin=true", follow_redirects=True)
+        rv = forward(admin_client, data={"pw": "1"})
+        assert b"MatchMaker Monitoring" in rv.data
+        assert not b"Bitte geben Sie etwas ein." in rv.data
+        assert not b"Weiter" in rv.data
 
-        p = exp.ui.render("token")
-
-        assert "Matchmaker ID" in p
+        rv = forward(admin_client)
+        assert b"There's nothing here" in rv.data
     
-    def test_member_table(self, exp):
-        spec = ali.SequentialSpec("a", "b", name="test", nslots=3)
-        mm = ali.MatchMaker(spec, exp=exp)
+    def test_activation(self, admin_client):
+        rv = admin_client.get("/start?admin=true", follow_redirects=True)
+        rv = forward(admin_client, data={"pw": "2"})
+        assert b"MatchMaker Monitoring" in rv.data
 
-        group = mm.match_to("test")
-        page = ali.page.AdminPage(mm, name="admin")
-        exp += page
-        exp.condition = "test"
-        exp._start()
-        exp.jump("admin")
-        exp._save_data(sync=True)
+        rv = forward(admin_client)
+        assert b"MatchMaker Activation" in rv.data
 
-        body = page.view_mm.render_table_body()
-        data = body["data"][0]
-
-        assert data["Session"]
-        assert data["Condition"] == "test"
-        assert data["Start Day"]
-        assert data["Start Time"]
-        assert data["Last Move"]
-        assert data["Group"]
-        assert data["Role"] == group.me.role
-        assert data["Status"] == "active"
-        assert data["Last ping"] == "(already matched)"
-
-
-
-
-
-def test_password_page(exp):
-    spec = ali.ParallelSpec("a", "b", name="test", nslots=3)
-    mm = ali.MatchMaker(spec, exp=exp)
-
-    page = ali.page.PasswordPage("pw", mm, name="pwpage")
-    exp += page
-
-    assert exp.pwpage
-
-
-    
+        rv = forward(admin_client)
+        assert b"There's nothing here" in rv.data

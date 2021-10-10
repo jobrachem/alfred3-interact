@@ -55,6 +55,7 @@
          ~Group.nactive
          ~Group.nfinished
          ~Group.shared_data
+         ~Group.spec_name
          ~Group.you
       
    
