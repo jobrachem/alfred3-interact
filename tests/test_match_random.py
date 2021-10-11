@@ -133,3 +133,36 @@ class TestParallel:
         assert group1.data.spec_name == "test"
         assert group2.data.spec_name == "test"
 
+    def test_three(self, exp_factory):
+        exp1 = exp_factory()
+        exp2 = exp_factory()
+        exp3 = exp_factory()
+
+        spec = ParallelSpec("a", "b", "c", nslots=5, name="test")
+
+        mm1 = MatchMaker(spec, exp=exp1)
+        mm2 = MatchMaker(spec, exp=exp2)
+        mm3 = MatchMaker(spec, exp=exp3)
+
+        with pytest.raises(NoMatch):
+            mm1.match_random()
+
+        with pytest.raises(NoMatch):
+            mm2.match_random()
+
+        group3 = mm3.match_random()
+        group1 = mm1.match_random()
+        group2 = mm2.match_random()
+
+        assert group1.spec_name == "test"
+        assert group2.spec_name == "test"
+        assert group3.spec_name == "test"
+
+        assert not exp1.aborted
+        assert not exp2.aborted
+        assert not exp3.aborted
+        
+
+
+
+
