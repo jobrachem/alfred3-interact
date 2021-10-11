@@ -21,7 +21,7 @@ class MatchMakerActivation(admin.OperatorPage):
     Admin page for toggling MatchMaker activation.
 
     A deactivated MatchMaker will abort the experiment when MatchMaking
-    is tried. You can use :attr:`.MatchMaker.active` and 
+    is tried. You can use :attr:`.MatchMaker.active` and
     :meth:`.MatchMaker.check_activation` to manually check for activation.
     The former simply returns a boolean value, indicating the MatchMaker's
     status. The latter one will automatically abort the experiment, if
@@ -46,7 +46,7 @@ class MatchMakerActivation(admin.OperatorPage):
             adminpass_lvl2 = use-better-passwords
             adminpass_lvl3 = to-protect-access
 
-        We add the activation page to the experiment's admin mode. Because 
+        We add the activation page to the experiment's admin mode. Because
         we attach the MatchMaker to ``exp.plugins.mm``, we provide the
         ``"plugins.mm"`` as the value for *matchmaker_location*::
 
@@ -66,7 +66,7 @@ class MatchMakerActivation(admin.OperatorPage):
 
             @exp.member(of_section="main")
             class Match(ali.WaitingPage):
-                
+
                 def wait_for(self):
                     group = self.exp.plugins.mm.match()
                     self.exp.plugins.group = group
@@ -80,7 +80,7 @@ class MatchMakerActivation(admin.OperatorPage):
         super().__init__(**kwargs)
         self.matchmaker_location = matchmaker_location
         self.match_maker = None
-    
+
     def added_to_experiment(self, exp):
         self.match_maker = operator.attrgetter(self.matchmaker_location)(exp)
         super().added_to_experiment(exp)
@@ -115,7 +115,7 @@ class MatchMakerMonitoring(admin.SpectatorPage):
             adminpass_lvl2 = use-better-passwords
             adminpass_lvl3 = to-protect-access
 
-        We add the monitoring page to the experiment's admin mode. Because 
+        We add the monitoring page to the experiment's admin mode. Because
         we attach the MatchMaker to ``exp.plugins.mm``, we provide the
         ``"plugins.mm"`` as the value for *matchmaker_location*::
 
@@ -135,12 +135,12 @@ class MatchMakerMonitoring(admin.SpectatorPage):
 
             @exp.member(of_section="main")
             class Match(ali.WaitingPage):
-                
+
                 def wait_for(self):
                     group = self.exp.plugins.mm.match()
                     self.exp.plugins.group = group
                     return True
-    
+
     """
 
     title = "MatchMaker Monitoring"
@@ -149,7 +149,7 @@ class MatchMakerMonitoring(admin.SpectatorPage):
         super().__init__(**kwargs)
         self.matchmaker_location = matchmaker_location
         self.match_maker = None
-    
+
     def added_to_experiment(self, exp):
         self.match_maker = operator.attrgetter(self.matchmaker_location)(exp)
         super().added_to_experiment(exp)
@@ -196,6 +196,7 @@ class DefaultWaitingExceptionPage(al.Page):
     """
     Default page to be displayed upon waiting exceptions.
     """
+
     title = "Experiment aborted"
     name = "default_waiting_exception_page"
 
@@ -227,7 +228,7 @@ class WaitingPage(al.NoNavigationPage):
     Args:
         wait_msg (str): Text to be displayed in the default layout.
             Defaults to None, in which case the text is
-            "Waiting for other group members." Can be defined as a 
+            "Waiting for other group members." Can be defined as a
             class attribute.
         wait_timeout (int): Maximum waiting time in seconds. If *wait_for*
             does not return a *True*-like value within waiting time, the experiment
@@ -262,7 +263,7 @@ class WaitingPage(al.NoNavigationPage):
             def setup(exp):
                 spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
                 exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-            
+
             @exp.member
             class Match(ali.WaitingPage):
 
@@ -270,14 +271,14 @@ class WaitingPage(al.NoNavigationPage):
                     group = self.exp.plugins.mm.match()
                     self.exp.plugins.group = group
                     return True
-            
+
             @exp.member
             class Success(al.Page):
 
                 def on_first_show(self):
                     group = self.exp.plugins.group
                     role = group.me.role
-                    
+
                     self += al.Text(f"Successfully matched to role: {{role}}")
 
 
@@ -296,7 +297,7 @@ class WaitingPage(al.NoNavigationPage):
             def setup(exp):
                 spec = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
                 exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-            
+
 
             @exp.member
             class Match(ali.WaitingPage):
@@ -320,11 +321,11 @@ class WaitingPage(al.NoNavigationPage):
                 def wait_for(self):
                     you = self.exp.plugins.group.you
                     return you.values.get("el1", False)
-            
-            
+
+
             @exp.member
             class SyncSuccess(al.Page):
-                
+
                 def on_first_show(self):
                     self += al.Text("Successfully synced.")
 
@@ -347,7 +348,7 @@ class WaitingPage(al.NoNavigationPage):
     #: Number of seconds in between two internal
     #: calls to :meth:`.wait_for`. Defaults to None, in which case
     #: a call will be made every two seconds.
-    wait_sleep_time: int = 2
+    wait_sleep_time: int = 3
 
     #: Abort page to be displayed on timeout
     wait_timeout_page = None
@@ -385,12 +386,12 @@ class WaitingPage(al.NoNavigationPage):
             self.wait_exception_page = wait_exception_page
         else:
             self.wait_exception_page = DefaultWaitingExceptionPage()
-        
+
         self += RepeatedCallback(
-            func=self._wait_for, 
-            interval=self.wait_sleep_time, 
-            followup="custom", 
-            custom_js="if (data) {move('forward')};"
+            func=self._wait_for,
+            interval=self.wait_sleep_time,
+            followup="custom",
+            custom_js="if (data) {move('forward')};",
         )
 
         #: Time of waiting start in seconds since epoch
@@ -401,18 +402,16 @@ class WaitingPage(al.NoNavigationPage):
         self.waiting_start: float = None
         self.countup = al.CountUp(font_size=30, align="center")
 
-    
     @property
     def expiration_time(self) -> float:
         """
-        float: Point in time at which the waiting page expires in 
+        float: Point in time at which the waiting page expires in
         seconds since epoch.
         """
         if not self.waiting_start:
             return None
-        
+
         return self.waiting_start + self.wait_timeout
-    
 
     @property
     def expired(self) -> bool:
@@ -424,11 +423,11 @@ class WaitingPage(al.NoNavigationPage):
             return now > self.expiration_time
         else:
             return False
-    
+
     @property
     def passed_time(self) -> float:
         return time.time() - self.waiting_start
-    
+
     @abstractmethod
     def wait_for(self):
         """
@@ -447,28 +446,28 @@ class WaitingPage(al.NoNavigationPage):
         on to the next page. Otherwise, the callback will try again
         until the timeout is reached.
         """
-        
+
         if not self.waiting_start:
             self.waiting_start = time.time()
             self.countup.start_time = self.waiting_start
-        
+
         if self.expired:
             self.on_expire()
             return True
-        
+
         try:
             wait_status = self.wait_for()
-        
+
         except NoMatch:
-            return False # return False so that the repeated callback will try again
-        
+            return False  # return False so that the repeated callback will try again
+
         except Exception:
             self.log.exception("Exception in waiting function. Aborting experiment.")
             self.exp.abort(reason="waiting error", page=self.wait_exception_page)
             return True
-        
+
         return wait_status
-    
+
     def on_expire(self):
         self.log.exception("Timeout on waiting page. Aborting experiment.")
         self.exp.abort(reason="timeout", page=self.wait_timeout_page)
@@ -481,7 +480,7 @@ class WaitingPage(al.NoNavigationPage):
         self += al.VerticalSpace("30px")
         self += self.countup
         self += al.Text(self.wait_msg, align="center")
-    
+
 
 @inherit_kwargs
 class MatchingPage(WaitingPage):
@@ -490,7 +489,7 @@ class MatchingPage(WaitingPage):
 
     Args:
         {kwargs}
-    
+
     Examples:
         ::
 
@@ -503,7 +502,7 @@ class MatchingPage(WaitingPage):
                 def setup(exp):
                     spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
                     exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-                
+
                 @exp.member
                 class Match(ali.MatchingPage):
 
@@ -511,15 +510,13 @@ class MatchingPage(WaitingPage):
                         group = self.exp.plugins.mm.match()
                         self.exp.plugins.group = group
                         return True
-                
+
                 @exp.member
                 class Success(al.Page):
 
                     def on_first_show(self):
                         group = self.exp.plugins.group
                         role = group.me.role
-                        
+
                         self += al.Text(f"Successfully matched to role: {{role}}")
     """
-
-    
