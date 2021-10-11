@@ -107,19 +107,17 @@ class ParallelMatchMaker:
 
             if data is None:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
-                return None
+            else:    
+                existing_group = self.get_group()
+                if existing_group:
+                    return existing_group
 
-            existing_group = self.get_group()
-            if existing_group:
-                return existing_group
-
-            waiting_members = self.mm.waiting_members
-            enough_members_waiting = len(waiting_members) == len(self.roles)
-            
-            if enough_members_waiting:
-                group = self.start_group(data, waiting_members)
-                return group
-
+                waiting_members = self.mm.waiting_members
+                enough_members_waiting = len(waiting_members) == len(self.roles)
+                
+                if enough_members_waiting:
+                    group = self.start_group(data, waiting_members)
+                    return group
         
         raise NoMatch # if match is not successful    
 
