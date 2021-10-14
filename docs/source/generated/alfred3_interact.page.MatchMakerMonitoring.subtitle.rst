@@ -1,0 +1,6 @@
+MatchMakerMonitoring.subtitle
+===================================================
+
+.. currentmodule:: alfred3_interact.page
+
+.. autoproperty:: MatchMakerMonitoring.subtitle

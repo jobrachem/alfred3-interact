@@ -1,0 +1,19 @@
+{
+    "creators": [
+        {   
+            "orcid": "0000-0001-5394-0379",
+            "affiliation": "Georg-August-University Göttingen",
+            "name": "Treffenstädt, Christian"
+        },
+        {   
+            "affiliation": "Georg-August-University Göttingen",
+            "name": "Brachem, Johannes"
+        }
+    ],    
+
+    "license": "MIT",
+
+    "title": "alfred3-interact - Interactive web-experiments in alfred3",
+
+    "keywords": ["psychology", "social science", "interaction", "software", "experiment"]
+}

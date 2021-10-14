@@ -5,29 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## alfred3_interact v0.2.0 [unreleased]
+## alfred3_interact v0.2.0 (Released 2021-10-14)
 
-### Added
+### Changed v0.2.0
+
+- We refactored the matchmaking system to make it more robust, more 
+  powerful, and easier to use. 
+  
+  - You can now *randomize* and *chain* group 
+    creation through `alfred3_interact.MatchMaker.match_random` and 
+    `alfred3_interact.MatchMaker.match_chain`. Both of these methods enable
+    you to take the special challenges of interactive experiments into 
+    account. *Chaining* group creation is handy, for example when you want 
+    to create groups of different sizes. Larger groups are harder to realize,
+    and thus you may wish to prioritize them: When possible, create a 
+    large group. Only when large group creation fails, create the smaller
+    groups. Please refer to the documentation for more details.
+  
+  - Matchmaking now requires the definition of "Group specs". These specs
+    currently come in three different flavours: `alfred3_interact.ParallelSpec`
+    for parallel (synchronous) groups, `alfred3_interact.SequentialSpec` for sequential
+    (asynchronous) groups, and `alfred3_interact.IndividualSpec` for
+    "groups" of size one. The latter allow you to include individual-sized
+    conditions in group experiments via `match_random` and `match_chain`.
+    You can use group specs to control the maximum number of groups that 
+    should be created based on a specific spec via their parameter `nslots`.
+  
+- We changed the admin facilities to use the new admin mode introduced 
+  in alfred3 v2.2.0. You can now add `alfred3_interact.MatchMakerActivation`
+  and `alfred3_interact.MatchMakerMonitoring` to your experiment 
+  individually.
+
+## alfred3_interact v0.1.9 (Released 2021-06-17)
+
+### Added v0.1.9
 
 #### MatchMaker
 
-- `MatchMaker.check_activation`
-- You can now tell the `MatchMaker` to collect only a certain number
-  of groups with the arguments `max_groups` and `max_groups_mode`.
-  Check out the documentation for more! **NOTE that this feature requires
-  alfred3 v2.1.7 or newer!**
-- New method `MatchMaker.check_group_number` gives you the possibility
-  to check for the number of collected groups and abort the experiment
-  if necessary at any time in the experiment.
-- New attribute `MatchMaker.full` returns *True* if the maximum number of
-  groups has been reached.
-
-#### Group
-
-- `Group.sessions`
+- New method `MatchMaker.check_activation` allows you to check whether
+  the MatchMaker is activated at any time in an experiment. This
+  can be useful, if tha actual matching takes place at some later point
+  in an experiment: In this case, it is sensible to only allow 
+  participants to progress, if they will actually be matched.
 
 #### Chat
-- `room`
+
+- New argument `room` for `ChatElement` and `Group.chat`. This argument
+  offers a convenient way to create distinct chat-rooms for the same
+  group of participants. Just enter a string as the group name; you may,
+  for instance, want to use a page name.
+
 
 ## alfred3_interact v0.1.8 (Released 2021-06-09)
 

@@ -30,18 +30,15 @@
       :toctree:
 
       
-         ~GroupMember.active
+         ~GroupMember.adata
+         ~GroupMember.additional_data
          ~GroupMember.client_data
-         ~GroupMember.expired
-         ~GroupMember.finished
-         ~GroupMember.last_move
-         ~GroupMember.last_page
+         ~GroupMember.group_id
          ~GroupMember.matched
          ~GroupMember.metadata
          ~GroupMember.move_history
+         ~GroupMember.role
          ~GroupMember.session_data
-         ~GroupMember.start_time
-         ~GroupMember.status
          ~GroupMember.values
       
    

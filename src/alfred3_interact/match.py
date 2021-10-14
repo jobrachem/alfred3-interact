@@ -1,33 +1,41 @@
-"""
-Provides the main MatchMaker functionality.
-"""
-
 import time
 import json
 import copy
-import string
-import re
-from dataclasses import asdict
+import typing as t
+import random
+from traceback import format_exception
+from dataclasses import asdict, dataclass, field
 
 from pymongo.collection import ReturnDocument
 from packaging import version
 from alfred3.alfredlog import QueuedLoggingInterface
-from alfred3.experiment import ExperimentSession
-from alfred3.exceptions import SessionTimeout
+from alfred3.exceptions import AllSlotsFull
 from alfred3 import __version__ as alfred_version
 
-from .group import Group
-from .group import GroupManager
+from alfred3_interact.group import GroupManager
+
+from .quota import MetaQuota
 from .member import GroupMember
 from .member import MemberManager
-from .data import MatchMakerData
-from .quota import GroupCounter
+from .group import Group
 from ._util import saving_method
 from ._util import MatchingError
-from ._util import BusyGroup
 from ._util import NoMatch
 
 ALFRED_VERSION = version.parse(alfred_version)
+
+
+@dataclass
+class MatchMakerData:
+    exp_id: str
+    exp_version: str
+    matchmaker_id: str
+    type: str
+    members: dict = field(default_factory=dict)
+    busy: bool = False
+    active: bool = False
+    ping_timeout: int = None
+
 
 class MatchMakerIO:
     def __init__(self, matchmaker):
@@ -106,6 +114,8 @@ class MatchMakerIO:
             exp_version=self.mm.exp_version,
             matchmaker_id=self.mm.matchmaker_id,
             active=self.mm._active,
+            type=self.mm._DATA_TYPE,
+            ping_timeout=self.mm.ping_timeout
         )
 
         data = self.db.find_one_and_update(
@@ -132,6 +142,7 @@ class MatchMakerIO:
                 exp_version=self.mm.exp_version,
                 matchmaker_id=self.mm.matchmaker_id,
                 active=self.mm._active,
+                type=self.mm._DATA_TYPE,
             )
 
             with open(self.path, "w", encoding="utf-8") as f:
@@ -143,7 +154,7 @@ class MatchMakerIO:
         if not data.busy:
             data.busy = True
             self._save_local(data)
-            return MatchMakerData(**data)
+            return data
         else:
             return None
 
@@ -164,12 +175,15 @@ class MatchMakerIO:
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type:
             self.mm.member.data.active = False
-            self.mm.member._save()
-            self.exp.abort(reason="matchmaker_error")
-            self.exp.log.error(
+            self.mm.member.io.save()
+            self.mm.exp.abort(reason="matchmaker_error")
+
+            tb = "".join(format_exception(exc_type, exc_value, traceback))
+            self.mm.exp.log.error(
                 (
-                    "There was an error in a locked MatchMaker operation. "
-                    f"I deactivated the responsible member {self.mm.member} and released the lock."
+                    f"There was an error in a locked MatchMaker operation."
+                    f"I deactivated the responsible member {self.mm.member} and released the lock.\n"
+                    f"{tb}"
                 )
             )
         self.release()
@@ -178,495 +192,536 @@ class MatchMakerIO:
 
 class MatchMaker:
     """
-    Organizes the creation and composition of groups for interactive
-    experiments.
+    Creates groups of multiple experiment sessions.
 
     Args:
-        *roles: A variable number of strings, indicating which roles
-            will be appointed to members of the group. The number of
-            roles determines the number of group members. All roles in a
-            group must be unique. Roles cannot start with numbers or
-            contain spaces.
-        exp (alfred3.experiment.ExperimentSession): The alfred3 experiment
-            in which this matchmaker is used.
-        admin_pw (str): Password for the MatchMaker admin view. If no
-            admin password is supplied, the admin view is deactivated.
-        id (str): Used in combination with the experiment ID as unique
-            identifier for the MatchMaker.  Defaults to 'matchmaker',
-            which is usually fine, unless you are using multiple
-            matchmakers in one experiment.
-        respect_version (bool): If True, the matchmaker will only match
+        *groupspecs: Variable number of group specifications. Each spec
+            defines one blueprint for a group. Currently, 
+            :class:`.ParallelSpec`, :class:`.SequentialSpec`, and 
+            :class:`.IndividualSpec` are supported.
+        exp (alfred3.ExperimentSession): Associated experiment session.
+        name (str): An identifier for the matchmaker. Must be unique
+            within one experiment. Can (and must) be set to a custom value, if
+            you wish to use multiple matchmakers in a single experiment. 
+            Defaults to 'matchmaker'. 
+        inactive_page (alfred3.Page): Page to be displayed to participants
+            if the matchmaker is inactive. If *None* (default) a default
+            page will be used.
+        full_page (alfred3.Page): Page to be displayed to participants
+            if all specs have reached their quota of groups. If *None* 
+            (default) a default page will be used.
+        raise_exception_if_full (bool): As an alternative to using a
+            *full_page*, you can let the MatchMaker raise the 
+            :class:`.AllSlotsFull` exception if all specs have reached 
+            their quota of groups. Defaults to *False*.
+        respect_version (bool): If True, the MatchMaker will only match
             sessions that run on the same experiment version into the
             same group. This setting makes sure that there's no strange
             behavior if you make changes to an ongoing experiment.
             Defaults to True.
-        active (bool): If True, the matchmaker will start in active mode.
-            Defaults to *True*.
-        inactive_page (Page): Page to be displayed to new participants
-            if the MatchMaker is inactive. If None, a default page is
-            used.
-        admin_param (str): Name of the URL parameter used to start the
-            admin mode. Defaults to the matchmaker id.
+        ping_timeout (float, int): When matching parallel groups 
+            (i.e. groups based on :class:`.ParallelSpec`), only active
+            sessions are included in the matchmaking process. Sessions
+            therefore send a signal of activity to the server on a 
+            regular schedule. The argument *ping_timeout* determines the 
+            number of seconds of inactivity before a session is 
+            considered to be inactive. Defaults to 15 seconds.
+    
+    The workhorse methods of the MatchMaker are :meth:`.match_random`,
+    :meth:`.match_chain`, and :meth:`.match_to`. Call one of these 
+    methods in the :meth:`.WaitingPage.wait_for` hook to start the
+    matchmaking process.
 
-        max_groups (int): Maximum number of groups to accept. If the
-            target number is reached, the experiment will be aborted
-            upon matching additional groups. What's more, you can use
-            :meth:`.check_group_number` at any time to abort the
-            experiment at an earlier time.
-
-            .. versionadded:: 0.1.9
-
-        max_groups_mode (str): Can be one of 'strict' or 'inclusive'.
-
-            If 'strict', the experiment will only be aborted if the
-            maximum number of groups is *fully finished*.
-
-            If 'inclusive', the experiment will also be aborted if
-            there are enough finished *and ongoing* sessions to
-            potentially reach the maximum number of groups.
-
-            While 'strict' mode might lead to participants being turned
-            away before the experiment is really complete, 'inclusive'
-            mode might lead to more data being collected than necessary.
-
-            Defaults to 'strict'.
-
-            .. versionadded:: 0.1.9
-
-    .. versionchanged:: 0.1.9
-       Added the parameters *max_groups* and *max_groups_mode* and the
-       method :meth:`.check_group_number`.
-
-    Notes:
-        See :meth:`.match_stepwise` and :meth:`.match_groupwise` for
-        more information and examples. Also, there is an alternative
-        constructor :meth:`.from_size`.
-
-        .. note:: Note that the automatic MatchMaker admin mode is only
-            available if the matchmaker is initialized in the experiment
-            setup hook!
-
+    To initialize the MatchMaker, you must first create a group 
+    specification, which is a sort of blueprint for building a group. 
+    The spec defines the size of the group, the roles that can be 
+    assigned to participants, and the number of groups that should be
+    created based on that spec. If you supply multiple specs, you
+    can randomize group creation with :meth:`.match_random` or create
+    an order of priority with :meth:`.match_chain`.
+    
     See Also:
-            - See :class:`.MatchingPage` for a special page class that
-              offers a nice waiting screen and automatic forwarding upon
-              achieving a match.
 
-            - See :class:`.WaitingPage` for a special page class that
-              offers a nice waiting screen for synchronization in an
-              ongoing experiment. This is useful to pause at some points
-              in the experiment and wait for all group members to arrive
-              at a specified point in the experiment.
+        See :class:`.SequentialSpec` and :class:`.ParallelSpec` for more 
+        information on specs.
 
     Examples:
-        The example below illustrates the creation of an *asynchronous*
-        group via :meth:`.match_stepwise`. For a synchronous group,
-        refer to :meth:`.match_groupwise`::
+        A minimal example with a single spec::
 
             import alfred3 as al
             import alfred3_interact as ali
 
-            exp = al.Experiment()
+            exp = Experiment()
 
             @exp.setup
             def setup(exp):
-                mm = ali.MatchMaker("role1", "role2", exp=exp)
-                exp.plugins.group = mm.match_stepwise()
+                spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+            
+            @exp.member
+            class Match(ali.WaitingPage):
 
-
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match_to("spec1")
+                    self.exp.plugins.group = group
+                    return True
+            
             @exp.member
             class Success(al.Page):
-                title = "Match successful"
 
-                def on_exp_access(self):
+                def on_first_show(self):
                     group = self.exp.plugins.group
-
-                    txt = f"You have successfully matched to role: {group.me.role}"
-                    self += al.Text(txt, align="center")
-
+                    role = group.me.role
+                    
+                    self += al.Text(f"Successfully matched to role: {role}")
 
 
     """
-
-    _TIMEOUT_MSG = "MatchMaking timeout"
-    _DATA_TYPE = "match_maker"
+    _DATA_TYPE = "match_maker_data"
 
     def __init__(
         self,
-        *roles,
-        exp: ExperimentSession,
-        id: str = "matchmaker",
-        respect_version: bool = True,
-        active: bool = True,
+        *groupspecs,
+        exp,
+        name: str = "matchmaker",
         inactive_page=None,
-        admin_pw: str = None,
-        admin_param: str = None,
-        max_groups: int = None,
-        max_groups_mode: str = "strict",
+        full_page=None,
+        raise_exception_if_full: bool = False,
+        respect_version: bool = True,
+        ping_timeout: t.Union[float, int] = 15
     ):
+        # init values
         self.exp = exp
-
-        if exp.start_time:
-            raise MatchingError("MatchMaker must be initialized during experiment setup.")
-
+        self.groupspecs = list(self._validate_specs(groupspecs))
         self.respect_version = respect_version
-        self.exp_version = self.exp.version if respect_version else ""
+        self.exp_version = exp.version if respect_version else ""
+        self.matchmaker_id = name
+        self.name = name
+        self.inactive_page = inactive_page
+        self.full_page = full_page
+        self.raise_exception_if_full = raise_exception_if_full
+
+        # auto values
+        self.spec_dict = {spec.name: spec for spec in groupspecs}
         self.log = QueuedLoggingInterface(base_logger="alfred3")
         self.log.add_queue_logger(self, __name__)
-        self._active = active
-        self.inactive_page = inactive_page
-        self.admin_param = admin_param if admin_param is not None else id
-        self.admin_pw = admin_pw
-        self.admin_mode = False
-
-        self.max_groups = max_groups
-        self.max_groups_mode = max_groups_mode
-
-        self.member_timeout = None
-
-        #: Number of seconds after which a single
-        #: group-operation will be considered to have failed. In this
-        #: case, the group in question will be marked as inactive and
-        #: not be included in further matchmaking. Defaults to 300 seconds
-        #: (5 minutes).
-        self.group_timeout = 10
-
-        if len(roles) != len(set(roles)):
-            raise ValueError("All roles in a group must be unique.")
-
-        self.roles = self._validate_roles(roles)
-        self.matchmaker_id = id
+        self._active = True
         self.io = MatchMakerIO(self)
-
-        self._data = self.io.load()
-
         self.member_manager = MemberManager(self)
-        self.group_manager = GroupManager(self)
         self.group = None
         self.member = None
-
-        self.exp.abort_functions.append(self._deactivate_session)
-
-        if self.admin_pw:
-            self.admin_mode = self._enable_admin_mode(self.exp)
-
-    @classmethod
-    def from_size(cls, n: int, **kwargs):
-        """
-        Creates a matchmaker instance from the number of group members.
-
-        Args:
-            n (int): The number of group members.
-            **kwargs: Further keyword arguments passed on to the usual
-                constructor.
-
-        Notes:
-            Group roles will be the letters of the alphabet: First small
-            letters, then capitalized, then repeated small letters
-            (e.g. "aa"), and so on.
-        """
-        roles = []
-        for i in range(n):
-            letter = string.ascii_letters[i]
-            while letter in roles:
-                letter = letter + string.ascii_letters[i]
-            roles.append(letter)
-
-        return cls(*roles, **kwargs)
-
-    @property
-    def full(self) -> bool:
-        """
-        bool: *True*, if the maximum number of groups has been reached.
-        Returns *False*, if no maximum number has been defined.
-        """
-        if not self.max_groups:
-            return False
-
-        return GroupCounter(self).full
+        self._match_start_save = None
+        self.ping_timeout = ping_timeout
+        self._data = self.io.load()
+        quotas = [spec.quota for spec in self.groupspecs]
+        self.quota = MetaQuota(*quotas)
 
     @property
     def active(self) -> bool:
         """
-        Returns *True*, if the MatchMaker is active.
+        Returns *True* if the MatchMaker is active.
         """
         d = self.io.load()
         self._active = d.active
         return self._active
+    
 
     @property
-    def member_timeout(self) -> int:
+    def _match_start(self) -> float:
         """
-        int: Timeout, after which members will be marked as inactive.
+        float: Start time of the matchmaking process. Should only be
+        called from inside a matching function.
         """
-        return self._member_timeout
+        if self._match_start_save is None:
+            self._match_start_save = time.time()
 
-    @member_timeout.setter
-    def member_timeout(self, value: int):
-        self._member_timeout = value if value is not None else self.exp.session_timeout
+        return self._match_start_save
 
     @property
-    def data(self) -> MatchMakerData:
+    def waiting_members(self) -> t.List[GroupMember]:
         """
-        MatchMakerData: The MatchMaker's underlying data.
+        list: List of experiment sessions currently active and waiting
+        to be matched. The sessions are represented by their 
+        :class:`.GroupMember` objects.
         """
-        self._data.members[self.member.session_id] = asdict(self.member.data)
-        return self._data
+        members = list(self.member_manager.waiting(self.ping_timeout))
+        members = [m for m in members if not m.data.session_id == self.exp.session_id]
+        if not self.member.matched:
+            members = [self.member] + members
+        return members
 
-    def match_stepwise(
-        self, member_timeout: int = None, ongoing_sessions_ok: bool = False
-    ) -> Group:
+    def match(self) -> Group:
         """
-        Assigns participants to groups and roles one-by-one without
-        waiting for a group to be full.
+        Shorthand method for conducting a match if there is only a single
+        spec.
 
-        Args:
-            member_timeout (int): Number of seconds after which an experiment
-                session is considered inactive. Inactive sessions are not
-                included in the matchmaking process (but can in principle
-                still finish their session). The roles of inactive sessions
-                will be free for allocation to new members. If None,
-                :attr:`alfred3.experiment.ExperimentSession.session_timeout`
-                will be used. Defaults to None.
-            ongoing_sessions_ok (bool): If False, new members will only
-                be added to a group if all previous members of that group
-                have finished their experiment sessions. This can prevent
-                session losses in case
-
-
-        Roles are assigned to members in the order in which they
-        are matched (first come, first serve).
-
-        This method is the correct choice for groups that can operate
-        in an asynchronous fashion. One example for such a setting is
-        a "yoking" setup.
-
-        Let's take a yoking group with two members, "a" and "b", as an
-        example: The first participant starts her experiment
-        and is immediately assinged to role "a". She finishes her
-        experiment without needing access to any values from participant
-        "b". The next participant is assigned to role "b". In his version
-        of the experiment, some aspects depend on the inputs of
-        participant "a".
-
+        Raises:
+            ValueError: If there is more than one spec.
+            NoMatch: If a single matching effort was unsuccesful. This
+                exception gets handled by :class:`.WaitingPage` and is
+                part of a normal matching process.
+        
+        Returns:
+            Group: The group object.
+        
         Examples:
-            ::
+            
+            Matching based on a single spec::
 
                 import alfred3 as al
-                from alfred3_interact import MatchMaker
+                import alfred3_interact as ali
 
-                exp = al.Experiment()
+                exp = Experiment()
 
                 @exp.setup
                 def setup(exp):
-                    mm = MatchMaker("a", "b", exp=exp)
-                    exp.plugins.group = mm.match_stepwise()
-
+                    spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                    exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
+                
                 @exp.member
-                class Demo(al.Page):
+                class Match(ali.WaitingPage):
 
-                    def on_exp_access(self):
-                        role = self.exp.plugins.group.me.role
-                        self += al.Text(f"I was assigned to role '{role}'.")
+                    def wait_for(self):
+                        group = self.exp.plugins.mm.match()
+                        self.exp.plugins.group = group
+                        return True
+                
+                @exp.member
+                class Success(al.Page):
+
+                    def on_first_show(self):
+                        group = self.exp.plugins.group
+                        role = group.me.role
+                        
+                        self += al.Text(f"Successfully matched to role: {role}")
 
         """
-        if not self._check_activation():
-            return
+        if len(self.groupspecs) > 1:
+            msg = (
+                "Cannot use the method 'MatchMaker.match()', if there is more than one spec. "
+                f"You have {len(self.groupspecs)} specs."
+            )
+            raise ValueError(msg)
+        
+        name = self.groupspecs[0].name
+        return self.match_to(name)
 
-        self.member_timeout = member_timeout
-        self.member = GroupMember(self)
-        self.member._save()
 
-        # match to existing group
-        if any(self.group_manager.notfull(ongoing_sessions_ok=ongoing_sessions_ok)):
-            try:
-                self.group = self._match_next_group(ongoing_sessions_ok=ongoing_sessions_ok)
-            except BusyGroup:
-                self.group = self._wait_until_free(self.group_timeout)
-
-            self.log.info(f"Session matched to role '{self.member.role}' in {self.group}.")
-            self._save_infos()
-            return self.group
-
-        # start a new group
-        else:
-            roles = {role: None for role in self.roles}
-            with Group(self, roles=roles) as group:
-                self.log.info(f"Starting new group: {group}.")
-
-                group += self.member
-                group._assign_next_role(to_member=self.member)
-                self.member._save()
-                self.group = group
-                self.log.info(f"Session matched to role '{self.member.role}' in {group}.")
-
-            self._save_infos()
-            self._count_group()
-            return self.group
-
-    def match_groupwise(self, ping_timeout: int = 15) -> Group:
+    def match_random(self, wait: int = None, nmin: int = None):
         """
-        Waits until there are enough participants for a full group, then
-        matches them together.
+        Conducts a match to a random feasible group specification.
 
         Args:
-            ping_timeout (int): Number of seconds after which an experiment
-                session will be excluded from groupwise matching. This makes
-                sure that only currently active sessions will be allocated
-                to a group. Defaults to 15 (seconds).
+            wait (int): Number of seconds to wait before actually starting
+                a matching effort. Defaults to None, which means
+                that there is no waiting time.
+            nmin (int): Minimum number of waiting participants that must 
+                be active before actually starting a matching effort. 
+                If there are *nmin* participants waiting, matching will
+                start even if the waiting time specified in *wait* is
+                not over yet. Thus, *nmin* can be used to cut the waiting
+                time short. Defaults to None, which means that waiting
+                time alone determines when matching will start.
+        
+        This is the right method, if you wish to randomize participants
+        into groups of different sizes. 
 
-        This method is the correct choice if group members exchange data
-        in real time. Roles are assigned randomly.
+        .. important::
+            :meth:`.match_random` matches randomly among all *feasible*
+            specs at the time of matching. A spec is feasible if there
+            are enough participants waiting for a group based on that
+            spec. 
 
-        Notes:
-            .. important:: Note that you must use a :class:`.MatchingPage` for
-                groupwise matching. Outside of a MatchingPage, groupwise
-                matching will not work.
+            For instance, let's say you have an :class:`.IndividualSpec` 
+            and a :class:`.ParallelSpec` with two roles, forming a dyad. 
+            Four participants
+            are scheduled for a session. Participant 1 logs in one minute
+            early, Participant 2 is on time, Participant 3 logs in 30 
+            seconds late, and Participant 4 logs in 2 minutes late. All of
+            them will be matched immediately to the :class:`.IndividualSpec`,
+            because this spec is always feasible. The :class:`.ParallelSpec`
+            on the other hand requires at least two participants to be
+            waiting simultaneously.
+            
+            This behavior can be adjusted through the arguments *wait*
+            and *nmin*. In this example case, you may, for instance,
+            specify ``nmin=3`` and ``wait=2*60`` to ensure that there
+            is some time for participants to register. Participants 1, 
+            2, and 3 will be matched to a random spec once Participant 3
+            logs in, because *nmin* has been reached. Participant 4 will
+            wait for two minutes before being assigned to the individual
+            spec. The possible outcomes are: (1) Four individual specs
+            (if the randomization does not lead to the formation of a
+            dyad), (2) two individual specs and one parallel spec (if a
+            dyad is formed in the randomization).
 
+            The method :meth:`.match_chain` may be an even more suitable
+            option.
+        
+        .. note::
+            Randomization into groups of different sizes can be a little
+            tricky because large groups may have an unequal (lower) 
+            chance of being filled at the same rate as smaller groups
+            due to participant dropout. We provide the arguments *wait* 
+            and *nmin* to improve the feasibility of such designs. However,
+            the method :meth:`.match_chain` may be an even more suitable
+            option.
+        
+        Raises:
+            NoMatch: If a single matching effort was unsuccesful. This
+                exception gets handled by :class:`.WaitingPage` and is
+                part of a normal matching process.
+        
+        Returns:
+            Group: The group object.
+        
         See Also:
-            - See :class:`.MatchingPage` for a special page class that
-              offers a nice waiting screen and automatic forwarding upon
-              achieving a match.
-
-            - See :class:`.WaitingPage` for a special page class that
-              offers a nice waiting screen for synchronization in an
-              ongoing experiment. This is useful to pause at some points
-              in the experiment and wait for all group members to arrive
-              at a specified point in the experiment.
-
+            :meth:`.match_chain`
+        
         Examples:
             ::
 
                 import alfred3 as al
                 import alfred3_interact as ali
 
-                exp = al.Experiment()
+                exp = Experiment()
 
                 @exp.setup
                 def setup(exp):
-                    exp.plugins.mm = ali.MatchMaker("a", "b", exp=exp)
-
+                    spec1 = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
+                    spec2 = ali.SequentialSpec("a", "b", nslots=10, name="spec2")
+                    exp.plugins.mm = ali.MatchMaker(spec1, spec2, exp=exp)
+                
                 @exp.member
-                class Match(ali.MatchingPage):
+                class Match(ali.WaitingPage):
 
                     def wait_for(self):
-                        self.exp.plugins.group = self.plugins.mm.match_groupwise()
+                        group = self.exp.plugins.mm.match_random()
+                        self.exp.plugins.group = group
+                        self.exp.condition = group.data.spec_name
                         return True
-
+                
                 @exp.member
-                class Demo(al.Page):
+                class Success(al.Page):
 
                     def on_first_show(self):
-                        role = self.exp.plugins.group.me.role
-                        self += al.Text(f"I was assigned to role '{role}'.")
+                        group = self.exp.plugins.group
+                        role = group.me.role
+                        cond = self.exp.condition
+                        
+                        self += al.Text(f"Successfully matched to role '{role}' in condition '{cond}'")
 
         """
-        if not self._check_activation():
-            return
-
-        if not saving_method(self.exp) == "mongo":
-            raise MatchingError("Must use a database for groupwise matching.")
-
-        if self.member and self.group:
-            self.log.info(
-                f"match_groupwise was called, but {self.member} was already matched to \
-                {self.group}. Returning group."
-            )
-            return self.group
-
-        self._set_ping_timeout(ping_timeout)
-
         self.member = self._init_member()
 
-        self.log.debug("Trying match")
-        self.group = self._do_match_groupwise(ping_timeout=ping_timeout)
+        if self.member.matched:
+            return self._get_group(self.member)
 
-        if not self.group:
-            self.log.debug("No match found.")
+        self.member.io.ping()
+
+        start = self._match_start
+
+        if wait is None:
+            waited_enough = True
+        else:
+            waited_enough = time.time() - start >= wait
+
+        if nmin is None:
+            enough_members = False
+        else:
+            enough_members = len(self.waiting_members) >= nmin
+
+        if enough_members or waited_enough:
+            random.shuffle(self.groupspecs)
+            return self._match_quota(self.groupspecs)
+
+        raise NoMatch
+
+
+    def match_chain(self, include_previous: bool = True, **spectimes) -> Group:
+        """
+        Offers prioritized matchmaking based on multiple specs.
+
+        Imagine that you have two :class:`.ParallelSpec` group specifications. 
+        Spec 1 requires five participants to be active, while Spec 2 only 
+        requires two.
+        You may wish to first try matching based on Spec 1 for some time
+        and move on to Spec 2 only when it becomes incresingly clear that
+        there are not enough participants present to fill the bigger spec.
+        This is what this method is for. You specify a schedule of time
+        boxes that are reserved for specific specs.
+        
+        Args:
+            include_previous (bool): If *True*, earlier specs will still be 
+                available for matching in later time boxes. If there are
+                enough participants waiting for two specs, the MatchMaker
+                selects a random spec for matching. Defaults to *True*.
+            **spectimes: Specifications of spec timeboxes. Specified by
+                ``specname=time``, where *time* is the length of the spec's 
+                time box in seconds and
+                *specname* is the spec's name. 
+                For the last spec, the value for ``time`` is irrelevant, 
+                as it will be included until the MatchMaking process 
+                times out. It should be set to *None*. You can select 
+                any number of specs, but only specs that are available to
+                the MatchMaker.
+        
+        Raises:
+            NoMatch: If a single matching effort was unsuccesful. This
+                exception gets handled by :class:`.WaitingPage` and is
+                part of a normal matching process.
+        
+        Returns:
+            Group: The group object.
+        
+        Examples:
+
+            In this example, the MatchMaker will try to form a group
+            based on ``spec2`` for the first three minutes of the 
+            matchmaking process. Once the first active participant 
+            has waited for more than three minutes without a successfull
+            match, ``spec1`` will be included::
+
+                import alfred3 as al
+                import alfred3_interact as ali
+
+                exp = Experiment()
+
+                @exp.setup
+                def setup(exp):
+                    spec1 = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
+                    spec2 = ali.ParallelSpec("a", "b", "c", nslots=10, name="spec2")
+                    exp.plugins.mm = ali.MatchMaker(spec1, spec2, exp=exp)
+                
+                @exp.member
+                class Match(ali.WaitingPage):
+
+                    def wait_for(self):
+                        group = self.exp.plugins.mm.match_chain(spec2=3*60, spec2=None)
+                        self.exp.plugins.group = group
+                        self.exp.condition = group.data.spec_name
+                        return True
+                
+                @exp.member
+                class Success(al.Page):
+
+                    def on_first_show(self):
+                        group = self.exp.plugins.group
+                        role = group.me.role
+                        cond = self.exp.condition
+                        
+                        self += al.Text(f"Successfully matched to role '{role}' in condition '{cond}'")
+
+
+        """
+        # member setip
+        self.member = self._init_member()
+        if self.member.matched:
+            return self._get_group(self.member)
+        self.member.io.ping()
+
+        # data setup
+        start = self._match_start
+        passed_time = time.time() - start
+
+        # remove full specs
+        feasible_specs = [spec.name for spec in self.groupspecs if not spec.full(self)]
+        spectimes = {spec: time for spec, time in spectimes.items() if spec in feasible_specs}
+
+        # spec selection setup
+        specs = []
+        candidate_specs = list(spectimes)
+        delays = list(spectimes.values())
+        delays = [0, *delays[:-1]]
+        previous_delay = 0
+
+        # spec selection
+        for i, spec in enumerate(candidate_specs):
+            delay = delays[i] + previous_delay
+            ready = passed_time >= delay
+            
+            try:
+                next_delay = delays[i + 1] + delay
+                next_spec_ready = passed_time >= next_delay
+                over = not include_previous and next_spec_ready
+            except IndexError: # for last spec
+                over = False
+
+            if ready and not over:
+                specs.append(self.spec_dict[spec])
+
+            previous_delay = delay
+
+        if not specs:
             raise NoMatch
 
-        self.log.info(f"{self.group} filled in groupwise match.")
-        self._save_infos()
-        self._count_group()
+        random.shuffle(specs)
+        return self._match_quota(specs)
 
-        return self.group
+        # return self._match_quota(specs)
 
-    def check_activation(self):
+    def match_to(self, name: str) -> Group:
         """
-        Verifies that the MatchMaker is active and aborts the experiment
-        if necessary.
-
-        If the MatchMaker not active, the current experiment session is
-        aborted, and the *abort_page* specified on initialization of
-        the MatchMaker will be shown to participants.
-
-        The matching methods :meth:`.match_groupwise` and
-        :meth:`.match_stepwise` will check for activation themselves,
-        when called. But this may be at a point in the experiment where
-        participants have made considerable progress. So it may be
-        useful to manually check for activation at an earlier stage.
-
-        As a general rule of thumb, it may be sensible to check activation
-        on first hiding of the landing page of an experiment. This way,
-        participants still get a nice welcoming screen, but do not invest
-        too much time before the experiment is cancelled.
-
-        """
-        self._check_activation()
-
-    def check_group_number(self, abort_page=None, raise_exception: bool = False):
-        """
-        Aborts the experiment if the maximum number of groups
-        is already present.
-
-        Groups that have already been counted will never be aborted by
-        this method.
+        Matches participants to a group based on a specific spec.
 
         Args:
-            abort_page (alfred3.Page): You can reference a custom
-                page to be displayed to new participants, if the
-                experiment is full.
-            raise_exception (bool): If True, the function raises
-                the :class:`.AllConditionsFull` exception instead of
-                automatically aborting the experiment if the maximum
-                number of groups is reached. This allows you to catch
-                the exception and customize the experiment's behavior
-                in this case.
-
-        .. versionadded:: 0.1.9
+            name (str): Name of the spec that should be used.
 
         Raises:
-            alfred3.exceptions.AllConditionsFull: If raise_exception is
-                True and the maximum number of groups is reached.
+            NoMatch: If a single matching effort was unsuccesful. This
+                exception gets handled by :class:`.WaitingPage` and is
+                part of a normal matching process.
+        
+        Returns:
+            Group: If matching was successful.
         """
-        if self.max_groups is None:
+        self.member = self._init_member()
+
+        if self.member.matched:
+            group = self._get_group(self.member)
+            if group.data.spec_name != name:
+                msg = (
+                    "Member was already matched to a group of spec"
+                    f"'{group.data.spec_name}' != '{name}'"
+                )
+                raise MatchingError(msg)
+            return group
+            
+        self.member.io.ping()
+
+        return self._match_to(name=name)
+
+    def _get_group(self, member):
+        manager = GroupManager(self)
+        group = manager.find_one(member.group_id)
+        spec = group.data.spec_name
+        return self._match_to(spec)
+
+    def _match_to(self, name: str):
+        spec = self.spec_dict[name]
+
+        if not self.check_activation() or self.exp.admin_mode:
             return
 
-        counter = GroupCounter(self, abort_page=abort_page)
-
-        if counter.find_slot([self.exp.session_id]):
+        self.group = spec._match(self)
+        if spec.count:
+            try:
+                spec.quota.count(self.group, raise_exception=True)
+            except AllSlotsFull:
+                self._full()
+        
+        if not self.group:
             return
 
-        counter.abort_if_full(raise_exception=raise_exception)
-
-    def _count_group(self):
-        if self.max_groups:
-            counter = GroupCounter(self)
-            counter.count_group()
-
-    def _init_member(self):
-        if self.member:
-            return self.member
-
-        member = GroupMember(self)
-        member._save()
-        if member.expired:
-            raise SessionTimeout
-        else:
-            return member
+        self._update_additional_data()
+        return self.group
 
     def toggle_activation(self) -> str:
         """
         Toggles MatchMaker activation.
+
+        An inactive MatchMaker will not conduct any matching. 
+        Sessions that call a matching method will be aborted.
 
         Returns:
             str: Returns the new status (active/inactive).
@@ -677,209 +732,114 @@ class MatchMaker:
         self._data = data
 
         return "active" if data.active else "inactive"
+    
+    def check_quota(self) -> bool:
+        """
+        Verifies that the MatchMaker has available slots for new 
+        groups. Aborts the experiment if there are no available slots
+        left.
 
-    def _wait_until_free(self, wait_max: int):
-        if saving_method(self.exp) == "local":
-            raise MatchingError("Can't wait for result in local experiment.")
-
-        self.log.info(
-            f"Waiting for ongoing group assignment to finish. Waiting for a maximum of {wait_max} seconds."
-        )
-        group = next(self.group_manager.notfull())
-        start = time.time()
-        timeout = False
-
-        while group.busy and not timeout:
-            timeout = time.time() - start > wait_max
-            group = self.group_manager.find(group.group_id)
-            time.sleep(1)
-
-        if not timeout and not group.busy:
-            self.log.info("Waiting successful. Proceeding with group assignment.")
-            return group
-
-        elif timeout:
-            msg1 = f"{group} was in waiting position for too long. "
-            msg2 = f"Starting a new group for session {self.exp.session_id}."
-            self.log.warning(msg1 + msg2)
-
-            roles = {role: None for role in self.roles}
-            group = Group(self, roles=roles)
-            return group
-
-    def _match_next_group(self, ongoing_sessions_ok: bool):
-        with next(self.group_manager.notfull(ongoing_sessions_ok=ongoing_sessions_ok)) as group:
-            self.log.info(f"Starting stepwise match of session to existing group: {group}.")
-            group += self.member
-            group._assign_next_role(to_member=self.member)
-            self.member._save()
-
-            return group
-
-    def _do_match_groupwise(self, ping_timeout):
-
-        with self.io as data:
-            if data is None:
-                self.log.debug("Returning. Data marked, MM is busy.")
-                return None
-
-            self.member = self.member._load()
-            if self.member.matched:
-                self.log.debug("Returning. Found group.")
-                return self.group_manager.find(self.member.data.group_id)
-
-            waiting_members = self._get_waiting_members(ping_timeout)
-
-            if len(waiting_members) >= len(self.roles):
-                group = self._fill_group(data, waiting_members)
-                return group
-
-            self.log.debug("Returning. Not enough active members.")
-            self.log.debug(f"Active members: {waiting_members}")
-            return None
-
-    def _get_waiting_members(self, ping_timeout):
-        waiting_members = list(self.member_manager.waiting(ping_timeout=ping_timeout))
-        self.log.debug(f"Full waiting members list: {waiting_members}")
-        waiting_members = [m for m in waiting_members if m != self.member]
-        self.log.debug(f"Filtered waiting members list: {waiting_members}")
-        waiting_members.insert(0, self.member)
-        self.log.debug(f"Changed waiting members list: {waiting_members}")
-        return waiting_members
-
-    def _fill_group(self, data, waiting_members):
-        self.log.debug("Filling group.")
-        roles = {role: None for role in self.roles}
-        group = Group(matchmaker=self, roles=roles)
-
-        candidates = (m for m in waiting_members)
-        while not group.full:
-            m = next(candidates)
-            self.log.debug(f"Filling group with {m}")
-            group += m
-
-        group._assign_all_roles(to_members=waiting_members)
-        group._save()
-
-        # update matchmaker data
-        for m in waiting_members:
-            self.log.debug(f"Member {m} is being updated.")
-            data.members[m.data.session_id] = asdict(m.data)
-        self.io.save(data=data)
-        self.log.debug(f"List of active members: {list(self.member_manager.active())}")
-
-        self.log.debug("Returning filled group.")
-        return group
-
-    def _matching_timeout(self, group: Group, timeout_page):
-        self.log.warning("Matchmaking timeout.")
-        if group:
-            group.data.active = False
-            group._save()
-            self.log.warning(f"{group} marked as expired.")
-        self.io.release()
-        self._data = self.io.load()
-
-        if timeout_page:
-            self.exp.abort(reason=self._TIMEOUT_MSG, page=timeout_page)
+        Raises:
+            AllSlotsFull: If the MatchMaker was initialized with 
+                ``raise_exception_if_full = True`` (default is *False*)
+                and the MatchMaker has no available slots.
+        """
+        if self.exp.admin_mode:
+            return True
+        
+        if self.quota.full:
+            self._full()
+            return False
         else:
-            self.exp.abort(
-                reason=self._TIMEOUT_MSG,
-                title="Timeout",
-                msg="Sorry, the matchmaking process timed out.",
-                icon="user-clock",
-            )
+            return True
 
-        return None
+    def check_activation(self) -> bool:
+        """
+        Verifies that the MatchMaker is active and aborts the experiment
+        if necessary.
 
-    def _check_activation(self):
-        if self.admin_mode:
+        If the MatchMaker not active, the current experiment session is
+        aborted, and the *abort_page* specified on initialization of
+        the MatchMaker will be shown to participants.
+
+        The matching methods will check for activation themselves,
+        when called. But this may happen at a point in the experiment where
+        participants have made considerable progress. So it may be
+        useful to manually check for activation at an earlier stage.
+
+        As a general rule of thumb, it may be sensible to check activation
+        on first hiding of the landing page of an experiment. This way,
+        participants still get a nice welcome screen, but do not invest
+        too much time before the experiment is cancelled.
+
+        """
+        if self.exp.admin_mode:
             return True
 
         if self.active:
             return True
 
         self.log.info("MatchMaking session aborted (MatchMaker inactive).")
-        self.exp._allow_append = True
-        if self.inactive_page:
-            self.exp.abort(reason="matchmaker_inactive", page=self.inactive_page)
-        else:
-            self.exp.abort(
-                reason="matchmaker_inactive",
-                title="MatchMaking inactive",
-                msg="Sorry, the matchmaking process is currently inactive. Please try again later.",
-                icon="user-times",
-            )
-        self.exp._allow_append = False
+        self._abort_exp("matchmaker_inactive", self.inactive_page)
 
         return False
 
-    def _save_infos(self):
+    def _match_quota(self, specs):
+        no_match = False
+
+        for spec in specs:
+            if not spec.full(self):
+                try:
+                    return self._match_to(spec.name)
+                except NoMatch:
+                    no_match = True
+
+        if no_match: # only reached if *no* spec lead to successful match
+            raise NoMatch
+
+        self._full()
+
+    def _full(self):
+        if self.raise_exception_if_full:
+            raise AllSlotsFull
+        else:
+            self._abort_exp("matchmaker_full", self.full_page)
+
+    def _abort_exp(self, reason: str, page):
+        full_page_title = "Experiment closed"
+        full_page_text = "Sorry, the experiment currently does not accept participants."
+        self.exp.abort(
+            reason=reason,
+            title=full_page_title,
+            msg=full_page_text,
+            icon="user-check",
+            page=page,
+        )
+
+    def _validate_specs(self, specs):
+        names = set([spec.name for spec in specs])
+        if len(names) < len(specs):
+            raise ValueError("Group specs must have unique names.")
+        
+        for spec in specs:
+            spec._init_quota(self.exp)
+
+        return specs
+
+    def _init_member(self) -> GroupMember:
+        if self.member:
+            self.member.io.load()
+            return self.member
+
+        member = GroupMember(self)
+        member.io.save()
+        return member
+
+
+    def _update_additional_data(self):
         prefix = "interact"
         while prefix in self.exp.adata:
-            prefix += "_"
+            prefix = "_" + prefix
         self.exp.adata[prefix] = {}
-        self.exp.adata[prefix]["groupid"] = self.group.group_id
-        self.exp.adata[prefix]["role"] = self.member.role
-
-    def _deactivate_session(self, exp):
-        # gets called when the experiment aborts!
-        if self.member:
-            self.member.data.active = False
-            self.member._save()
-
-    def _enable_admin_mode(self, exp) -> bool:
-        """
-        Returns *True* if admin mode is called, *False* otherwise.
-        """
-        from alfred3_interact.page import PasswordPage, AdminPage
-
-        if (
-            exp.urlargs.get(self.admin_param, False) == "admin"
-            and not exp.session_status == "admin"
-        ):
-            exp.session_timeout = None
-            exp.config.read_dict({"data": {"save_data": False}})
-            exp.config.read_dict({"layout": {"show_progress": False}})
-            exp.session_status = "admin"
-
-            exp._allow_append = True
-            exp += PasswordPage(
-                password=self.admin_pw,
-                match_maker_id=self.matchmaker_id,
-                title="MatchMaker Admin",
-                name="_pw_admin_page",
-            )
-            exp += AdminPage(match_maker=self, title="MatchMaker Admin", name="_admin_page")
-            exp._allow_append = False
-
-            return True
-
-        else:
-            return False
-
-    def _set_ping_timeout(self, ping_timeout):
-        if not self._data.ping_timeout == ping_timeout:
-            q = {"type": "match_maker", "exp_id": self.exp.exp_id}
-            q["exp_version"] = self.exp_version
-            q["matchmaker_id"] = self.matchmaker_id
-            self.exp.db_misc.find_one_and_update(
-                q, update={"$set": {"ping_timeout": ping_timeout}}
-            )
-
-    def _validate_roles(self, roles):
-        p = re.compile(r"^\d|\s")
-        for role in roles:
-            if p.search(role):
-                raise ValueError(
-                    f"Error in role '{role}': Roles must not start with numbers \
-                    and must not contain spaces."
-                )
-
-        return roles
-
-    def __str__(self):
-        return f"{type(self).__name__}(id='{self.matchmaker_id}', roles={str(self.roles)})"
-
-    def __repr__(self):
-        return self.__str__()
+        self.exp.adata[prefix]["groupid"] = self.group.data.group_id
+        self.exp.adata[prefix]["role"] = self.member.data.role
