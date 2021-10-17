@@ -433,7 +433,7 @@ class Group:
             import alfred3 as al
             import alfred3_interact as ali
 
-            exp = Experiment()
+            exp = al.Experiment()
 
             @exp.setup
             def setup(exp):
