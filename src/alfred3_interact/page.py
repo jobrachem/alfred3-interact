@@ -257,6 +257,7 @@ class WaitingPage(al.NoNavigationPage):
             import alfred3 as al
             import alfred3_interact as ali
 
+            exp = al.Experiment()
 
             @exp.setup
             def setup(exp):
@@ -495,6 +496,7 @@ class MatchingPage(WaitingPage):
             import alfred3 as al
                 import alfred3_interact as ali
 
+                exp = al.Experiment()
 
                 @exp.setup
                 def setup(exp):
