@@ -147,4 +147,42 @@ class TestChainMatch:
         
         with pytest.raises(NoMatch):
             mm3.match_chain(test2=3, test1=0, include_previous=False)
+    
+
+    def test_roles(self, exp_factory):
+
+        exp1 = exp_factory("__exp1")
+        exp2 = exp_factory("__exp2")
+        exp3 = exp_factory("__exp3")
+
+        spec1 = ParallelSpec("a", "b", nslots=5, name="test1")
+        spec2 = ParallelSpec("a", "b", "c", nslots=5, name="test2")
+
+        mm1 = MatchMaker(spec1, spec2, exp=exp1)
+        mm2 = MatchMaker(spec1, spec2, exp=exp2)
+        mm3 = MatchMaker(spec1, spec2, exp=exp3)
+
+        with pytest.raises(NoMatch):
+            mm1.match_chain(test2=10, test1=0)
+        
+        with pytest.raises(NoMatch):
+            mm2.match_chain(test2=10, test1=0)
+
+        group3 = mm3.match_chain(test2=10, test1=0)
+        group2 = mm2.match_chain(test2=10, test1=0)
+        group1 = mm1.match_chain(test2=10, test1=0)
+        
+        assert group1.data.spec_name == "test2"
+        assert group2.data.spec_name == "test2"
+        assert group3.data.spec_name == "test2"
+        
+        assert group1.roles.roles["a"] is not None
+        assert group1.roles.roles["b"] is not None
+        assert group1.roles.roles["c"] is not None
+
+        assert group1.me.role == next(group3.roles.roles_of([exp1.session_id]))
+        assert group2.me.role == next(group3.roles.roles_of([exp2.session_id]))
+        assert group3.me.role == next(group3.roles.roles_of([exp3.session_id]))
+
+        assert len(set([group1.me.role, group2.me.role, group3.me.role])) == 3
         

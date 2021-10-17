@@ -298,13 +298,14 @@ class GroupRoles(GroupHelper):
     def open(self) -> Iterator[str]:
         finished = self.manager.find_finished_sessions(self.data.members)
         pending = self.manager.find_active_sessions(self.data.members)
-        sessions = chain(finished, pending)
+        sessions = list(chain(finished, pending))
         roles = (role for role, sid in self.roles.items() if sid not in sessions)
         return roles
 
     def assign(self, role: str, member: GroupMember):
-        self.data.roles[role] = member.data.session_id
+        self.group.data.roles[role] = member.data.session_id
         member.data.role = role
+        self.group.io.save()
 
     def next(self) -> str:
         role = next(self.open(), None)
@@ -314,6 +315,7 @@ class GroupRoles(GroupHelper):
         role_list = list(self.data.roles.items())
         random.shuffle(role_list)
         self.data.roles = dict(role_list)
+        self.group.io.save()
 
 
 class GroupMemberManager(GroupHelper):
