@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## alfred3_interact v0.2.1 [unreleased]
 
+### Added v0.2.1
+
+- Added `alfred3_interact.MatchTestPage`, a page that can be used to
+  quickly test the matchmaking of interactive experiments.
+
 ### Fixed v0.2.1
 
 - Fixed an issue that lead to problems with role assignment in parallel 
