@@ -1,6 +1,6 @@
-MatchMakerMonitoring.showif
+MatchMakerMonitoring.showif()
 =================================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoattribute:: MatchMakerMonitoring.showif
+.. automethod:: MatchMakerMonitoring.showif

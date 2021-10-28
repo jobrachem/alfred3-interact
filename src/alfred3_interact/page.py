@@ -257,7 +257,7 @@ class WaitingPage(al.NoNavigationPage):
             import alfred3 as al
             import alfred3_interact as ali
 
-            exp = Experiment()
+            exp = al.Experiment()
 
             @exp.setup
             def setup(exp):
@@ -496,7 +496,7 @@ class MatchingPage(WaitingPage):
             import alfred3 as al
                 import alfred3_interact as ali
 
-                exp = Experiment()
+                exp = al.Experiment()
 
                 @exp.setup
                 def setup(exp):
@@ -520,3 +520,78 @@ class MatchingPage(WaitingPage):
 
                         self += al.Text(f"Successfully matched to role: {{role}}")
     """
+
+
+@inherit_kwargs
+class MatchTestPage(al.Page):
+    """
+    A page for testing interactive experiments during development.
+
+    Args:
+        {kwargs}
+
+    The page expects a group object to be locatod at 
+    ``self.exp.plugins.group`` when it is first shown. 
+    It displays some information about the group, as well as a group chat.
+
+    Examples:
+        An example experiment with two specs with three roles each, 
+        random matching and a test page::
+
+            import alfred3 as al
+            import alfred3_interact as ali
+
+            exp = al.Experiment()
+
+            @exp.setup
+            def setup(exp):
+                spec1 = ali.ParallelSpec("a", "b", "c", nslots=10, name="spec1")
+                spec2 = ali.ParallelSpec("a2", "b2", "c2", nslots=10, name="spec2")
+                exp.plugins.mm = ali.MatchMaker(spec1, spec2, exp=exp)
+
+
+            @exp.member
+            class Match(ali.WaitingPage):
+
+                def wait_for(self):
+                    group = self.exp.plugins.mm.match_random()
+                    self.exp.plugins.group = group
+                    return True
+            
+            exp += ali.MatchTestPage(name="test")
+
+    
+    """
+    title = "MatchMaking Test Page"
+
+    def on_first_show(self):
+        group = self.exp.plugins.group
+        role = group.me.role
+                
+
+        self += al.Text("## This session")
+        self += al.Text(f"Successfully matched to role: {role}")
+        self += al.Text(f"This member's spec name: {group.spec_name}")
+
+        self += al.VerticalSpace("15pt")
+        self += al.Hline()
+        self += al.VerticalSpace("15pt")
+
+        self += al.Text("## Group Members")
+        for m in group.members():
+            self += al.Text(f"Member with role '{m.role}': {m.data.session_id}")
+
+        self += al.VerticalSpace("15pt")
+        self += al.Hline()
+        self += al.VerticalSpace("15pt")
+
+        self += al.Text("## Group Specs")
+        for m in group.members():
+            self += al.Text(f"Spec of member with role '{m.role}': {m.mm.group.spec_name}")
+        
+        self += al.VerticalSpace("15pt")
+        self += al.Hline()
+        self += al.VerticalSpace("15pt")
+        
+        self += al.Text("## Group Chat")
+        self += group.chat()

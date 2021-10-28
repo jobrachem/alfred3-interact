@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.2.1 (Released 2021-10-28)
+
+### Added v0.2.1
+
+- Added `alfred3_interact.MatchTestPage`, a page that can be used to
+  quickly test the matchmaking of interactive experiments.
+
+### Fixed v0.2.1
+
+- Fixed an issue that lead to problems with role assignment in parallel 
+  groups.
+
 ## alfred3_interact v0.2.0 (Released 2021-10-14)
 
 ### Changed v0.2.0

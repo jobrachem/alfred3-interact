@@ -41,7 +41,8 @@ class Chat(Element):
             chat. Defaults to an empty string: ``""``.
         
         placeholder (str): Text to display as a placeholder in the input
-            field. Defaults to '...'
+            field. Defaults to *Press enter to send your message, 
+            shift+enter for a linebreak*.
 
         disabled (bool): If *True*, the input field and send button will
             be disabled. Participants will be able to read the chat, but

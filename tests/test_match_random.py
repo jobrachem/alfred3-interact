@@ -161,8 +161,35 @@ class TestParallel:
         assert not exp1.aborted
         assert not exp2.aborted
         assert not exp3.aborted
-        
 
+    def test_roles(self, exp_factory):
+        exp1 = exp_factory()
+        exp2 = exp_factory()
+        exp3 = exp_factory()
 
+        spec = ParallelSpec("a", "b", "c", nslots=5, name="test")
 
+        mm1 = MatchMaker(spec, exp=exp1)
+        mm2 = MatchMaker(spec, exp=exp2)
+        mm3 = MatchMaker(spec, exp=exp3)
+
+        with pytest.raises(NoMatch):
+            mm1.match_random()
+
+        with pytest.raises(NoMatch):
+            mm2.match_random()
+
+        group3 = mm3.match_random()
+        group1 = mm1.match_random()
+        group2 = mm2.match_random()
+
+        assert group1.roles.roles["a"] is not None
+        assert group1.roles.roles["b"] is not None
+        assert group1.roles.roles["c"] is not None
+
+        assert group1.me.role == next(group3.roles.roles_of([exp1.session_id]))
+        assert group2.me.role == next(group3.roles.roles_of([exp2.session_id]))
+        assert group3.me.role == next(group3.roles.roles_of([exp3.session_id]))
+
+        assert len(set([group1.me.role, group2.me.role, group3.me.role])) == 3
 

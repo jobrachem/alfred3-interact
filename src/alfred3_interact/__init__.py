@@ -2,6 +2,7 @@ from .page import WaitingPage
 from .page import MatchingPage
 from .page import MatchMakerMonitoring
 from .page import MatchMakerActivation
+from .page import MatchTestPage
 
 from .match import MatchMaker
 from .spec import ParallelSpec

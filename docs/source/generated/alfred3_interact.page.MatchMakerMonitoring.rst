@@ -60,10 +60,16 @@
       ~MatchMakerMonitoring.on_first_show
    
    
+      ~MatchMakerMonitoring.position_in_section
+   
+   
       ~MatchMakerMonitoring.prepare_web_widget
    
    
       ~MatchMakerMonitoring.save_data
+   
+   
+      ~MatchMakerMonitoring.showif
    
    
       ~MatchMakerMonitoring.uptree
@@ -114,7 +120,6 @@
          ~MatchMakerMonitoring.section
          ~MatchMakerMonitoring.short_tree
          ~MatchMakerMonitoring.should_be_shown
-         ~MatchMakerMonitoring.showif
          ~MatchMakerMonitoring.subtitle
          ~MatchMakerMonitoring.tag
          ~MatchMakerMonitoring.title
