@@ -18,13 +18,22 @@
    
    
    
-      ~MatchMaker.from_size
+      ~MatchMaker.check_activation
    
    
-      ~MatchMaker.match_groupwise
+      ~MatchMaker.check_quota
    
    
-      ~MatchMaker.match_stepwise
+      ~MatchMaker.match
+   
+   
+      ~MatchMaker.match_chain
+   
+   
+      ~MatchMaker.match_random
+   
+   
+      ~MatchMaker.match_to
    
    
       ~MatchMaker.toggle_activation
@@ -43,8 +52,7 @@
 
       
          ~MatchMaker.active
-         ~MatchMaker.data
-         ~MatchMaker.member_timeout
+         ~MatchMaker.waiting_members
       
    
    
