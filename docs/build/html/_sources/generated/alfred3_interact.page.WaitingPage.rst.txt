@@ -63,10 +63,16 @@
       ~WaitingPage.on_first_show
    
    
+      ~WaitingPage.position_in_section
+   
+   
       ~WaitingPage.prepare_web_widget
    
    
       ~WaitingPage.save_data
+   
+   
+      ~WaitingPage.showif
    
    
       ~WaitingPage.uptree
@@ -122,7 +128,6 @@
          ~WaitingPage.section
          ~WaitingPage.short_tree
          ~WaitingPage.should_be_shown
-         ~WaitingPage.showif
          ~WaitingPage.subtitle
          ~WaitingPage.tag
          ~WaitingPage.title

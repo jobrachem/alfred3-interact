@@ -36,7 +36,10 @@ can also be used independently of groups.
 
 Equipped with this narrative information, you can dive into the API
 documentation and examples to see in more detail how to use 
-alfred3_interact in your alfred3 experiments.
+alfred3_interact in your alfred3 experiments. 
+
+If you have more questions or are stuck somewhere, please do not hesitate
+to ask your question in alfred3's GitHub discussions: https://github.com/ctreffe/alfred/discussions/categories/q-a
 
 .. toctree::
    :maxdepth: 2

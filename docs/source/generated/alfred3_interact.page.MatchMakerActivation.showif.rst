@@ -1,6 +1,6 @@
-MatchMakerActivation.showif
+MatchMakerActivation.showif()
 =================================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoattribute:: MatchMakerActivation.showif
+.. automethod:: MatchMakerActivation.showif

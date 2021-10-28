@@ -60,10 +60,16 @@
       ~MatchMakerActivation.on_first_show
    
    
+      ~MatchMakerActivation.position_in_section
+   
+   
       ~MatchMakerActivation.prepare_web_widget
    
    
       ~MatchMakerActivation.save_data
+   
+   
+      ~MatchMakerActivation.showif
    
    
       ~MatchMakerActivation.uptree
@@ -114,7 +120,6 @@
          ~MatchMakerActivation.section
          ~MatchMakerActivation.short_tree
          ~MatchMakerActivation.should_be_shown
-         ~MatchMakerActivation.showif
          ~MatchMakerActivation.subtitle
          ~MatchMakerActivation.tag
          ~MatchMakerActivation.title
