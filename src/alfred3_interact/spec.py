@@ -113,7 +113,7 @@ class ParallelMatchMaker:
                     return existing_group
 
                 waiting_members = self.mm.waiting_members
-                enough_members_waiting = len(waiting_members) == len(self.roles)
+                enough_members_waiting = len(waiting_members) >= len(self.roles)
                 
                 if enough_members_waiting:
                     group = self.start_group(data, waiting_members)
