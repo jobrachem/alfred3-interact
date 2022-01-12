@@ -166,6 +166,76 @@ class TestParallel:
         assert group2.data.spec_name == "test"
         assert group3.data.spec_name == "test"
         assert group4.data.spec_name == "test"
+    
+
+    def test_priority(self, exp_factory):
+        exp1 = exp_factory()
+        exp2 = exp_factory()
+        exp3 = exp_factory()
+
+        spec = ParallelSpec("a", "b", nslots=5, name="test", shuffle_waiting_members=False)
+
+        mm1 = MatchMaker(spec, exp=exp1)
+        mm2 = MatchMaker(spec, exp=exp2)
+        mm3 = MatchMaker(spec, exp=exp3)
+
+        with pytest.raises(NoMatch):
+            mm1.match_random(wait=2)
+
+        with pytest.raises(NoMatch):
+            mm2.match_random(wait=2)
+
+        with pytest.raises(NoMatch):
+            mm3.match_random(wait=2)
+        
+        time.sleep(2)
+        
+        group1 = mm1.match_random()
+
+        with pytest.raises(NoMatch):
+            mm3.match_random(wait=2)
+        
+        group2 = mm2.match_random(wait=2)
+
+        assert group1.data.spec_name == "test"
+        assert group2.data.spec_name == "test"
+        
+
+    def test_shuffle(self, exp_factory):
+        exp1 = exp_factory()
+        exp2 = exp_factory()
+        exp3 = exp_factory()
+
+        spec = ParallelSpec("a", "b", nslots=5, name="test", shuffle_waiting_members=True)
+
+        mm1 = MatchMaker(spec, exp=exp1)
+        mm2 = MatchMaker(spec, exp=exp2)
+        mm3 = MatchMaker(spec, exp=exp3)
+
+        random.seed(112345)
+        with pytest.raises(NoMatch):
+            mm1.match_random(wait=2)
+
+        with pytest.raises(NoMatch):
+            mm2.match_random(wait=2)
+
+        with pytest.raises(NoMatch):
+            mm3.match_random(wait=2)
+        
+        time.sleep(2)
+        
+        group1 = mm1.match_random(wait=2)
+        group3 = mm3.match_random(wait=2)
+        
+        with pytest.raises(NoMatch):
+            mm2.match_random(wait=2)
+
+        assert group1.data.spec_name == "test"
+        assert group3.data.spec_name == "test"
+
+        
+
+
 
     def test_three(self, exp_factory):
         exp1 = exp_factory()
