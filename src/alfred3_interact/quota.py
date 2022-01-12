@@ -21,10 +21,10 @@ class GroupSlot:
             return self._get_data_local(exp)
         elif saving_method(exp) == "mongo":
             return self._get_data_mongo(exp)
-    
+
     def _get_data_mongo(self, exp) -> t.Iterator[dict]:
         return exp.db_misc.find({"group_id": {"$in": self.group_ids}})
-    
+
     def _get_data_local(self, exp) -> t.Iterator[dict]:
         path = exp.config.get("interact", "path", fallback="save/interact")
         path = exp.subpath(path)
@@ -36,7 +36,7 @@ class GroupSlot:
                 group_data = json.load(f)
             if group_data["group_id"] in self.group_ids:
                 yield group_data
-    
+
     def most_recent_save(self, exp) -> float:
         data = self.get_data(exp)
         oldest_saves = []
@@ -48,16 +48,18 @@ class GroupSlot:
             members = self._pending_members(exp, group_data, ["exp_save_time"])
             save_times = [m["exp_save_time"] for m in members]
             oldest_saves.append(min(save_times))
-        
+
         # from the oldest activities, we take the newest one
         return max(oldest_saves)
-    
-    def _pending_members(self, exp, group_data, projection: t.Union[dict, list] = None) -> t.Iterator[dict]:
+
+    def _pending_members(
+        self, exp, group_data, projection: t.Union[dict, list] = None
+    ) -> t.Iterator[dict]:
         if saving_method(exp) == "local":
             return self._pending_members_local(exp, group_data)
         elif saving_method(exp) == "mongo":
             return self._pending_members_mongo(exp, group_data, projection)
-    
+
     def _pending_members_local(self, exp, group_data) -> t.Iterator[dict]:
         earliest_start = time.time() - exp.session_timeout
         path = exp.config.get("local_saving_agent", "path")
@@ -70,64 +72,66 @@ class GroupSlot:
             expired = False if start is None else start < earliest_start
             if in_group and not aborted and not finished and not expired:
                 yield session_data
-    
-    def _pending_members_mongo(self, exp, group_data, projection: t.Union[dict, list] = None) -> t.Iterator[dict]:
+
+    def _pending_members_mongo(
+        self, exp, group_data, projection: t.Union[dict, list] = None
+    ) -> t.Iterator[dict]:
         earliest_start = time.time() - exp.session_timeout
 
         q = {
-                "type": dm.EXP_DATA,
-                "exp_session_id": {"$in": group_data["members"]},
-                "exp_finished": False,
-                "exp_aborted": False,
-                "$or": [{"exp_start_time": {"$gte": earliest_start}}, {"exp_start_time": None}]
-            }
-        
+            "type": dm.EXP_DATA,
+            "exp_session_id": {"$in": group_data["members"]},
+            "exp_finished": False,
+            "exp_aborted": False,
+            "$or": [{"exp_start_time": {"$gte": earliest_start}}, {"exp_start_time": None}],
+        }
+
         return exp.db_main.find(q, projection=projection)
-    
+
     def npending(self, exp) -> int:
         counts = self._npending_members(exp)
         npending_groups = len([gid for gid, npending in counts.items() if npending > 0])
         return npending_groups
-    
+
     def _npending_members(self, exp) -> dict:
         if saving_method(exp) == "local":
             counts = self._npending_groups_local(exp)
         elif saving_method(exp) == "mongo":
             counts = self._npending_groups_mongo(exp)
-        
+
         return counts
-        
+
     def _count_pending(self, exp, members, data: list, cursor: t.Iterator) -> dict:
         earliest_start = time.time() - exp.session_timeout
         gids = [d["group_id"] for d in data]
-        
+
         counts = {gid: 0 for gid in gids}
         exited = {gid: False for gid in gids}
-        
+
         for session_data in cursor:
             aborted = session_data["exp_aborted"]
             finished = session_data["exp_finished"]
             start = session_data["exp_start_time"]
             expired = False if start is None else start < earliest_start
-            
+
             gid = members.get(session_data["exp_session_id"], None)
 
             if gid and not aborted and not finished and not expired:
                 counts[gid] += 1
-            
+
             if "groupwise" in data[0]["type"] and (aborted or expired):
                 exited[gid] = True
-        
+
         return counts
-        
+
     def _npending_groups_local(self, exp) -> int:
         data = self.get_data(exp)
         data = list(data)
-        
+
         path = exp.config.get("local_saving_agent", "path")
         path = exp.subpath(path)
         cursor = dm.iterate_local_data(dm.EXP_DATA, path)
-        
+
         members = {}
         for group_data in data:
             members.update({sid: group_data["group_id"] for sid in group_data["members"]})
@@ -135,7 +139,7 @@ class GroupSlot:
         counts = self._count_pending(exp, members, data, cursor)
 
         return counts
-    
+
     def _npending_groups_mongo(self, exp) -> int:
         p = ["group_id", "members", "type"]
         data = exp.db_misc.find({"group_id": {"$in": self.group_ids}}, projection=p)
@@ -143,7 +147,7 @@ class GroupSlot:
         members = {}
         for group_data in data:
             members.update({sid: group_data["group_id"] for sid in group_data["members"]})
-        
+
         q = {"exp_session_id": {"$in": list(members)}, "type": dm.EXP_DATA}
         p = ["exp_finished", "exp_aborted", "exp_start_time", "exp_session_id"]
         cursor = exp.db_main.find(q, p)
@@ -151,12 +155,14 @@ class GroupSlot:
 
         return counts
 
-    def _finished_members(self, exp, group_data: dict, projection: t.Union[dict, list]) -> t.Iterator[dict]:
+    def _finished_members(
+        self, exp, group_data: dict, projection: t.Union[dict, list]
+    ) -> t.Iterator[dict]:
         if saving_method(exp) == "local":
             return self._finished_members_local(exp, group_data)
         elif saving_method(exp) == "mongo":
             return self._finished_members_mongo(exp, group_data, projection)
-    
+
     def _finished_members_local(self, exp, group_data: dict) -> t.Iterator[dict]:
         path = exp.config.get("local_saving_agent", "path")
         path = exp.subpath(path)
@@ -165,14 +171,16 @@ class GroupSlot:
             finished = session_data["exp_finished"]
             if sid in group_data["members"] and finished:
                 yield session_data
-    
-    def _finished_members_mongo(self, exp, group_data: dict, projection: t.Union[dict, list]) -> t.Iterator[dict]:
+
+    def _finished_members_mongo(
+        self, exp, group_data: dict, projection: t.Union[dict, list]
+    ) -> t.Iterator[dict]:
         q = {
-                "type": dm.EXP_DATA,
-                "exp_session_id": {"$in": group_data["members"]},
-                "exp_finished": True,
-            }
-        
+            "type": dm.EXP_DATA,
+            "exp_session_id": {"$in": group_data["members"]},
+            "exp_finished": True,
+        }
+
         return exp.db_main.find(q, projection=projection)
 
     # def contains_incomplete_group(self, exp) -> bool:
@@ -190,7 +198,7 @@ class GroupSlot:
     #     for group_data in data:
     #         cursor = self._finished_members(exp, group_data, ["exp_finished"])
     #         gid = group_data["group_id"]
-            
+
     #         nroles = len(group_data["roles"])
     #         nfinished = sum([session["exp_finished"] for session in cursor])
     #         nfilled = counts_pending[gid] + counts_finished[gid]
@@ -209,9 +217,8 @@ class GroupSlot:
             nfinished = sum([session["exp_finished"] for session in cursor])
             gid = group_data["group_id"]
             counts[gid] = nfinished
-        
-        return counts
 
+        return counts
 
     def finished(self, exp) -> bool:
         data = self.get_data(exp)
@@ -247,13 +254,12 @@ class GroupSlotManager:
     def __post_init__(self):
         self.slots = [GroupSlot(**slot_data) for slot_data in self.slots]
 
-
     def open_slots(self, exp) -> Iterator[Slot]:
         return (slot for slot in self.slots if slot.open)
 
     def pending_slots(self, exp) -> Iterator[Slot]:
         return (slot for slot in self.slots if slot.pending(exp))
-    
+
     # def incomplete_slots(self, exp) -> Iterator[Slot]:
     #     return (slot for slot in self.slots if slot.contains_incomplete_group(exp))
 
@@ -261,7 +267,7 @@ class GroupSlotManager:
         for slot in self.slots:
             if group_ids in slot:
                 return slot
-    
+
     def next_pending(self, exp) -> Slot:
         """
         This method returns the next pending slot that is
@@ -276,17 +282,17 @@ class GroupSlotManager:
            is most likely to need extra groups.
         """
         slots = list(self.pending_slots(exp))
-        
+
         if len(slots) == 1:
             return slots[0]
-        
+
         slots = self._sparsest_slots(slots, exp)
 
         if len(slots) == 1:
             return slots[0]
-        
+
         return self._oldest_slot(slots, exp)
-    
+
     def _sparsest_slots(self, slots, exp) -> List[Slot]:
 
         npending = [slot.npending(exp) for slot in slots]
@@ -296,7 +302,7 @@ class GroupSlotManager:
             return minimal_pending
         else:
             return minimal_pending
-    
+
     def _oldest_slot(self, slots, exp) -> Slot:
         most_recent_save = [slot.most_recent_save(exp) for slot in slots]
         oldest = min(most_recent_save)
@@ -308,24 +314,24 @@ class GroupSlotManager:
 class ParallelGroupQuota(SessionQuota):
     """
     Manages quota for parallel groups.
-    
+
     Args:
         {kwargs}
     """
 
     group_type = GroupType.PARALLEL
-    
+
     def __init__(self, nslots: int, exp, name: str = "group_quota", **kwargs):
         if kwargs.pop("session_ids", False):
             raise ValueError("Unsupported argument: 'session_ids'")
-        
+
         super().__init__(nslots=nslots, exp=exp, name=name, **kwargs)
         self.group_id = None
-    
+
     @staticmethod
     def _use_comptability(**kwargs) -> bool:
         return False
-    
+
     def count(self, group, raise_exception: bool = False):
         if not group.data.group_type == self.group_type:
             raise ValueError(f"Group type {group.gtype} != {self.group_type}")
@@ -333,7 +339,7 @@ class ParallelGroupQuota(SessionQuota):
         self.session_ids = group.data.members
 
         return super().count(raise_exception)
-    
+
     def _slot_manager(self, data: QuotaData):
         try:
             return SlotManager(data.slots)
@@ -342,14 +348,14 @@ class ParallelGroupQuota(SessionQuota):
             if any(group_ids):
                 raise ValueError(
                     (
-                        "Tried to initialize a quota for a parallel spec " 
+                        "Tried to initialize a quota for a parallel spec "
                         "with data for a sequential spec quota. This can occur, if you use the same"
                         "name for different specs. Please make sure that all names are unique."
                     )
                 )
             else:
                 raise e
-    
+
 
 @inherit_kwargs(exclude=["session_ids"])
 class SequentialGroupQuota(ParallelGroupQuota):
@@ -359,6 +365,7 @@ class SequentialGroupQuota(ParallelGroupQuota):
     Args:
         {kwargs}
     """
+
     group_type = GroupType.SEQUENTIAL
 
     def _update_slot(self, slot):
@@ -377,14 +384,14 @@ class SequentialGroupQuota(ParallelGroupQuota):
             if any(session_groups):
                 raise ValueError(
                     (
-                        "Tried to initialize a quota for a sequential spec " 
+                        "Tried to initialize a quota for a sequential spec "
                         "with data for a parallel spec quota. This can occur, if you use the same"
                         "name for different specs. Please make sure that all names are unique."
                     )
                 )
             else:
                 raise e
-    
+
     @property
     def full(self) -> bool:
         """
@@ -393,21 +400,21 @@ class SequentialGroupQuota(ParallelGroupQuota):
         """
         with self.io as data:
             nopen = self._nopen(data)
-            
+
             if nopen > 0:
                 return False
 
             npending = self._npending(data)
 
             # no pending and no open slots means that the quota is allfinished
-            if npending == 0: 
+            if npending == 0:
                 return True
 
             # pending is > 0, inclusive quota will allow new groups to be formed
             if self.inclusive:
                 return False
-            
-            # Exclusive quota with pending slots and all groups in 
+
+            # Exclusive quota with pending slots and all groups in
             # those slots are complete. Thus, the quota is full
             return True
 
@@ -423,57 +430,57 @@ class MetaQuota:
 
     def __init__(self, *quotas):
         self.quotas = quotas
-    
+
     @property
     def nopen(self) -> int:
         """
-        int: Number of open slots. 
-        
+        int: Number of open slots.
+
         A slot is open, if there is no
-        active or finished experiment session (or group of experiment 
+        active or finished experiment session (or group of experiment
         sessions) associated with this slot.
         """
         return sum([quota.nopen for quota in self.quotas])
-    
+
     @property
     def npending(self) -> int:
         """
-        int: Number of pending slots. 
-        
-        A slot is pending, if there is currently an active session 
+        int: Number of pending slots.
+
+        A slot is pending, if there is currently an active session
         (or group of sessions) associated with this slot.
         """
         return sum([quota.npending for quota in self.quotas])
-    
+
     @property
     def nslots(self) -> int:
         """
         int: Total number of available slots.
         """
         return sum([quota.nslots for quota in self.quotas])
-    
+
     @property
     def nfinished(self) -> int:
         """
-        int: Number of finished slots. 
+        int: Number of finished slots.
 
-        A slot is finished, if at least one session (or group of 
+        A slot is finished, if at least one session (or group of
         sessions in case of group quotas) associated with this slot has
         finished the experiment.
         """
         return sum([quota.nfinished for quota in self.quotas])
-    
+
     @property
     def allfinished(self) -> bool:
         """
         bool: *True*, if all slots are finished.
 
-        A slot is finished, if at least one session (or group of 
+        A slot is finished, if at least one session (or group of
         sessions in case of group quotas) associated with this slot has
         finished the experiment.
         """
         return all([quota.allfinished for quota in self.quotas])
-    
+
     @property
     def full(self) -> bool:
         """
@@ -483,4 +490,3 @@ class MetaQuota:
         sessions or groups.
         """
         return all([quota.full for quota in self.quotas])
-    
