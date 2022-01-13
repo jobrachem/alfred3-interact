@@ -422,6 +422,8 @@ class MatchMaker:
                 not over yet. Thus, *nmin* can be used to cut the waiting
                 time short. Defaults to None, which means that waiting
                 time alone determines when matching will start.
+                **Note**: The parameter *nmin* will only take effect, if
+                *wait* is not *None*.
         
         This is the right method, if you wish to randomize participants
         into groups of different sizes. 
