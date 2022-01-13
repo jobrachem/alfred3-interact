@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.2.2 [unreleased]
+
+### Added v0.2.2
+
+- Added the parameter `shuffle_waiting_members` to `ParallelSpec`. If *True*,
+  groups will be composed after shuffling the list of waiting members. 
+  If *False*, members who have been waiting for a longer time have a
+  higher priority (although their prioritization is not entirely deterministic).
+
+
 ## alfred3_interact v0.2.1 (Released 2021-10-28)
 
 ### Added v0.2.1
