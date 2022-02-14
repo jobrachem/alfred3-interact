@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index &#8212; alfred3_interact</title>
     
-  <link rel="stylesheet" href="_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -19,60 +20,68 @@
 
     
       
-  <link rel="stylesheet"
-    href="_static/vendor/open-sans_all/1.44.1/index.css">
-  <link rel="stylesheet"
-    href="_static/vendor/lato_latin-ext/1.44.1/index.css">
 
     
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=84ace793992934648b4de8eed757e5a2" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css" />
     
-  <link rel="preload" as="script" href="_static/js/index.d3f166471bb80abb5163.js">
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
 
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <script src="_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en" />
+    <meta name="docsearch:language" content="None">
+    
 
-
-
+    <!-- Google Analytics -->
+    
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
     
 
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<div class="col-12 col-md-3 bd-sidebar site-navigation " id="site-navigation">
     
         <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="index.html">
-  
-  <img src="_static/alfred_logo_color.png" class="logo" alt="logo">
-  
-  
-  <h1 class="site-logo" id="site-title">alfred3_interact</h1>
-  
-</a>
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/alfred_logo_color.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">alfred3_interact</h1>
+      
+    </a>
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form>
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-    <p class="caption collapsible-parent">
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Durchsuchen Sie die Dokumente ..." aria-label="Durchsuchen Sie die Dokumente ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   How To
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="howto_match.html">
    How To Create an Interactive Experiment
@@ -89,17 +98,22 @@
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   API Reference
  </span>
 </p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1 collapsible-parent">
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.html">
    MatchMaker
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.match.MatchMaker.check_activation.html">
      MatchMaker.check_activation()
@@ -146,14 +160,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.spec.SequentialSpec.html">
    SequentialSpec
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.spec.SequentialSpec.full.html">
      SequentialSpec.full()
@@ -175,14 +192,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.spec.ParallelSpec.html">
    ParallelSpec
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.spec.ParallelSpec.full.html">
      ParallelSpec.full()
@@ -204,14 +224,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.spec.IndividualSpec.html">
    IndividualSpec
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.spec.IndividualSpec.full.html">
      IndividualSpec.full()
@@ -233,14 +256,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.group.Group.html">
    Group
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.group.Group.active_members.html">
      Group.active_members()
@@ -317,14 +343,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.html">
    GroupMember
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.member.GroupMember.adata.html">
      GroupMember.adata
@@ -376,14 +405,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.html">
    WaitingPage
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.added_to_experiment.html">
      WaitingPage.added_to_experiment()
@@ -709,15 +741,23 @@
      WaitingPage.wait_timeout_page
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="generated/alfred3_interact.page.WaitingPage.waiting_start.html">
+     WaitingPage.waiting_start
+    </a>
+   </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.page.MatchMakerActivation.html">
    MatchMakerActivation
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+  <label for="toctree-checkbox-8">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.page.MatchMakerActivation.added_to_experiment.html">
      MatchMakerActivation.added_to_experiment()
@@ -999,14 +1039,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.page.MatchMakerMonitoring.html">
    MatchMakerMonitoring
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+  <label for="toctree-checkbox-9">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.page.MatchMakerMonitoring.added_to_experiment.html">
      MatchMakerMonitoring.added_to_experiment()
@@ -1288,14 +1331,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.element.Chat.html">
    Chat
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
+  <label for="toctree-checkbox-10">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.element.Chat.add_css.html">
      Chat.add_css()
@@ -1457,14 +1503,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.quota.ParallelGroupQuota.html">
    ParallelGroupQuota
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/>
+  <label for="toctree-checkbox-11">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.quota.ParallelGroupQuota.count.html">
      ParallelGroupQuota.count()
@@ -1511,14 +1560,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.quota.SequentialGroupQuota.html">
    SequentialGroupQuota
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/>
+  <label for="toctree-checkbox-12">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.quota.SequentialGroupQuota.count.html">
      SequentialGroupQuota.count()
@@ -1565,14 +1617,17 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
- <li class="toctree-l1 collapsible-parent">
+ <li class="toctree-l1 has-children">
   <a class="reference internal" href="generated/alfred3_interact.quota.MetaQuota.html">
    MetaQuota
   </a>
-  <ul class="collapse-ul">
+  <input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/>
+  <label for="toctree-checkbox-13">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="generated/alfred3_interact.quota.MetaQuota.allfinished.html">
      MetaQuota.allfinished
@@ -1604,11 +1659,10 @@
     </a>
    </li>
   </ul>
-  <i class="fas fa-chevron-down">
-  </i>
  </li>
 </ul>
 
+    </div>
 </nav> <!-- To handle the deprecated key -->
 
 <div class="navbar_extra_footer">
@@ -1622,22 +1676,22 @@
 
 
           
+<!-- This is an invisible pixel that we watch to see if we've scrolled. -->
+<div class="sbt-scroll-pixel-helper"></div>
 <main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
     
     <div class="topbar container-xl fixed-top">
     <div class="topbar-contents row">
         <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
         <div class="col pl-md-4 topbar-main">
-            
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
+            <div class="topbar-left">
+                
+                <label class="nav-toggle-button" for="__navigation">
+                    <div class="visually-hidden">Navigation umschalten</div>
+                    <i class="fas fa-bars"></i>
+                </label>
+                
+            </div>
             
             <!-- Source interaction buttons -->
 
@@ -1647,33 +1701,43 @@
     <div class="dropdown-buttons sourcebuttons">
         <a class="repository-button"
             href="https://github.com/jobrachem/alfred3-interact"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
+                data-toggle="tooltip" data-placement="left" title="Quell-Repository"><i
+                    class="fab fa-github"></i>Repository</button></a>
         
         
     </div>
 </div>
 
-
             <!-- Full screen (wrap in <a> to have style consistency -->
-            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-                    title="Fullscreen mode"><i
-                        class="fas fa-expand"></i></button></a>
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Vollbildmodus"
+        title="Vollbildmodus"><i
+            class="fas fa-expand"></i></button></a>
 
             <!-- Launch buttons -->
 
         </div>
 
         <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
             
         </div>
     </div>
 </div>
     <div id="main-content" class="row">
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
               <div>
                 
 
@@ -1714,13 +1778,13 @@
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.access_level.html#alfred3_interact.page.MatchMakerMonitoring.access_level">(alfred3_interact.page.MatchMakerMonitoring attribute)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.match.MatchMaker.active.html#alfred3_interact.match.MatchMaker.active">active() (alfred3_interact.match.MatchMaker property)</a>
+      <li><a href="generated/alfred3_interact.match.MatchMaker.active.html#alfred3_interact.match.MatchMaker.active">active (alfred3_interact.match.MatchMaker property)</a>
 </li>
       <li><a href="generated/alfred3_interact.group.Group.active_members.html#alfred3_interact.group.Group.active_members">active_members() (alfred3_interact.group.Group method)</a>
 </li>
       <li><a href="generated/alfred3_interact.group.Group.active_other_members.html#alfred3_interact.group.Group.active_other_members">active_other_members() (alfred3_interact.group.Group method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.adata.html#alfred3_interact.member.GroupMember.adata">adata() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.adata.html#alfred3_interact.member.GroupMember.adata">adata (alfred3_interact.member.GroupMember property)</a>
 </li>
       <li><a href="generated/alfred3_interact.element.Chat.add_css.html#alfred3_interact.element.Chat.add_css">add_css() (alfred3_interact.element.Chat method)</a>
 </li>
@@ -1748,9 +1812,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.member.GroupMember.additional_data.html#alfred3_interact.member.GroupMember.additional_data">additional_data() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.additional_data.html#alfred3_interact.member.GroupMember.additional_data">additional_data (alfred3_interact.member.GroupMember property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.all_elements.html#alfred3_interact.page.MatchMakerActivation.all_elements">all_elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.all_elements.html#alfred3_interact.page.MatchMakerActivation.all_elements">all_elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.all_elements.html#alfred3_interact.page.MatchMakerMonitoring.all_elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1758,7 +1822,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.all_elements.html#alfred3_interact.page.WaitingPage.all_elements">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.all_input_elements.html#alfred3_interact.page.MatchMakerActivation.all_input_elements">all_input_elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.all_input_elements.html#alfred3_interact.page.MatchMakerActivation.all_input_elements">all_input_elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.all_input_elements.html#alfred3_interact.page.MatchMakerMonitoring.all_input_elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1766,7 +1830,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.all_input_elements.html#alfred3_interact.page.WaitingPage.all_input_elements">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.quota.MetaQuota.allfinished.html#alfred3_interact.quota.MetaQuota.allfinished">allfinished() (alfred3_interact.quota.MetaQuota property)</a>
+      <li><a href="generated/alfred3_interact.quota.MetaQuota.allfinished.html#alfred3_interact.quota.MetaQuota.allfinished">allfinished (alfred3_interact.quota.MetaQuota property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.ParallelGroupQuota.allfinished.html#alfred3_interact.quota.ParallelGroupQuota.allfinished">(alfred3_interact.quota.ParallelGroupQuota property)</a>
@@ -1788,7 +1852,7 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.background_color.html#alfred3_interact.page.MatchMakerActivation.background_color">background_color() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.background_color.html#alfred3_interact.page.MatchMakerActivation.background_color">background_color (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.background_color.html#alfred3_interact.page.MatchMakerMonitoring.background_color">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1814,7 +1878,7 @@
 </li>
       <li><a href="generated/alfred3_interact.match.MatchMaker.check_quota.html#alfred3_interact.match.MatchMaker.check_quota">check_quota() (alfred3_interact.match.MatchMaker method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.client_data.html#alfred3_interact.member.GroupMember.client_data">client_data() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.client_data.html#alfred3_interact.member.GroupMember.client_data">client_data (alfred3_interact.member.GroupMember property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.close.html#alfred3_interact.page.MatchMakerActivation.close">close() (alfred3_interact.page.MatchMakerActivation method)</a>
 
@@ -1824,7 +1888,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.close.html#alfred3_interact.page.WaitingPage.close">(alfred3_interact.page.WaitingPage method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.converted_width.html#alfred3_interact.element.Chat.converted_width">converted_width() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.converted_width.html#alfred3_interact.element.Chat.converted_width">converted_width (alfred3_interact.element.Chat property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1834,13 +1898,13 @@
         <li><a href="generated/alfred3_interact.quota.SequentialGroupQuota.count.html#alfred3_interact.quota.SequentialGroupQuota.count">(alfred3_interact.quota.SequentialGroupQuota method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.css_class_container.html#alfred3_interact.element.Chat.css_class_container">css_class_container() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.css_class_container.html#alfred3_interact.element.Chat.css_class_container">css_class_container (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.css_class_element.html#alfred3_interact.element.Chat.css_class_element">css_class_element() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.css_class_element.html#alfred3_interact.element.Chat.css_class_element">css_class_element (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.css_code.html#alfred3_interact.element.Chat.css_code">css_code() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.css_code.html#alfred3_interact.element.Chat.css_code">css_code (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.css_urls.html#alfred3_interact.element.Chat.css_urls">css_urls() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.css_urls.html#alfred3_interact.element.Chat.css_urls">css_urls (alfred3_interact.element.Chat property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.custom_move.html#alfred3_interact.page.MatchMakerActivation.custom_move">custom_move() (alfred3_interact.page.MatchMakerActivation method)</a>
 
@@ -1856,7 +1920,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.data.html#alfred3_interact.page.MatchMakerActivation.data">data() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.data.html#alfred3_interact.page.MatchMakerActivation.data">data (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.data.html#alfred3_interact.page.MatchMakerMonitoring.data">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1872,7 +1936,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.display_standalone.html#alfred3_interact.element.Chat.display_standalone">display_standalone() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.display_standalone.html#alfred3_interact.element.Chat.display_standalone">display_standalone (alfred3_interact.element.Chat property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.durations.html#alfred3_interact.page.MatchMakerActivation.durations">durations() (alfred3_interact.page.MatchMakerActivation method)</a>
 
@@ -1890,9 +1954,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.element.Chat.element_template.html#alfred3_interact.element.Chat.element_template">element_template (alfred3_interact.element.Chat attribute)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.element_width.html#alfred3_interact.element.Chat.element_width">element_width() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.element_width.html#alfred3_interact.element.Chat.element_width">element_width (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.elements.html#alfred3_interact.page.MatchMakerActivation.elements">elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.elements.html#alfred3_interact.page.MatchMakerActivation.elements">elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.elements.html#alfred3_interact.page.MatchMakerMonitoring.elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1900,7 +1964,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.elements.html#alfred3_interact.page.WaitingPage.elements">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.exp.html#alfred3_interact.element.Chat.exp">exp() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.exp.html#alfred3_interact.element.Chat.exp">exp (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.exp.html#alfred3_interact.page.MatchMakerActivation.exp">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -1912,7 +1976,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.experiment.html#alfred3_interact.element.Chat.experiment">experiment() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.experiment.html#alfred3_interact.element.Chat.experiment">experiment (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.experiment.html#alfred3_interact.page.MatchMakerActivation.experiment">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -1922,9 +1986,9 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.experiment.html#alfred3_interact.page.WaitingPage.experiment">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.WaitingPage.expiration_time.html#alfred3_interact.page.WaitingPage.expiration_time">expiration_time() (alfred3_interact.page.WaitingPage property)</a>
+      <li><a href="generated/alfred3_interact.page.WaitingPage.expiration_time.html#alfred3_interact.page.WaitingPage.expiration_time">expiration_time (alfred3_interact.page.WaitingPage property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.WaitingPage.expired.html#alfred3_interact.page.WaitingPage.expired">expired() (alfred3_interact.page.WaitingPage property)</a>
+      <li><a href="generated/alfred3_interact.page.WaitingPage.expired.html#alfred3_interact.page.WaitingPage.expired">expired (alfred3_interact.page.WaitingPage property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1932,7 +1996,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.filled_input_elements.html#alfred3_interact.page.MatchMakerActivation.filled_input_elements">filled_input_elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.filled_input_elements.html#alfred3_interact.page.MatchMakerActivation.filled_input_elements">filled_input_elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.filled_input_elements.html#alfred3_interact.page.MatchMakerMonitoring.filled_input_elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1940,7 +2004,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.filled_input_elements.html#alfred3_interact.page.WaitingPage.filled_input_elements">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.group.Group.finished.html#alfred3_interact.group.Group.finished">finished() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.finished.html#alfred3_interact.group.Group.finished">finished (alfred3_interact.group.Group property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.first_duration.html#alfred3_interact.page.MatchMakerActivation.first_duration">first_duration() (alfred3_interact.page.MatchMakerActivation method)</a>
 
@@ -1950,7 +2014,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.first_duration.html#alfred3_interact.page.WaitingPage.first_duration">(alfred3_interact.page.WaitingPage method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.fixed_width.html#alfred3_interact.page.MatchMakerActivation.fixed_width">fixed_width() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.fixed_width.html#alfred3_interact.page.MatchMakerActivation.fixed_width">fixed_width (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.fixed_width.html#alfred3_interact.page.MatchMakerMonitoring.fixed_width">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -1960,9 +2024,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.font_size.html#alfred3_interact.element.Chat.font_size">font_size() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.font_size.html#alfred3_interact.element.Chat.font_size">font_size (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.group.Group.full.html#alfred3_interact.group.Group.full">full() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.full.html#alfred3_interact.group.Group.full">full (alfred3_interact.group.Group property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.MetaQuota.full.html#alfred3_interact.quota.MetaQuota.full">(alfred3_interact.quota.MetaQuota property)</a>
@@ -1971,8 +2035,10 @@
 </li>
         <li><a href="generated/alfred3_interact.quota.SequentialGroupQuota.full.html#alfred3_interact.quota.SequentialGroupQuota.full">(alfred3_interact.quota.SequentialGroupQuota property)</a>
 </li>
-        <li><a href="generated/alfred3_interact.spec.IndividualSpec.full.html#alfred3_interact.spec.IndividualSpec.full">(alfred3_interact.spec.IndividualSpec method)</a>
-</li>
+      </ul></li>
+      <li><a href="generated/alfred3_interact.spec.IndividualSpec.full.html#alfred3_interact.spec.IndividualSpec.full">full() (alfred3_interact.spec.IndividualSpec method)</a>
+
+      <ul>
         <li><a href="generated/alfred3_interact.spec.ParallelSpec.full.html#alfred3_interact.spec.ParallelSpec.full">(alfred3_interact.spec.ParallelSpec method)</a>
 </li>
         <li><a href="generated/alfred3_interact.spec.SequentialSpec.full.html#alfred3_interact.spec.SequentialSpec.full">(alfred3_interact.spec.SequentialSpec method)</a>
@@ -1986,7 +2052,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.group.Group.html#alfred3_interact.group.Group">Group (class in alfred3_interact.group)</a>
 </li>
-      <li><a href="generated/alfred3_interact.group.Group.group_id.html#alfred3_interact.group.Group.group_id">group_id() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.group_id.html#alfred3_interact.group.Group.group_id">group_id (alfred3_interact.group.Group property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.member.GroupMember.group_id.html#alfred3_interact.member.GroupMember.group_id">(alfred3_interact.member.GroupMember property)</a>
@@ -2014,7 +2080,7 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.has_been_shown.html#alfred3_interact.page.MatchMakerActivation.has_been_shown">has_been_shown() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.has_been_shown.html#alfred3_interact.page.MatchMakerActivation.has_been_shown">has_been_shown (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.has_been_shown.html#alfred3_interact.page.MatchMakerMonitoring.has_been_shown">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2024,7 +2090,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.header_color.html#alfred3_interact.page.MatchMakerActivation.header_color">header_color() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.header_color.html#alfred3_interact.page.MatchMakerActivation.header_color">header_color (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.header_color.html#alfred3_interact.page.MatchMakerMonitoring.header_color">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2040,7 +2106,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.spec.IndividualSpec.html#alfred3_interact.spec.IndividualSpec">IndividualSpec (class in alfred3_interact.spec)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.input_elements.html#alfred3_interact.page.MatchMakerActivation.input_elements">input_elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.input_elements.html#alfred3_interact.page.MatchMakerActivation.input_elements">input_elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.input_elements.html#alfred3_interact.page.MatchMakerMonitoring.input_elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2058,7 +2124,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.is_closed.html#alfred3_interact.page.MatchMakerActivation.is_closed">is_closed() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.is_closed.html#alfred3_interact.page.MatchMakerActivation.is_closed">is_closed (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.is_closed.html#alfred3_interact.page.MatchMakerMonitoring.is_closed">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2072,13 +2138,13 @@
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.js_code.html#alfred3_interact.element.Chat.js_code">js_code() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.js_code.html#alfred3_interact.element.Chat.js_code">js_code (alfred3_interact.element.Chat property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.element.Chat.js_template.html#alfred3_interact.element.Chat.js_template">js_template (alfred3_interact.element.Chat attribute)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.js_urls.html#alfred3_interact.element.Chat.js_urls">js_urls() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.js_urls.html#alfred3_interact.element.Chat.js_urls">js_urls (alfred3_interact.element.Chat property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2108,7 +2174,7 @@
 </li>
       <li><a href="generated/alfred3_interact.match.MatchMaker.match_to.html#alfred3_interact.match.MatchMaker.match_to">match_to() (alfred3_interact.match.MatchMaker method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.matched.html#alfred3_interact.member.GroupMember.matched">matched() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.matched.html#alfred3_interact.member.GroupMember.matched">matched (alfred3_interact.member.GroupMember property)</a>
 </li>
       <li><a href="generated/alfred3_interact.match.MatchMaker.html#alfred3_interact.match.MatchMaker">MatchMaker (class in alfred3_interact.match)</a>
 </li>
@@ -2116,17 +2182,17 @@
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.html#alfred3_interact.page.MatchMakerMonitoring">MatchMakerMonitoring (class in alfred3_interact.page)</a>
 </li>
-      <li><a href="generated/alfred3_interact.group.Group.me.html#alfred3_interact.group.Group.me">me() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.me.html#alfred3_interact.group.Group.me">me (alfred3_interact.group.Group property)</a>
 </li>
       <li><a href="generated/alfred3_interact.group.Group.members.html#alfred3_interact.group.Group.members">members() (alfred3_interact.group.Group method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.metadata.html#alfred3_interact.member.GroupMember.metadata">metadata() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.metadata.html#alfred3_interact.member.GroupMember.metadata">metadata (alfred3_interact.member.GroupMember property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.quota.MetaQuota.html#alfred3_interact.quota.MetaQuota">MetaQuota (class in alfred3_interact.quota)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.minimum_display_time.html#alfred3_interact.page.MatchMakerActivation.minimum_display_time">minimum_display_time() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.minimum_display_time.html#alfred3_interact.page.MatchMakerActivation.minimum_display_time">minimum_display_time (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.minimum_display_time.html#alfred3_interact.page.MatchMakerMonitoring.minimum_display_time">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2134,7 +2200,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.minimum_display_time.html#alfred3_interact.page.WaitingPage.minimum_display_time">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.minimum_display_time_msg.html#alfred3_interact.page.MatchMakerActivation.minimum_display_time_msg">minimum_display_time_msg() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.minimum_display_time_msg.html#alfred3_interact.page.MatchMakerActivation.minimum_display_time_msg">minimum_display_time_msg (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.minimum_display_time_msg.html#alfred3_interact.page.MatchMakerMonitoring.minimum_display_time_msg">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2142,9 +2208,9 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.minimum_display_time_msg.html#alfred3_interact.page.WaitingPage.minimum_display_time_msg">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.move_history.html#alfred3_interact.member.GroupMember.move_history">move_history() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.move_history.html#alfred3_interact.member.GroupMember.move_history">move_history (alfred3_interact.member.GroupMember property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.must_be_shown.html#alfred3_interact.page.MatchMakerActivation.must_be_shown">must_be_shown() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.must_be_shown.html#alfred3_interact.page.MatchMakerActivation.must_be_shown">must_be_shown (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.must_be_shown.html#alfred3_interact.page.MatchMakerMonitoring.must_be_shown">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2158,25 +2224,25 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.group.Group.nactive.html#alfred3_interact.group.Group.nactive">nactive() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.nactive.html#alfred3_interact.group.Group.nactive">nactive (alfred3_interact.group.Group property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.name.html#alfred3_interact.page.MatchMakerActivation.name">name (alfred3_interact.page.MatchMakerActivation attribute)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.name.html#alfred3_interact.element.Chat.name">name (alfred3_interact.element.Chat property)</a>
 
       <ul>
+        <li><a href="generated/alfred3_interact.page.MatchMakerActivation.name.html#alfred3_interact.page.MatchMakerActivation.name">(alfred3_interact.page.MatchMakerActivation attribute)</a>
+</li>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.name.html#alfred3_interact.page.MatchMakerMonitoring.name">(alfred3_interact.page.MatchMakerMonitoring attribute)</a>
 </li>
         <li><a href="generated/alfred3_interact.page.WaitingPage.name.html#alfred3_interact.page.WaitingPage.name">(alfred3_interact.page.WaitingPage attribute)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.name.html#alfred3_interact.element.Chat.name">name() (alfred3_interact.element.Chat property)</a>
-</li>
       <li><a href="generated/alfred3_interact.quota.ParallelGroupQuota.next.html#alfred3_interact.quota.ParallelGroupQuota.next">next() (alfred3_interact.quota.ParallelGroupQuota method)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.SequentialGroupQuota.next.html#alfred3_interact.quota.SequentialGroupQuota.next">(alfred3_interact.quota.SequentialGroupQuota method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.group.Group.nfinished.html#alfred3_interact.group.Group.nfinished">nfinished() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.nfinished.html#alfred3_interact.group.Group.nfinished">nfinished (alfred3_interact.group.Group property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.MetaQuota.nfinished.html#alfred3_interact.quota.MetaQuota.nfinished">(alfred3_interact.quota.MetaQuota property)</a>
@@ -2188,7 +2254,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.quota.MetaQuota.nopen.html#alfred3_interact.quota.MetaQuota.nopen">nopen() (alfred3_interact.quota.MetaQuota property)</a>
+      <li><a href="generated/alfred3_interact.quota.MetaQuota.nopen.html#alfred3_interact.quota.MetaQuota.nopen">nopen (alfred3_interact.quota.MetaQuota property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.ParallelGroupQuota.nopen.html#alfred3_interact.quota.ParallelGroupQuota.nopen">(alfred3_interact.quota.ParallelGroupQuota property)</a>
@@ -2196,7 +2262,7 @@
         <li><a href="generated/alfred3_interact.quota.SequentialGroupQuota.nopen.html#alfred3_interact.quota.SequentialGroupQuota.nopen">(alfred3_interact.quota.SequentialGroupQuota property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.quota.MetaQuota.npending.html#alfred3_interact.quota.MetaQuota.npending">npending() (alfred3_interact.quota.MetaQuota property)</a>
+      <li><a href="generated/alfred3_interact.quota.MetaQuota.npending.html#alfred3_interact.quota.MetaQuota.npending">npending (alfred3_interact.quota.MetaQuota property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.quota.ParallelGroupQuota.npending.html#alfred3_interact.quota.ParallelGroupQuota.npending">(alfred3_interact.quota.ParallelGroupQuota property)</a>
@@ -2204,7 +2270,7 @@
         <li><a href="generated/alfred3_interact.quota.SequentialGroupQuota.npending.html#alfred3_interact.quota.SequentialGroupQuota.npending">(alfred3_interact.quota.SequentialGroupQuota property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.quota.MetaQuota.nslots.html#alfred3_interact.quota.MetaQuota.nslots">nslots() (alfred3_interact.quota.MetaQuota property)</a>
+      <li><a href="generated/alfred3_interact.quota.MetaQuota.nslots.html#alfred3_interact.quota.MetaQuota.nslots">nslots (alfred3_interact.quota.MetaQuota property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2272,13 +2338,13 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.page.html#alfred3_interact.element.Chat.page">page() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.page.html#alfred3_interact.element.Chat.page">page (alfred3_interact.element.Chat property)</a>
 </li>
       <li><a href="generated/alfred3_interact.quota.ParallelGroupQuota.html#alfred3_interact.quota.ParallelGroupQuota">ParallelGroupQuota (class in alfred3_interact.quota)</a>
 </li>
       <li><a href="generated/alfred3_interact.spec.ParallelSpec.html#alfred3_interact.spec.ParallelSpec">ParallelSpec (class in alfred3_interact.spec)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.parent.html#alfred3_interact.page.MatchMakerActivation.parent">parent() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.parent.html#alfred3_interact.page.MatchMakerActivation.parent">parent (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.parent.html#alfred3_interact.page.MatchMakerMonitoring.parent">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2294,7 +2360,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.parent_name.html#alfred3_interact.page.WaitingPage.parent_name">(alfred3_interact.page.WaitingPage attribute)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.WaitingPage.passed_time.html#alfred3_interact.page.WaitingPage.passed_time">passed_time() (alfred3_interact.page.WaitingPage property)</a>
+      <li><a href="generated/alfred3_interact.page.WaitingPage.passed_time.html#alfred3_interact.page.WaitingPage.passed_time">passed_time (alfred3_interact.page.WaitingPage property)</a>
 </li>
       <li><a href="generated/alfred3_interact.spec.IndividualSpec.pattern.html#alfred3_interact.spec.IndividualSpec.pattern">pattern (alfred3_interact.spec.IndividualSpec attribute)</a>
 
@@ -2306,7 +2372,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.position.html#alfred3_interact.element.Chat.position">position() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.position.html#alfred3_interact.element.Chat.position">position (alfred3_interact.element.Chat property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.position_in_section.html#alfred3_interact.page.MatchMakerActivation.position_in_section">position_in_section() (alfred3_interact.page.MatchMakerActivation method)</a>
 
@@ -2348,7 +2414,7 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.spec.IndividualSpec.quota.html#alfred3_interact.spec.IndividualSpec.quota">quota() (alfred3_interact.spec.IndividualSpec property)</a>
+      <li><a href="generated/alfred3_interact.spec.IndividualSpec.quota.html#alfred3_interact.spec.IndividualSpec.quota">quota (alfred3_interact.spec.IndividualSpec property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.spec.ParallelSpec.quota.html#alfred3_interact.spec.ParallelSpec.quota">(alfred3_interact.spec.ParallelSpec property)</a>
@@ -2369,12 +2435,12 @@
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.responsive_width.html#alfred3_interact.page.MatchMakerMonitoring.responsive_width">(alfred3_interact.page.MatchMakerMonitoring attribute)</a>
 </li>
+        <li><a href="generated/alfred3_interact.page.WaitingPage.responsive_width.html#alfred3_interact.page.WaitingPage.responsive_width">(alfred3_interact.page.WaitingPage property)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.WaitingPage.responsive_width.html#alfred3_interact.page.WaitingPage.responsive_width">responsive_width() (alfred3_interact.page.WaitingPage property)</a>
-</li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.role.html#alfred3_interact.member.GroupMember.role">role() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.role.html#alfred3_interact.member.GroupMember.role">role (alfred3_interact.member.GroupMember property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2390,7 +2456,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.save_data.html#alfred3_interact.page.WaitingPage.save_data">(alfred3_interact.page.WaitingPage method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.section.html#alfred3_interact.element.Chat.section">section() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.section.html#alfred3_interact.element.Chat.section">section (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.section.html#alfred3_interact.page.MatchMakerActivation.section">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -2404,11 +2470,11 @@
 </li>
       <li><a href="generated/alfred3_interact.spec.SequentialSpec.html#alfred3_interact.spec.SequentialSpec">SequentialSpec (class in alfred3_interact.spec)</a>
 </li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.session_data.html#alfred3_interact.member.GroupMember.session_data">session_data() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.session_data.html#alfred3_interact.member.GroupMember.session_data">session_data (alfred3_interact.member.GroupMember property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.group.Group.shared_data.html#alfred3_interact.group.Group.shared_data">shared_data() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.shared_data.html#alfred3_interact.group.Group.shared_data">shared_data (alfred3_interact.group.Group property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.short_tree.html#alfred3_interact.element.Chat.short_tree">short_tree() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.short_tree.html#alfred3_interact.element.Chat.short_tree">short_tree (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.short_tree.html#alfred3_interact.page.MatchMakerActivation.short_tree">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -2420,7 +2486,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.element.Chat.should_be_shown.html#alfred3_interact.element.Chat.should_be_shown">should_be_shown() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.should_be_shown.html#alfred3_interact.element.Chat.should_be_shown">should_be_shown (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.should_be_shown.html#alfred3_interact.page.MatchMakerActivation.should_be_shown">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -2430,19 +2496,19 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.should_be_shown.html#alfred3_interact.page.WaitingPage.should_be_shown">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.element.Chat.showif.html#alfred3_interact.element.Chat.showif">showif() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.showif.html#alfred3_interact.element.Chat.showif">showif (alfred3_interact.element.Chat property)</a>
+</li>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.showif.html#alfred3_interact.page.MatchMakerActivation.showif">showif() (alfred3_interact.page.MatchMakerActivation method)</a>
 
       <ul>
-        <li><a href="generated/alfred3_interact.page.MatchMakerActivation.showif.html#alfred3_interact.page.MatchMakerActivation.showif">(alfred3_interact.page.MatchMakerActivation method)</a>
-</li>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.showif.html#alfred3_interact.page.MatchMakerMonitoring.showif">(alfred3_interact.page.MatchMakerMonitoring method)</a>
 </li>
         <li><a href="generated/alfred3_interact.page.WaitingPage.showif.html#alfred3_interact.page.WaitingPage.showif">(alfred3_interact.page.WaitingPage method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.group.Group.spec_name.html#alfred3_interact.group.Group.spec_name">spec_name() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.spec_name.html#alfred3_interact.group.Group.spec_name">spec_name (alfred3_interact.group.Group property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.subtitle.html#alfred3_interact.page.MatchMakerActivation.subtitle">subtitle() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.subtitle.html#alfred3_interact.page.MatchMakerActivation.subtitle">subtitle (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.subtitle.html#alfred3_interact.page.MatchMakerMonitoring.subtitle">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2456,7 +2522,7 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.tag.html#alfred3_interact.page.MatchMakerActivation.tag">tag() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.tag.html#alfred3_interact.page.MatchMakerActivation.tag">tag (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.tag.html#alfred3_interact.page.MatchMakerMonitoring.tag">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2466,7 +2532,7 @@
       </ul></li>
       <li><a href="generated/alfred3_interact.group.Group.takes_members.html#alfred3_interact.group.Group.takes_members">takes_members() (alfred3_interact.group.Group method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.template_data.html#alfred3_interact.element.Chat.template_data">template_data() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.template_data.html#alfred3_interact.element.Chat.template_data">template_data (alfred3_interact.element.Chat property)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.MatchMakerActivation.title.html#alfred3_interact.page.MatchMakerActivation.title">title (alfred3_interact.page.MatchMakerActivation attribute)</a>
 
@@ -2480,7 +2546,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.match.MatchMaker.toggle_activation.html#alfred3_interact.match.MatchMaker.toggle_activation">toggle_activation() (alfred3_interact.match.MatchMaker method)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.tree.html#alfred3_interact.element.Chat.tree">tree() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.tree.html#alfred3_interact.element.Chat.tree">tree (alfred3_interact.element.Chat property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerActivation.tree.html#alfred3_interact.page.MatchMakerActivation.tree">(alfred3_interact.page.MatchMakerActivation property)</a>
@@ -2496,7 +2562,7 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.uid.html#alfred3_interact.page.MatchMakerActivation.uid">uid() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.uid.html#alfred3_interact.page.MatchMakerActivation.uid">uid (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.uid.html#alfred3_interact.page.MatchMakerMonitoring.uid">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2504,7 +2570,7 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.uid.html#alfred3_interact.page.WaitingPage.uid">(alfred3_interact.page.WaitingPage property)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.unlinked_data.html#alfred3_interact.page.MatchMakerActivation.unlinked_data">unlinked_data() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.unlinked_data.html#alfred3_interact.page.MatchMakerActivation.unlinked_data">unlinked_data (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.unlinked_data.html#alfred3_interact.page.MatchMakerMonitoring.unlinked_data">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2514,7 +2580,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.updated_elements.html#alfred3_interact.page.MatchMakerActivation.updated_elements">updated_elements() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.updated_elements.html#alfred3_interact.page.MatchMakerActivation.updated_elements">updated_elements (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.updated_elements.html#alfred3_interact.page.MatchMakerMonitoring.updated_elements">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2544,9 +2610,9 @@
         <li><a href="generated/alfred3_interact.page.WaitingPage.validate.html#alfred3_interact.page.WaitingPage.validate">(alfred3_interact.page.WaitingPage method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/alfred3_interact.member.GroupMember.values.html#alfred3_interact.member.GroupMember.values">values() (alfred3_interact.member.GroupMember property)</a>
+      <li><a href="generated/alfred3_interact.member.GroupMember.values.html#alfred3_interact.member.GroupMember.values">values (alfred3_interact.member.GroupMember property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.vargs.html#alfred3_interact.page.MatchMakerActivation.vargs">vargs() (alfred3_interact.page.MatchMakerActivation property)</a>
+      <li><a href="generated/alfred3_interact.page.MatchMakerActivation.vargs.html#alfred3_interact.page.MatchMakerActivation.vargs">vargs (alfred3_interact.page.MatchMakerActivation property)</a>
 
       <ul>
         <li><a href="generated/alfred3_interact.page.MatchMakerMonitoring.vargs.html#alfred3_interact.page.MatchMakerMonitoring.vargs">(alfred3_interact.page.MatchMakerMonitoring property)</a>
@@ -2584,13 +2650,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/alfred3_interact.page.WaitingPage.wait_timeout_page.html#alfred3_interact.page.WaitingPage.wait_timeout_page">wait_timeout_page (alfred3_interact.page.WaitingPage attribute)</a>
 </li>
-      <li><a href="generated/alfred3_interact.match.MatchMaker.waiting_members.html#alfred3_interact.match.MatchMaker.waiting_members">waiting_members() (alfred3_interact.match.MatchMaker property)</a>
+      <li><a href="generated/alfred3_interact.match.MatchMaker.waiting_members.html#alfred3_interact.match.MatchMaker.waiting_members">waiting_members (alfred3_interact.match.MatchMaker property)</a>
+</li>
+      <li><a href="generated/alfred3_interact.page.WaitingPage.waiting_start.html#alfred3_interact.page.WaitingPage.waiting_start">waiting_start (alfred3_interact.page.WaitingPage attribute)</a>
 </li>
       <li><a href="generated/alfred3_interact.page.WaitingPage.html#alfred3_interact.page.WaitingPage">WaitingPage (class in alfred3_interact.page)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.web_widget.html#alfred3_interact.element.Chat.web_widget">web_widget() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.web_widget.html#alfred3_interact.element.Chat.web_widget">web_widget (alfred3_interact.element.Chat property)</a>
 </li>
-      <li><a href="generated/alfred3_interact.element.Chat.width.html#alfred3_interact.element.Chat.width">width() (alfred3_interact.element.Chat property)</a>
+      <li><a href="generated/alfred3_interact.element.Chat.width.html#alfred3_interact.element.Chat.width">width (alfred3_interact.element.Chat property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2598,7 +2666,7 @@
 <h2 id="Y">Y</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/alfred3_interact.group.Group.you.html#alfred3_interact.group.Group.you">you() (alfred3_interact.group.Group property)</a>
+      <li><a href="generated/alfred3_interact.group.Group.you.html#alfred3_interact.group.Group.you">you (alfred3_interact.group.Group property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2607,34 +2675,28 @@
 
               </div>
               
-        
-        <div class='prev-next-bottom'>
             
-
-        </div>
-        
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
-    <div class="container">
-      <p>
-        
-          By Johannes Brachem, Christian Treffenstädt<br/>
-        
-            &copy; Copyright 2021, Johannes Brachem, Christian Treffenstädt.<br/>
-      </p>
-    </div>
-  </footer>
+    <footer class="footer">
+  <p>
+    
+      Durch Johannes Brachem, Christian Treffenstädt<br/>
+    
+        &copy; Urheberrechte © 2021, Johannes Brachem, Christian Treffenstädt.<br/>
+  </p>
+</footer>
 </main>
 
 
       </div>
     </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
 
-    
-  <script src="_static/js/index.d3f166471bb80abb5163.js"></script>
-
-
-    
   </body>
 </html>
