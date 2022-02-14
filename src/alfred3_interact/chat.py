@@ -5,7 +5,6 @@ The under-the-hood administration of the chat.
 import time
 import bleach
 from pymongo.collection import ReturnDocument
-from alfred3.exceptions import AlfredError
 
 
 class ChatManager:
@@ -81,11 +80,11 @@ class ChatManager:
 
         self._inactive_sids = []
         self.exp.append_plugin_data_query(self._plugin_data_query)
-    
+
     @property
     def _plugin_data_query(self):
         f = {"exp_id": self.exp.exp_id, "type": "chat_data"}
-        
+
         q = {}
         q["title"] = "Chat"
         q["type"] = "chat_data"
@@ -96,20 +95,21 @@ class ChatManager:
 
     def _find_color_index(self, n) -> int:
         n_colors = len(self.DEFAULT_COLORS)
-        if n <= n_colors:
-            return n
 
-        else:
+        if not n <= n_colors:
             while n > n_colors:
                 n -= n_colors
-            return n
+
+        return n
 
     def _find_color(self):
         if self.colors:
-            return self.colors[self.nickname]
+            color = self.colors[self.nickname]
         else:
             i = self._find_color_index(self.member_number)
-            return self.DEFAULT_COLORS[i - 1]
+            color = self.DEFAULT_COLORS[i - 1]
+
+        return color
 
     def _register_session(self) -> int:
         """Returns chat member number (a simple count)"""
@@ -141,7 +141,9 @@ class ChatManager:
         msg_data["color"] = self.color
 
         self.exp.db_misc.find_one_and_update(
-            self._query, update={"$push": {"messages": msg_data}, "$inc": {"change_counter": 1}}, upsert=True
+            self._query,
+            update={"$push": {"messages": msg_data}, "$inc": {"change_counter": 1}},
+            upsert=True,
         )
 
     def load_messages(self) -> str:
@@ -149,12 +151,12 @@ class ChatManager:
         Loads new messages from the database into the ChatManager instance.
 
         Returns:
-            str: A status indicator. "pass" means that no new messages 
-            have been found, "update" means that the internal message 
+            str: A status indicator. "pass" means that no new messages
+            have been found, "update" means that the internal message
             storage has been updated.
         """
         data = self.exp.db_misc.find_one(self._query, projection={"change_counter": True})
-        
+
         if data.get("change_counter", False) == self._local_change_counter:
             return "pass"
 
@@ -167,10 +169,9 @@ class ChatManager:
 
         self.data = chat_data
         if self.ignore_aborted_sessions:
-                self._update_session_status()
-        
-        return "update"
+            self._update_session_status()
 
+        return "update"
 
     def get_new_messages(self) -> tuple:
         """
@@ -180,7 +181,7 @@ class ChatManager:
         if self.data and self.data.get("messages", False):
             i, self._loaded_index = self._loaded_index, len(self.data["messages"])
 
-            msgs = self.data["messages"][i:self._loaded_index]
+            msgs = self.data["messages"][i : self._loaded_index]
             out_messages = [
                 msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
             ]
@@ -224,7 +225,8 @@ class ChatManager:
         for sid in uncertain_sids:
             query = {"type": "exp_data", "exp_session_id": sid}
             sdata = self.exp.db_main.find_one(
-                query, projection={"exp_aborted": True, "exp_start_time": True, "exp_finished": True}
+                query,
+                projection={"exp_aborted": True, "exp_start_time": True, "exp_finished": True},
             )
 
             if sdata["exp_aborted"]:

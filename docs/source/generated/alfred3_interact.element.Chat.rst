@@ -74,6 +74,10 @@
          ~Chat.tree
          ~Chat.web_widget
          ~Chat.width
+         ~Chat.align
+         ~Chat.height
+         ~Chat.instance_log
+         ~Chat.log
       
    
    

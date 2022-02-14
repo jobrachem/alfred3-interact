@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import asdict
 import re
 import typing as t
+import random
 
 from .quota import ParallelGroupQuota, SequentialGroupQuota
 from .group import Group, GroupManager, GroupType, BusyGroup
@@ -85,7 +86,7 @@ class SequentialMatchMaker:
 class ParallelMatchMaker:
     group_type = GroupType.PARALLEL
 
-    def __init__(self, *roles, matchmaker, spec_name: str):
+    def __init__(self, *roles, matchmaker, spec_name: str, shuffle_waiting_members: bool = True):
         self.roles = roles
         self.mm = matchmaker
 
@@ -97,6 +98,8 @@ class ParallelMatchMaker:
             "group_type": self.group_type,
             "spec_name": spec_name
         }
+
+        self.shuffle_waiting_members = shuffle_waiting_members
 
 
     def match(self) -> Group:
@@ -113,7 +116,7 @@ class ParallelMatchMaker:
                     return existing_group
 
                 waiting_members = self.mm.waiting_members
-                enough_members_waiting = len(waiting_members) == len(self.roles)
+                enough_members_waiting = len(waiting_members) >= len(self.roles)
                 
                 if enough_members_waiting:
                     group = self.start_group(data, waiting_members)
@@ -126,6 +129,12 @@ class ParallelMatchMaker:
 
         with Group(self.mm, **self.data) as group:
             self.log.info(f"Starting new group {group}.")
+
+            if self.shuffle_waiting_members:
+                me = waiting_members[0]
+                others = waiting_members[1:]
+                random.shuffle(others)
+                waiting_members = [me] + others
 
             candidates = (m for m in waiting_members)
 
@@ -187,6 +196,10 @@ class ParallelSpec(Spec):
             slot, if there are no pending sessions for that slot. See
             :class:`.SequentialGroupQuota` / :class:`.ParallelGroupQuota`
             for more details.
+        shuffle_waiting_members (bool): If *True*, the list of waiting
+            members will be shuffled before starting a new group. If
+            *False*, members who have been waiting longest are 
+            prioritized.
 
     See Also:
         See :class:`.SequentialSpec` for an interface for defining a sequential group
@@ -205,6 +218,7 @@ class ParallelSpec(Spec):
         respect_version: bool = True,
         inclusive: bool = False,
         count: bool = True,
+        shuffle_waiting_members: bool = True
     ):
 
 
@@ -221,6 +235,8 @@ class ParallelSpec(Spec):
         self._quota = None
 
         self.ongoing_sessions_ok = False
+
+        self._shuffle_waiting_members = shuffle_waiting_members
     
     def _init_quota(self, exp):
         if self.count:
@@ -242,6 +258,7 @@ class ParallelSpec(Spec):
             *self.roles,
             matchmaker=match_maker,
             spec_name=self.name,
+            shuffle_waiting_members=self._shuffle_waiting_members
         )
 
         group = mm.match()
