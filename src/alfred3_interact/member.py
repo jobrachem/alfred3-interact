@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass, field
 from pymongo.collection import ReturnDocument
 from alfred3.data_manager import DataManager as dm
 from alfred3.quota import SessionGroup
+from requests import session
 
 from ._util import saving_method
 from ._util import MatchingError
@@ -434,8 +435,6 @@ class MemberManager:
         q = self.query_exp
         q["exp_finished"] = False
         q["exp_aborted"] = False
-        earliest_start = time.time() - self.exp.session_timeout
-        q["$or"] = [{"exp_start_time": {"$gte": earliest_start}}, {"exp_start_time": None}]
 
         if sessions is not None:
             q["exp_session_id"] = {"$in": sessions}
@@ -457,7 +456,9 @@ class MemberManager:
         q = self.query_active_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
         for sessiondata in cursor:
-            yield sessiondata["exp_session_id"]
+            status = SessionGroup([sessiondata["exp_session_id"]])
+            if status.pending(self.exp):
+                yield sessiondata["exp_session_id"]
 
     def find_finished_sessions(self, sessions: List[str] = None) -> Iterator[str]:
         if self.method == "local":
