@@ -711,7 +711,7 @@ class MatchMaker:
                 spec.quota.count(self.group, raise_exception=True)
             except AllSlotsFull:
                 self.group.deactivate()
-                return self._full()
+                self._full()
         
         if not self.group:
             return
