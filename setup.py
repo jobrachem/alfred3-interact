@@ -28,7 +28,8 @@ setuptools.setup(
     package_dir={"": "src"},
     install_requires=[
         "alfred3>=2.0",
-        "bleach>=3.2.1"
+        "bleach>=3.2.1",
+        "packaging"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
