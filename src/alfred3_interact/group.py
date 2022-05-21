@@ -787,10 +787,9 @@ class GroupManager:
             else:
                 with open(fpath, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                    if (
-                        d["exp_version"] == self.mm.exp_version
-                        and d["spec_name"] == self.spec_name
-                    ):
+                    version_matches = d["exp_version"] == self.mm.exp_version
+                    spec_matches = d["spec_name"] == self.spec_name
+                    if version_matches and spec_matches:
                         yield d
 
     def _mongo_groups(self) -> Iterator[dict]:
