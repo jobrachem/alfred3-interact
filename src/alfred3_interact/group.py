@@ -705,6 +705,11 @@ class Group:
         self.data.members.append(member.data.session_id)
         self.io.save()
         return self
+    
+    def deactivate(self):
+        with self as group:
+            group.data.active = False
+            group.io.save()
 
     def __enter__(self):
         data = self.io.load_markbusy()
