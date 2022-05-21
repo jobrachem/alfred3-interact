@@ -2,6 +2,7 @@ import pytest
 import time
 from alfred3_interact import SequentialSpec, MatchMaker, ParallelSpec, NoMatch
 from alfred3_interact.testutil import get_group
+from alfred3.quota import SessionGroup
 
 def test_clear(exp):
     """
@@ -63,13 +64,32 @@ class TestSequential:
         
         group1 = get_group(exp1)
 
-        exp1._start()
+        exp1.start()
         exp1.abort("test")
         exp1._save_data(sync=True)
 
         group2 = get_group(exp2)
         assert group1 == group2
         assert group1.me.data.role == group2.me.data.role
+        assert group2.a.data.session_id == exp2.session_id
+
+        assert not group2.full
+        assert group2.groupmember_manager.nactive == 1
+    
+    def test_fill_expired_role(self, exp_factory):
+        exp1 = exp_factory("s1", 0.1)
+        exp2 = exp_factory("s2")
+        
+        group1 = get_group(exp1)
+
+        exp1.start()
+        time.sleep(0.2)
+        assert not SessionGroup(["s1"]).pending(exp1)
+
+        group2 = get_group(exp2, nslots=1)
+        assert group1 == group2
+        assert group1.me.data.role == group2.me.data.role
+        assert group2.a.data.session_id == exp2.session_id
 
         assert not group2.full
         assert group2.groupmember_manager.nactive == 1
@@ -79,6 +99,8 @@ class TestSequential:
         group1 = get_group(exp1)
 
         assert group1.you is None
+    
+    
 
 
 class TestSequentialLocal:
@@ -115,18 +137,37 @@ class TestSequentialLocal:
         assert group3 != group2    
 
     def test_fill_aborted_role(self, lexp_factory):
-        exp1 = lexp_factory()
-        exp2 = lexp_factory()
+        exp1 = lexp_factory("s1")
+        exp2 = lexp_factory("s2")
         
         group1 = get_group(exp1)
 
-        exp1._start()
+        exp1.start()
         exp1.abort("test")
         exp1._save_data(sync=True)
 
         group2 = get_group(exp2)
         assert group1 == group2
         assert group1.me.data.role == group2.me.data.role
+        assert group2.a.data.session_id == exp2.session_id
+
+        assert not group2.full
+        assert group2.groupmember_manager.nactive == 1
+    
+    def test_fill_expired_role(self, lexp_factory):
+        exp1 = lexp_factory("s1", 0.1)
+        exp2 = lexp_factory("s2")
+        
+        group1 = get_group(exp1)
+
+        exp1.start()
+        time.sleep(0.2)
+        assert not SessionGroup(["s1"]).pending(exp1)
+
+        group2 = get_group(exp2, nslots=1)
+        assert group1 == group2
+        assert group1.me.data.role == group2.me.data.role
+        assert group2.a.data.session_id == exp2.session_id
 
         assert not group2.full
         assert group2.groupmember_manager.nactive == 1
