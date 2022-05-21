@@ -229,6 +229,40 @@ class TestQuotaSequentialLocal:
         assert mm.quota.nfinished == 0
         assert mm.quota.nopen == 0
         assert mm.quota.npending == 1
+    
+    def test_session_timeout(self, lexp_factory):
+        exp1 = lexp_factory("s1")
+        exp2 = lexp_factory("s2")
+        exp3 = lexp_factory("s3")
+
+        exp1._start()
+        spec = SequentialSpec("a", "b", nslots=1, name="test")
+        mm1 = MatchMaker(spec, exp=exp1)
+        group1 = mm1.match_to("test")
+
+
+        mm2 = MatchMaker(spec, exp=exp2)
+        mm2.match_to("test")
+        
+        assert exp2.aborted
+        
+        assert group1.mm.quota.nopen == 0
+        assert group1.mm.quota.npending == 1
+        
+        time.sleep(0.1)
+        exp1._session_timeout = 0.1
+        
+        assert exp1.session_expired
+        exp1.forward()
+        exp1._save_data(sync=True)
+        assert exp1.aborted
+
+        mm3 = MatchMaker(spec, exp=exp3)
+        group3 = mm3.match_to("test")
+
+        assert group3.me.role == "a"
+        assert not exp3.aborted
+        assert group3.group_id == group1.group_id
 
 
 class TestQuotaParallel:
