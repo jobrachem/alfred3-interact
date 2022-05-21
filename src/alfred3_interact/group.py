@@ -377,20 +377,13 @@ class GroupMemberManager(GroupHelper):
         if not role in self.data.roles:
             raise AttributeError(f"Role '{role}' not found in {self}.")
 
-        active = (m for m in self.active_members() if m.data.role == role)
-        member = next(active, None)
-
-        if not member:
-            inactive = (m for m in self.members() if m.data.role == role)
-            member = next(inactive, None)
-
-        return member
+        return next(self.manager.find([self.group.data.roles[role]]), None)
 
     def members(self) -> Iterator[GroupMember]:
         return self.manager.find(self.data.members)
 
     def active_members(self) -> Iterator[GroupMember]:
-        sessions = self.manager.find_active_sessions(self.data.members)
+        sessions = list(self.manager.find_active_sessions(self.data.members))
         return self.manager.find(sessions)
 
     def other_members(self) -> Iterator[GroupMember]:
