@@ -202,9 +202,9 @@ class TestParallel:
         
 
     def test_shuffle(self, exp_factory):
-        exp1 = exp_factory()
-        exp2 = exp_factory()
-        exp3 = exp_factory()
+        exp1 = exp_factory("s1")
+        exp2 = exp_factory("s2")
+        exp3 = exp_factory("s3")
 
         spec = ParallelSpec("a", "b", nslots=5, name="test", shuffle_waiting_members=True)
 
@@ -212,7 +212,7 @@ class TestParallel:
         mm2 = MatchMaker(spec, exp=exp2)
         mm3 = MatchMaker(spec, exp=exp3)
 
-        random.seed(112345)
+        random.seed(112347)
         with pytest.raises(NoMatch):
             mm1.match_random(wait=2)
 
