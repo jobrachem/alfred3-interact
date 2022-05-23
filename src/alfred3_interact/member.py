@@ -489,13 +489,6 @@ class MemberManager:
             if status.pending(self.exp):
                 yield sessiondata["exp_session_id"]
 
-    def find_finished_sessions(self, sessions: List[str] = None) -> Iterator[str]:
-        if self.method == "local":
-            return self._find_finished_sessions_local(sessions)
-
-        elif self.method == "mongo":
-            return self._find_finished_sessions_mongo(sessions)
-    
     def _find_finished_sessions_local(self, sessions: List[str]) -> Iterator[str]:
         for m in self.members():
             if m.status.finished and m.data.session_id in sessions:
