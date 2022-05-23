@@ -349,10 +349,17 @@ class GroupMemberManager(GroupHelper):
             raise MatchingError(
                 "Can't use 'you' for groups with more than 2 slots, because it is ambiguous. Use the 'other_members()' generator instead, or access members based on their roles."
             )
-        else:
-            you = next(self.active_other_members(), None)
-            if not you:
-                you = next(self.other_members(), None)
+        
+        you = next(self.finished_other_members(), None)
+        if you:
+            return you
+
+        you = next(self.active_other_members(), None)
+        if you:
+            return you
+        
+        you = next(self.other_members(), None)
+        if you:
             return you
 
     @property
@@ -392,10 +399,21 @@ class GroupMemberManager(GroupHelper):
                 yield member
 
     def active_other_members(self) -> Iterator[GroupMember]:
-        sessions = self.manager.find_active_sessions(self.data.members)
+        sessions = list(self.manager.find_active_sessions(self.data.members))
+        if not sessions:
+            return
         for member in self.manager.find(sessions):
             if not member.data.session_id == self.exp.session_id:
                 yield member
+
+    def finished_other_members(self) -> Iterator[GroupMember]:
+        sessions = list(self.manager.find_finished_sessions(self.data.members))
+        if not sessions:
+            return
+        for member in self.manager.find(sessions):
+            if not member.data.session_id == self.exp.session_id:
+                yield member
+
 
     @property
     def oldest_save(self) -> float:

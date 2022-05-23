@@ -175,7 +175,7 @@ class GroupMemberExpData(MemberHelper):
             if isinstance(projection, list):
                 data = {k: v for k, v in data.items() if k in projection}
             elif isinstance(projection, dict):
-                data = {k: v for k, v in data.items() if projection[k]}
+                data = {k: v for k, v in data.items() if projection.get(k, True)}
 
         return data
 
@@ -440,6 +440,22 @@ class MemberManager:
             q["exp_session_id"] = {"$in": sessions}
 
         return q
+    
+    def query_finished_sessions(self, sessions: List[str] = None) -> dict:
+        q = self.query_exp
+        q["exp_finished"] = True
+        q["exp_aborted"] = False
+
+        if sessions is not None:
+            q["exp_session_id"] = {"$in": sessions}
+
+        return q
+    
+    def find_finished_sessions(self, sessions: List[str] = None) -> Iterator[str]:
+        if self.method == "local":
+            return self._find_finished_sessions_local(sessions)
+        elif self.method == "mongo":
+            return self._find_finished_sessions_mongo(sessions)
 
     def find_active_sessions(self, sessions: List[str] = None) -> Iterator[str]:
         if self.method == "local":
@@ -451,6 +467,19 @@ class MemberManager:
         for member in self.members():
             if member.status.active:
                 yield member.data.session_id
+
+    def _find_finished_sessions_local(self, sessions: List[str] = None) -> Iterator[str]:
+        for member in self.members():
+            if member.status.finished:
+                yield member.data.session_id
+    
+    def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
+        q = self.query_finished_sessions(sessions)
+        cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
+        for sessiondata in cursor:
+            status = SessionGroup([sessiondata["exp_session_id"]])
+            if status.finished(self.exp):
+                yield sessiondata["exp_session_id"]
     
     def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
         q = self.query_active_sessions(sessions)
