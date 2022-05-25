@@ -53,6 +53,7 @@ def admin_client(tmp_path):
     clear_db()
 
 
+@pytest.mark.skip("Should be run manually")
 class TestWaitingPage:
     def test_waiting_page(self, exp):
         class Wait(ali.WaitingPage):
@@ -102,7 +103,7 @@ class TestWaitingPage:
     #     time.sleep(10)
     #     assert "Sorry, waiting took too long" in driver.page_source
 
-
+@pytest.mark.skip("Should be run manually")
 class TestAdminPage:
     def test_monitoring(self, admin_client):
         rv = admin_client.get("/start?admin=true", follow_redirects=True)
