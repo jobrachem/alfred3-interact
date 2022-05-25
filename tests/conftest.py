@@ -13,7 +13,7 @@ def exp(tmp_path):
 
     yield exp
 
-    clear_db()
+    clear_db(mock=False)
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def exp_factory(tmp_path):
 
     yield expf
 
-    clear_db()
+    clear_db(mock=False)
 
 
 @pytest.fixture
