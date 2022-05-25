@@ -24,8 +24,8 @@ repos:
     hooks:
       - id: black
         args: ["--preview"]
-  # - repo: https://github.com/pycqa/flake8
-  #   rev: 4.0.1
-  #   hooks:
-  #     - id: flake8
-  #       args: ["--ignore=E501", "--exclude=src/alfred3/__init__.py,docs/source/conf.py"]
+  - repo: https://github.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        args: ["--ignore=E501, E203", "--exclude=src/alfred3_interact/__init__.py,docs/source/conf.py"]
