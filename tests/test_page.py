@@ -1,14 +1,12 @@
-import time
-import pytest
 import threading
+import time
 
-from flask import request, Blueprint
+import pytest
+from alfred3.testutil import clear_db, forward, get_app
+from flask import Blueprint, request
 from selenium import webdriver
-import alfred3_interact as ali
-from alfred3.testutil import get_app
-from alfred3.testutil import clear_db
-from alfred3.testutil import forward
 
+import alfred3_interact as ali
 
 testing = Blueprint("test", __name__)
 

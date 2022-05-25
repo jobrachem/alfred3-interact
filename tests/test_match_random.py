@@ -1,7 +1,9 @@
-import time
-import pytest
 import random
-from alfred3_interact import SequentialSpec, MatchMaker, NoMatch
+import time
+
+import pytest
+
+from alfred3_interact import MatchMaker, NoMatch, SequentialSpec
 from alfred3_interact.spec import ParallelSpec
 
 
@@ -166,14 +168,15 @@ class TestParallel:
         assert group2.data.spec_name == "test"
         assert group3.data.spec_name == "test"
         assert group4.data.spec_name == "test"
-    
 
     def test_priority(self, exp_factory):
         exp1 = exp_factory()
         exp2 = exp_factory()
         exp3 = exp_factory()
 
-        spec = ParallelSpec("a", "b", nslots=5, name="test", shuffle_waiting_members=False)
+        spec = ParallelSpec(
+            "a", "b", nslots=5, name="test", shuffle_waiting_members=False
+        )
 
         mm1 = MatchMaker(spec, exp=exp1)
         mm2 = MatchMaker(spec, exp=exp2)
@@ -187,26 +190,27 @@ class TestParallel:
 
         with pytest.raises(NoMatch):
             mm3.match_random(wait=2)
-        
+
         time.sleep(2)
-        
+
         group1 = mm1.match_random()
 
         with pytest.raises(NoMatch):
             mm3.match_random(wait=2)
-        
+
         group2 = mm2.match_random(wait=2)
 
         assert group1.data.spec_name == "test"
         assert group2.data.spec_name == "test"
-        
 
     def test_shuffle(self, exp_factory):
         exp1 = exp_factory("s1")
         exp2 = exp_factory("s2")
         exp3 = exp_factory("s3")
 
-        spec = ParallelSpec("a", "b", nslots=5, name="test", shuffle_waiting_members=True)
+        spec = ParallelSpec(
+            "a", "b", nslots=5, name="test", shuffle_waiting_members=True
+        )
 
         mm1 = MatchMaker(spec, exp=exp1)
         mm2 = MatchMaker(spec, exp=exp2)
@@ -221,21 +225,17 @@ class TestParallel:
 
         with pytest.raises(NoMatch):
             mm3.match_random(wait=2)
-        
+
         time.sleep(2)
-        
+
         group1 = mm1.match_random(wait=2)
         group3 = mm3.match_random(wait=2)
-        
+
         with pytest.raises(NoMatch):
             mm2.match_random(wait=2)
 
         assert group1.data.spec_name == "test"
         assert group3.data.spec_name == "test"
-
-        
-
-
 
     def test_three(self, exp_factory):
         exp1 = exp_factory()
@@ -295,4 +295,4 @@ class TestParallel:
         assert group2.me.role == next(group3.roles.roles_of([exp2.session_id]))
         assert group3.me.role == next(group3.roles.roles_of([exp3.session_id]))
 
-        assert len(set([group1.me.role, group2.me.role, group3.me.role])) == 3
+        assert len({group1.me.role, group2.me.role, group3.me.role}) == 3

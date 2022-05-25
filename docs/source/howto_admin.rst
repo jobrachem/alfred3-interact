@@ -14,7 +14,7 @@ admin pages:
     ~alfred3_interact.page.MatchMakerActivation
 
 
-.. note:: For more information and examples, please visit the API 
+.. note:: For more information and examples, please visit the API
     documentation of the admin pages linked above.
 
 To activate the admin mode, we need to set passwords for all three
@@ -36,7 +36,7 @@ can use::
 
     http://127.0.0.1:5000/start?admin=true
 
-Note that the question mark only signals the beginning of additional 
+Note that the question mark only signals the beginning of additional
 url arguments. If you use multiple url arguments, they are chained via
 ``&``. For example, the following url would *also* start the experiment
 in admin mode::
@@ -50,5 +50,5 @@ check the log - you may have forgotten to specify all necessary passwords.
 If you enter a correct password, you can move on to the admin pages. Based
 on your password, you may see only a subset of all possibly available pages.
 With the level 1 password, you can only see level 1 pages. With the level 2
-password, you can see level 1 and level 2 pages. And with the level 3 
+password, you can see level 1 and level 2 pages. And with the level 3
 password, you have full access to pages of all three levels.

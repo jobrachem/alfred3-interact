@@ -1,7 +1,9 @@
 import alfred3 as al
+
 import alfred3_interact as ali
 
 exp = al.Experiment()
+
 
 @exp.setup
 def setup(exp):
@@ -9,9 +11,9 @@ def setup(exp):
     group = mm.match_stepwise()
     exp.plugins.group = group
 
+
 @exp.member
 class Success(al.Page):
-    
     def on_first_show(self):
         group = self.exp.plugins.group
         role = group.me.role

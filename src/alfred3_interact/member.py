@@ -2,19 +2,18 @@
 Functionality related to group members.
 """
 
-import time
 import datetime
 import json
-from typing import Iterator, List
+import time
 from dataclasses import asdict, dataclass, field
+from typing import Iterator, List
 
-from pymongo.collection import ReturnDocument
 from alfred3.data_manager import DataManager as dm
 from alfred3.quota import SessionGroup
+from pymongo.collection import ReturnDocument
 from requests import session
 
-from ._util import saving_method
-from ._util import MatchingError
+from ._util import MatchingError, saving_method
 
 
 @dataclass
@@ -62,7 +61,7 @@ class GroupMemberIO(MemberHelper):
         self.member.data = GroupMemberData(**data)
 
     def _load_local(self) -> dict:
-        with open(self.path, "r", encoding="utf-8") as f:
+        with open(self.path, encoding="utf-8") as f:
             return json.load(f)
 
     def _load_mongo(self) -> dict:
@@ -76,7 +75,7 @@ class GroupMemberIO(MemberHelper):
             self._save_local()
 
     def _save_local(self):
-        with open(self.path, "r", encoding="utf-8") as f:
+        with open(self.path, encoding="utf-8") as f:
             mm = json.load(f)
 
         sid = self.member.data.session_id
@@ -96,6 +95,7 @@ class GroupMemberIO(MemberHelper):
         data = {"members": {self.sid: {"ping": now}}}
         self.db.find_one_and_update(self.query, [{"$set": data}])
         self.member.data.ping = now
+
 
 # TODO Manuell deaktivieren für MatchMaker-Chaining
 @dataclass
@@ -142,7 +142,6 @@ class GroupMemberStatus:
 
 
 class GroupMemberExpData(MemberHelper):
-    
     @property
     def db(self):
         return self.exp.db_main
@@ -228,7 +227,7 @@ class GroupMemberInfo(MemberHelper):
             return time_print
 
         return None
-    
+
     @property
     def last_save(self) -> float:
         projection = {"exp_save_time": True, "_id": False}
@@ -246,7 +245,7 @@ class GroupMemberInfo(MemberHelper):
 class GroupMember:
     """
     The group member object grants access to a member's experiment data.
-    
+
     The group member object's most important job is to provide easy
     access to the member's experiment data through the following
     attributes. They provide the same objects as the corresponding
@@ -259,6 +258,7 @@ class GroupMember:
     - :attr:`.client_data`
     - :attr:`.adata`
     """
+
     def __init__(self, matchmaker, **data):
 
         self.mm = matchmaker
@@ -293,7 +293,7 @@ class GroupMember:
         bool: Indicates whether the member is associated with a group.
         """
         return self.status.matched
-    
+
     @property
     def group_id(self) -> str:
         """
@@ -308,12 +308,12 @@ class GroupMember:
         dict: Flat dictionary of input element values.
 
         Gives access to the member's experiment inputs.
-        
+
         See Also:
-            The dict works just like 
+            The dict works just like
             :attr:`alfred3.experiment.ExperimentSession.values`. The keys are
             the names of input elements in the member's experiment session.
-            The values are the user inputs. 
+            The values are the user inputs.
         """
         projection = {}
         projection.update({key: False for key in dm._client_data_keys})
@@ -321,14 +321,14 @@ class GroupMember:
 
         data = self.expdata.load(projection)
         return dm.flatten(data)
-    
+
     @property
     def session_data(self) -> dict:
         """
         dict: Full dictionary of experiment session data.
 
         See Also:
-            The dict works just like 
+            The dict works just like
             :attr:`alfred3.experiment.ExperimentSession.session_data`.
         """
         return self.expdata.load()
@@ -339,7 +339,7 @@ class GroupMember:
         dict: Dictionary of client data.
 
         See Also:
-            The dict works just like 
+            The dict works just like
             :attr:`alfred3.experiment.ExperimentSession.client_data`.
         """
         client_data = list(dm._client_data_keys)
@@ -375,7 +375,7 @@ class GroupMember:
         dict: Dictionary of additional data.
 
         See Also:
-            The dict works just like 
+            The dict works just like
             :attr:`alfred3.experiment.ExperimentSession.adata`.
         """
         data = self.expdata.load(["additional_data"])
@@ -440,7 +440,7 @@ class MemberManager:
             q["exp_session_id"] = {"$in": sessions}
 
         return q
-    
+
     def query_finished_sessions(self, sessions: List[str] = None) -> dict:
         q = self.query_exp
         q["exp_finished"] = True
@@ -450,7 +450,7 @@ class MemberManager:
             q["exp_session_id"] = {"$in": sessions}
 
         return q
-    
+
     def find_finished_sessions(self, sessions: List[str] = None) -> Iterator[str]:
         if self.method == "local":
             return self._find_finished_sessions_local(sessions)
@@ -462,17 +462,19 @@ class MemberManager:
             return self._find_active_sessions_local(sessions)
         elif self.method == "mongo":
             return self._find_active_sessions_mongo(sessions)
-            
+
     def _find_active_sessions_local(self, sessions: List[str] = None) -> Iterator[str]:
         for member in self.members():
             if member.status.active:
                 yield member.data.session_id
 
-    def _find_finished_sessions_local(self, sessions: List[str] = None) -> Iterator[str]:
+    def _find_finished_sessions_local(
+        self, sessions: List[str] = None
+    ) -> Iterator[str]:
         for member in self.members():
             if member.status.finished:
                 yield member.data.session_id
-    
+
     def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
         q = self.query_finished_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
@@ -480,7 +482,7 @@ class MemberManager:
             status = SessionGroup([sessiondata["exp_session_id"]])
             if status.finished(self.exp):
                 yield sessiondata["exp_session_id"]
-    
+
     def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
         q = self.query_active_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
@@ -517,15 +519,15 @@ class MemberManager:
     def active(self) -> GroupMember:
         if self.method == "local":
             return self._active_local()
-        
+
         elif self.method == "mongo":
             return self._active_mongo()
-    
+
     def _active_local(self) -> Iterator[GroupMember]:
         for m in self.members():
             if m.status.active:
                 yield m
-    
+
     def _active_mongo(self) -> Iterator[GroupMember]:
         q = self.query_mm
         p = self.active_sessions_projection()
@@ -559,16 +561,16 @@ class MemberManager:
     def find(self, sessions: List[str]) -> Iterator[GroupMember]:
         if self.method == "local":
             return self._find_local(sessions)
-        
+
         elif self.method == "mongo":
-            return self._find_mongo(sessions)    
-    
+            return self._find_mongo(sessions)
+
     def _find_local(self, sessions: List[str]) -> Iterator[GroupMember]:
         data = self.mm.io.load().members.values()
         for mdata in data:
             if mdata["session_id"] in sessions:
                 yield GroupMember(matchmaker=self.mm, **mdata)
-    
+
     def _find_mongo(self, sessions: List[str]) -> Iterator[GroupMember]:
         q = self.query_mm
         p = {f"members.{sid}": True for sid in sessions}

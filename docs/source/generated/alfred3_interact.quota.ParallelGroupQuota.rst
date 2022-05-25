@@ -7,35 +7,35 @@
    :show-inheritance:
 
 
-   
-   
+
+
    .. rubric:: Methods
 
    .. autosummary::
       :nosignatures:
       :toctree:
-      
-   
-   
-   
+
+
+
+
       ~ParallelGroupQuota.count
-   
-   
+
+
       ~ParallelGroupQuota.next
-   
 
-   
-   
 
-   
-   
+
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :template: autosummary/attribute.rst
       :toctree:
 
-      
+
          ~ParallelGroupQuota.DATA_TYPE
          ~ParallelGroupQuota.allfinished
          ~ParallelGroupQuota.full
@@ -43,7 +43,3 @@
          ~ParallelGroupQuota.nfinished
          ~ParallelGroupQuota.nopen
          ~ParallelGroupQuota.npending
-      
-   
-   
-   

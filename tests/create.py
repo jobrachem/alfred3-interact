@@ -11,15 +11,18 @@ Or like this::
 
 """
 
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from subprocess import run
+
 import click
 
 
 @click.command()
 @click.option(
-    "-name", prompt="Enter a name for the test experiment", help="Name for test experiment"
+    "-name",
+    prompt="Enter a name for the test experiment",
+    help="Name for test experiment",
 )
 def testexp(name):
     """Create a test experiment."""

@@ -2,9 +2,9 @@ alfred3-interact: Interactive web-experiments
 ==============================================
 
 Welcome to the documentation of alfred3-interact! Alfred3-interact
-is a plugin for alfred3_ that offers the creation of interactive web 
-experiments, predominantly in the social sciences. 
-As prerequisites, you need to have **Python 3.7** or newer 
+is a plugin for alfred3_ that offers the creation of interactive web
+experiments, predominantly in the social sciences.
+As prerequisites, you need to have **Python 3.7** or newer
 and **alfred3 v2.2** or newer installed.
 
 .. _alfred3: https://github.com/ctreffe/alfred
@@ -22,21 +22,21 @@ Usage
 -------
 
 The composition of groups of multiple participants for data exchange
-relies on the :class:`.MatchMaker` class and its methods 
-:meth:`.match_random`, :meth:`.match_chain`, and :meth:`.match_to`. 
-All of these methods return :class:`.Group` objects, which allow you to 
-reference individual participants and their corresponding 
-:class:`.GroupMember` objects based on their role in the group. 
+relies on the :class:`.MatchMaker` class and its methods
+:meth:`.match_random`, :meth:`.match_chain`, and :meth:`.match_to`.
+All of these methods return :class:`.Group` objects, which allow you to
+reference individual participants and their corresponding
+:class:`.GroupMember` objects based on their role in the group.
 
 Within an experiment, you can define waiting points for synchronizing
 multiple participants' progress through the :class:`.WaitingPage`.
-We also provide a :class:`.Chat` element, which can be comfortably 
+We also provide a :class:`.Chat` element, which can be comfortably
 used as a group chat through the shortcut :meth:`.Group.chat`. The chat
-can also be used independently of groups. 
+can also be used independently of groups.
 
 Equipped with this narrative information, you can dive into the API
-documentation and examples to see in more detail how to use 
-alfred3_interact in your alfred3 experiments. 
+documentation and examples to see in more detail how to use
+alfred3_interact in your alfred3 experiments.
 
 If you have more questions or are stuck somewhere, please do not hesitate
 to ask your question in alfred3's GitHub discussions: https://github.com/ctreffe/alfred/discussions/categories/q-a

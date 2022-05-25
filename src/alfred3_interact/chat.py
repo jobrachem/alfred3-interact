@@ -3,6 +3,7 @@ The under-the-hood administration of the chat.
 """
 
 import time
+
 import bleach
 from pymongo.collection import ReturnDocument
 
@@ -155,7 +156,9 @@ class ChatManager:
             have been found, "update" means that the internal message
             storage has been updated.
         """
-        data = self.exp.db_misc.find_one(self._query, projection={"change_counter": True})
+        data = self.exp.db_misc.find_one(
+            self._query, projection={"change_counter": True}
+        )
 
         if data.get("change_counter", False) == self._local_change_counter:
             return "pass"
@@ -183,7 +186,9 @@ class ChatManager:
 
             msgs = self.data["messages"][i : self._loaded_index]
             out_messages = [
-                msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
+                msg
+                for msg in msgs
+                if msg["sender_session_id"] not in self._inactive_sids
             ]
 
             return tuple(out_messages)
@@ -200,7 +205,9 @@ class ChatManager:
             self._loaded_index = len(msgs)
 
             out_messages = [
-                msg for msg in msgs if msg["sender_session_id"] not in self._inactive_sids
+                msg
+                for msg in msgs
+                if msg["sender_session_id"] not in self._inactive_sids
             ]
 
             # if self.encrypt:
@@ -226,13 +233,19 @@ class ChatManager:
             query = {"type": "exp_data", "exp_session_id": sid}
             sdata = self.exp.db_main.find_one(
                 query,
-                projection={"exp_aborted": True, "exp_start_time": True, "exp_finished": True},
+                projection={
+                    "exp_aborted": True,
+                    "exp_start_time": True,
+                    "exp_finished": True,
+                },
             )
 
             if sdata["exp_aborted"]:
                 self._inactive_sids.append(sid)
 
             elif self.exp.session_timeout and not sdata["exp_finished"]:
-                expired = time.time() - sdata["exp_start_time"] > self.exp.session_timeout
+                expired = (
+                    time.time() - sdata["exp_start_time"] > self.exp.session_timeout
+                )
                 if expired:
                     self._inactive_sids.append(sid)

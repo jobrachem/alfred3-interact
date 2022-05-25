@@ -4,23 +4,21 @@ Functionality related to groups.
 import json
 import random
 import time
-from traceback import format_exception
-from itertools import chain
+from abc import ABC, abstractproperty
 from collections import UserDict
-from uuid import uuid4
-from pathlib import Path
-from typing import Iterator, List
 from dataclasses import asdict, dataclass, field
 from enum import Enum, auto
-from abc import ABC, abstractproperty
+from itertools import chain
+from pathlib import Path
+from traceback import format_exception
+from typing import Iterator, List
+from uuid import uuid4
 
 from pymongo.collection import ReturnDocument
 
-from .member import MemberManager
-from .member import GroupMember
-from ._util import MatchingError, BusyGroup
-from ._util import saving_method
+from ._util import BusyGroup, MatchingError, saving_method
 from .element import Chat
+from .member import GroupMember, MemberManager
 
 
 class GroupType:
@@ -115,13 +113,12 @@ class SharedGroupData(UserDict):
 
         else:
             msg = (
-                f"You are setting or getting item '{key}', which refers "
-                f"to an object of type {type(value)}. This is most likely a mutable type. "
-                "Using a mutable object in SharedGroupData is very dangerous. "
-                "You may end up losing data, because SharedGroupData can only write "
-                "to the database when an item is set, not when it is changed. "
-                "Please switch to using only immutable types, like "
-                "tuple, str, int, float, and bool."
+                f"You are setting or getting item '{key}', which refers to an object of"
+                f" type {type(value)}. This is most likely a mutable type. Using a"
+                " mutable object in SharedGroupData is very dangerous. You may end up"
+                " losing data, because SharedGroupData can only write to the database"
+                " when an item is set, not when it is changed. Please switch to using"
+                " only immutable types, like tuple, str, int, float, and bool."
             )
             self.group.exp.log.warning(msg)
 
@@ -220,7 +217,7 @@ class GroupIO(GroupHelper):
         return self.db.find_one(self.query, {"_id": False})
 
     def _load_local(self) -> dict:
-        with open(self.path, "r", encoding="utf-8") as fp:
+        with open(self.path, encoding="utf-8") as fp:
             return json.load(fp)
 
     def load_markbusy(self) -> GroupData:
@@ -347,9 +344,11 @@ class GroupMemberManager(GroupHelper):
         """
         if len(self.data.roles) > 2:
             raise MatchingError(
-                "Can't use 'you' for groups with more than 2 slots, because it is ambiguous. Use the 'other_members()' generator instead, or access members based on their roles."
+                "Can't use 'you' for groups with more than 2 slots, because it is"
+                " ambiguous. Use the 'other_members()' generator instead, or access"
+                " members based on their roles."
             )
-        
+
         you = next(self.finished_other_members(), None)
         if you:
             return you
@@ -357,7 +356,7 @@ class GroupMemberManager(GroupHelper):
         you = next(self.active_other_members(), None)
         if you:
             return you
-        
+
         you = next(self.other_members(), None)
         if you:
             return you
@@ -414,7 +413,6 @@ class GroupMemberManager(GroupHelper):
             if not member.data.session_id == self.exp.session_id:
                 yield member
 
-
     @property
     def oldest_save(self) -> float:
         save_times = [m.info.last_save for m in self.active_members()]
@@ -439,7 +437,7 @@ class Group:
         See :class:`.GroupMember` for information about member objects.
 
     Examples:
-        
+
         In this basic example, we access both group members through their
         roles and print their inputs on the last page::
 
@@ -452,13 +450,13 @@ class Group:
             def setup(exp):
                 spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
                 exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-            
+
             @exp.member
             class Demo:
 
                 def on_exp_access(self):
                     self += al.TextEntry(leftlab="Enter some text", force_input=True, name="el1")
-            
+
             @exp.member
             class Match(ali.WaitingPage):
 
@@ -466,14 +464,14 @@ class Group:
                     group = self.exp.plugins.mm.match()
                     self.exp.plugins.group = group
                     return True
-            
+
             @exp.member
             class Success(al.Page):
 
                 def on_first_show(self):
                     group = self.exp.plugins.group
                     role = group.me.role
-                    
+
                     self += al.Text(f"Successfully matched to role: {role}")
 
                     a = group.a
@@ -481,8 +479,9 @@ class Group:
 
                     self += al.Text(f"Values of group member a: {a.values}")
                     self += al.Text(f"Values of group member b: {b.values}")
-                    
+
     """
+
     def __init__(self, matchmaker, **data):
         self.mm = matchmaker
         self.exp = self.mm.exp
@@ -646,11 +645,11 @@ class Group:
 
         Yields:
             :class:`.GroupMember`
-        
+
         See Also:
             - :meth:`.active_members`
             - :meth:`.other_members`
-        
+
         """
         return self.groupmember_manager.members()
 
@@ -673,7 +672,7 @@ class Group:
         except for :attr:`.me`. Yields :class:`.GroupMember` objects.
 
         Yields:
-            :class:`.GroupMember`        
+            :class:`.GroupMember`
         """
         return self.groupmember_manager.other_members()
 
@@ -684,7 +683,7 @@ class Group:
 
         Yields:
             :class:`.GroupMember`
-        
+
         See Also:
             - :attr:`.GroupMember.active`
         """
@@ -695,7 +694,10 @@ class Group:
         nmembers = self.groupmember_manager.nactive if self.data.members else 0
         shortid = self.data.group_id[-4:]
 
-        return f"{type(self).__name__}(roles={roles}, active members={nmembers}, id='{shortid}')"
+        return (
+            f"{type(self).__name__}(roles={roles}, active members={nmembers},"
+            f" id='{shortid}')"
+        )
 
     def __getattr__(self, name):
         return self.groupmember_manager.get_member_by_role(role=name)
@@ -704,7 +706,9 @@ class Group:
         return self.groupmember_manager.get_member_by_role(role=key)
 
     def __eq__(self, other):
-        return (type(self) == type(other)) and (self.data.group_id == other.data.group_id)
+        return (type(self) == type(other)) and (
+            self.data.group_id == other.data.group_id
+        )
 
     def __iadd__(self, member):
         # TODO: Add group ID to member's experiment data
@@ -716,7 +720,7 @@ class Group:
         self.data.members.append(member.data.session_id)
         self.io.save()
         return self
-    
+
     def deactivate(self):
         with self as group:
             group.data.active = False
@@ -743,10 +747,8 @@ class Group:
         if exc_type:
             tb = "".join(format_exception(exc_type, exc_value, tb))
             self.exp.log.error(
-                (
-                    f"There was an error when operating on {self}: {exc_value}."
-                    "The group was deactivated.\n{tb}"
-                )
+                f"There was an error when operating on {self}: {exc_value}."
+                "The group was deactivated.\n{tb}"
             )
             self.data.active = False
             self.io.save()
@@ -801,7 +803,7 @@ class GroupManager:
                 continue
 
             else:
-                with open(fpath, "r", encoding="utf-8") as f:
+                with open(fpath, encoding="utf-8") as f:
                     d = json.load(f)
                     version_matches = d["exp_version"] == self.mm.exp_version
                     spec_matches = d["spec_name"] == self.spec_name

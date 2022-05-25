@@ -1,12 +1,13 @@
-from dataclasses import asdict, dataclass, field
-import time
 import json
-from typing import List, Iterator
+import time
 import typing as t
+from dataclasses import asdict, dataclass, field
+from typing import Iterator, List
 
-from alfred3.data_manager import DataManager as dm, saving_method
-from alfred3.quota import Slot, SessionQuota, QuotaData, SlotManager
 from alfred3._helper import inherit_kwargs
+from alfred3.data_manager import DataManager as dm
+from alfred3.data_manager import saving_method
+from alfred3.quota import QuotaData, SessionQuota, Slot, SlotManager
 
 from .group import GroupType
 
@@ -32,7 +33,7 @@ class GroupSlot:
         for fp in path.iterdir():
             if not "group" in str(fp):
                 continue
-            with open(fp, "r", encoding="utf-8") as f:
+            with open(fp, encoding="utf-8") as f:
                 group_data = json.load(f)
             if group_data["group_id"] in self.group_ids:
                 yield group_data
@@ -83,7 +84,10 @@ class GroupSlot:
             "exp_session_id": {"$in": group_data["members"]},
             "exp_finished": False,
             "exp_aborted": False,
-            "$or": [{"exp_start_time": {"$gte": earliest_start}}, {"exp_start_time": None}],
+            "$or": [
+                {"exp_start_time": {"$gte": earliest_start}},
+                {"exp_start_time": None},
+            ],
         }
 
         return exp.db_main.find(q, projection=projection)
@@ -134,7 +138,9 @@ class GroupSlot:
 
         members = {}
         for group_data in data:
-            members.update({sid: group_data["group_id"] for sid in group_data["members"]})
+            members.update(
+                {sid: group_data["group_id"] for sid in group_data["members"]}
+            )
 
         counts = self._count_pending(exp, members, data, cursor)
 
@@ -146,7 +152,9 @@ class GroupSlot:
         data = list(data)
         members = {}
         for group_data in data:
-            members.update({sid: group_data["group_id"] for sid in group_data["members"]})
+            members.update(
+                {sid: group_data["group_id"] for sid in group_data["members"]}
+            )
 
         q = {"exp_session_id": {"$in": list(members)}, "type": dm.EXP_DATA}
         p = ["exp_finished", "exp_aborted", "exp_start_time", "exp_session_id"]
@@ -214,7 +222,7 @@ class GroupSlot:
         counts = {}
         for group_data in data:
             cursor = self._finished_members(exp, group_data, ["exp_finished"])
-            nfinished = sum([session["exp_finished"] for session in cursor])
+            nfinished = sum(session["exp_finished"] for session in cursor)
             gid = group_data["group_id"]
             counts[gid] = nfinished
 
@@ -225,7 +233,7 @@ class GroupSlot:
 
         for group_data in data:
             cursor = self._finished_members(exp, group_data, ["exp_finished"])
-            nfinished = sum([session["exp_finished"] for session in cursor])
+            nfinished = sum(session["exp_finished"] for session in cursor)
             nroles = len(group_data["roles"])
 
             if nfinished == nroles:
@@ -344,11 +352,9 @@ class ParallelGroupQuota(SessionQuota):
             group_ids = [slot.get("group_ids", False) for slot in data.slots]
             if any(group_ids):
                 raise ValueError(
-                    (
-                        "Tried to initialize a quota for a parallel spec "
-                        "with data for a sequential spec quota. This can occur, if you use the same"
-                        "name for different specs. Please make sure that all names are unique."
-                    )
+                    "Tried to initialize a quota for a parallel spec with data for a"
+                    " sequential spec quota. This can occur, if you use the samename"
+                    " for different specs. Please make sure that all names are unique."
                 )
             else:
                 raise e
@@ -380,11 +386,9 @@ class SequentialGroupQuota(ParallelGroupQuota):
             session_groups = [slot.get("session_groups", False) for slot in data.slots]
             if any(session_groups):
                 raise ValueError(
-                    (
-                        "Tried to initialize a quota for a sequential spec "
-                        "with data for a parallel spec quota. This can occur, if you use the same"
-                        "name for different specs. Please make sure that all names are unique."
-                    )
+                    "Tried to initialize a quota for a sequential spec with data for a"
+                    " parallel spec quota. This can occur, if you use the samename for"
+                    " different specs. Please make sure that all names are unique."
                 )
             else:
                 raise e
@@ -437,7 +441,7 @@ class MetaQuota:
         active or finished experiment session (or group of experiment
         sessions) associated with this slot.
         """
-        return sum([quota.nopen for quota in self.quotas])
+        return sum(quota.nopen for quota in self.quotas)
 
     @property
     def npending(self) -> int:
@@ -447,14 +451,14 @@ class MetaQuota:
         A slot is pending, if there is currently an active session
         (or group of sessions) associated with this slot.
         """
-        return sum([quota.npending for quota in self.quotas])
+        return sum(quota.npending for quota in self.quotas)
 
     @property
     def nslots(self) -> int:
         """
         int: Total number of available slots.
         """
-        return sum([quota.nslots for quota in self.quotas])
+        return sum(quota.nslots for quota in self.quotas)
 
     @property
     def nfinished(self) -> int:
@@ -465,7 +469,7 @@ class MetaQuota:
         sessions in case of group quotas) associated with this slot has
         finished the experiment.
         """
-        return sum([quota.nfinished for quota in self.quotas])
+        return sum(quota.nfinished for quota in self.quotas)
 
     @property
     def allfinished(self) -> bool:

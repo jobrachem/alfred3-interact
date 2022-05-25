@@ -1,7 +1,7 @@
 # alfred3-interact: Interactive web-experiments in alfred3 [![DOI](https://zenodo.org/badge/340368707.svg)](https://zenodo.org/badge/latestdoi/340368707)
 
 Alfred3-interact is a plugin for [alfred3](https://github.com/ctreffe/alfred).
-It allows for the creation of interactive web experiments, predominantly 
+It allows for the creation of interactive web experiments, predominantly
 in the social sciences. As prerequisites,
 you need to have **Python 3.7** or newer and **alfred3 v2.2.0** or newer installed.
 
@@ -43,7 +43,7 @@ def setup(exp):
 
 @exp.member
 class Match(ali.WaitingPage):
-    
+
     def wait_for(self):
         group = self.exp.plugins.mm.match()
         self.exp.plugins.group = group
@@ -56,7 +56,7 @@ class Success(al.Page):
 
     def on_exp_access(self):
         group = self.exp.plugins.group
-        
+
         txt = f"You have successfully matched to role: {group.me.role}"
         self += al.Text(txt, align="center")
 
@@ -74,10 +74,10 @@ $ alfred3 run
 
 ## Citation
 
-Alfred3-interact was developed for research at the department for 
-economic and social psychology, Georg-August-University Göttingen. 
-**If you are publishing research conducted using alfred3, the 
+Alfred3-interact was developed for research at the department for
+economic and social psychology, Georg-August-University Göttingen.
+**If you are publishing research conducted using alfred3, the
 following citation is required:**
 
->Brachem, J. & Treffenstädt, C. (2021). Alfred3-interact - Interactive web experiments in alfred3. (Version x.x.x). Göttingen, 
+>Brachem, J. & Treffenstädt, C. (2021). Alfred3-interact - Interactive web experiments in alfred3. (Version x.x.x). Göttingen,
 Germany: https://doi.org/10.5281/zenodo.1437219
