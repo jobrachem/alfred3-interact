@@ -103,6 +103,7 @@ class TestWaitingPage:
     #     time.sleep(10)
     #     assert "Sorry, waiting took too long" in driver.page_source
 
+
 @pytest.mark.skip("Should be run manually")
 class TestAdminPage:
     def test_monitoring(self, admin_client):

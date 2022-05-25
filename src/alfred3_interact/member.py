@@ -475,7 +475,9 @@ class MemberManager:
             if member.status.finished:
                 yield member.data.session_id
 
-    def _find_finished_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
+    def _find_finished_sessions_mongo(
+        self, sessions: List[str] = None
+    ) -> Iterator[str]:
         q = self.query_finished_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
         for sessiondata in cursor:
