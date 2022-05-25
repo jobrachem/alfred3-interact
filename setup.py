@@ -35,6 +35,7 @@ setuptools.setup(
             "flake8",
             "python-dotenv",
             "mongomock",
+            "bs4"
         ]
     },
     classifiers=[
