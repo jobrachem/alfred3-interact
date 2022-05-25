@@ -475,7 +475,7 @@ class MemberManager:
             if member.status.finished:
                 yield member.data.session_id
 
-    def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
+    def _find_finished_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
         q = self.query_finished_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
         for sessiondata in cursor:
@@ -495,15 +495,6 @@ class MemberManager:
         for m in self.members():
             if m.status.finished and m.data.session_id in sessions:
                 yield m.data.session_id
-
-    def _find_finished_sessions_mongo(self, sessions: List[str]) -> Iterator[str]:
-        q = self.query_exp
-        q["exp_finished"] = True
-        if sessions is not None:
-            q["exp_session_id"] = {"$in": sessions}
-        cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
-        for sessiondata in cursor:
-            yield sessiondata["exp_session_id"]
 
     def active_sessions_projection(self, cache_length: int = 1) -> dict:
         now = time.time()
