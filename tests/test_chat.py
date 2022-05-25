@@ -16,7 +16,7 @@ def chat(exp):
 
 def test_post_one_message(chat, exp):
     chat.post_message("test")
-    doc = exp.db_main.find_one(chat._query)
+    doc = exp.db_misc.find_one(chat._query)
 
     assert doc
     assert len(doc["messages"]) == 1
