@@ -10,10 +10,8 @@ from typing import Iterator, List
 
 from alfred3.data_manager import DataManager as dm
 from alfred3.quota import SessionGroup
-from pymongo.collection import ReturnDocument
-from requests import session
 
-from ._util import MatchingError, saving_method
+from ._util import saving_method
 
 
 @dataclass
@@ -466,13 +464,6 @@ class MemberManager:
     def _find_active_sessions_local(self, sessions: List[str] = None) -> Iterator[str]:
         for member in self.members():
             if member.status.active:
-                yield member.data.session_id
-
-    def _find_finished_sessions_local(
-        self, sessions: List[str] = None
-    ) -> Iterator[str]:
-        for member in self.members():
-            if member.status.finished:
                 yield member.data.session_id
 
     def _find_finished_sessions_mongo(

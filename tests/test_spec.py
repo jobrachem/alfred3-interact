@@ -1,5 +1,3 @@
-import pytest  # pylint: disable=unused-import
-
 from alfred3_interact import IndividualSpec, ParallelSpec, SequentialSpec
 
 

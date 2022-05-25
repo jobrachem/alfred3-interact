@@ -1,4 +1,3 @@
-import pytest
 from alfred3.data_manager import DataManager as dm
 
 from alfred3_interact.testutil import get_group

@@ -9,8 +9,7 @@ from alfred3 import icon
 from alfred3._helper import inherit_kwargs
 from alfred3.data_manager import DataManager as dm
 from alfred3.element.core import Element
-from jinja2 import Environment, PackageLoader, Template
-from pymongo.collection import ReturnDocument
+from jinja2 import Environment, PackageLoader
 
 from .chat import ChatManager
 

@@ -1,7 +1,7 @@
 import json
 import time
 import typing as t
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Iterator, List
 
 from alfred3._helper import inherit_kwargs
@@ -31,7 +31,7 @@ class GroupSlot:
         path = exp.subpath(path)
 
         for fp in path.iterdir():
-            if not "group" in str(fp):
+            if "group" not in str(fp):
                 continue
             with open(fp, encoding="utf-8") as f:
                 group_data = json.load(f)

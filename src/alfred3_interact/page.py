@@ -169,7 +169,7 @@ class MatchMakerMonitoring(admin.SpectatorPage):
             width="full",
         )
 
-        self += al.Style(code=f"#view_mm {{font-size: 85%;}}")
+        self += al.Style(code="#view_mm {{font-size: 85%;}}")
 
         # datatables javascript package
         # self += al.Style(url="//cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css")

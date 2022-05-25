@@ -110,8 +110,8 @@ class TestAdminPage:
         rv = admin_client.get("/start?admin=true", follow_redirects=True)
         rv = forward(admin_client, data={"pw": "1"})
         assert b"MatchMaker Monitoring" in rv.data
-        assert not b"Bitte geben Sie etwas ein." in rv.data
-        assert not b"Weiter" in rv.data
+        assert b"Bitte geben Sie etwas ein." not in rv.data
+        assert b"Weiter" not in rv.data
 
         rv = forward(admin_client)
         assert b"There's nothing here" in rv.data

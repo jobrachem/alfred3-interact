@@ -4,10 +4,8 @@ Functionality related to groups.
 import json
 import random
 import time
-from abc import ABC, abstractproperty
 from collections import UserDict
 from dataclasses import asdict, dataclass, field
-from enum import Enum, auto
 from itertools import chain
 from pathlib import Path
 from traceback import format_exception
@@ -380,7 +378,7 @@ class GroupMemberManager(GroupHelper):
         GroupMember: Returns the :class:`.GroupMember` that inhabits the
         given role.
         """
-        if not role in self.data.roles:
+        if role not in self.data.roles:
             raise AttributeError(f"Role '{role}' not found in {self}.")
 
         return next(self.manager.find([self.group.data.roles[role]]), None)
@@ -511,7 +509,7 @@ class Group:
         data["exp_id"] = exp_id if exp_id is not None else self.exp.exp_id
         data["matchmaker_id"] = mm_id if mm_id is not None else self.mm.matchmaker_id
 
-        if not "exp_version" in data:
+        if "exp_version" not in data:
             data["exp_version"] = self.mm.exp_version
 
         data.pop("_id", None)

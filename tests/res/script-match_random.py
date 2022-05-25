@@ -40,11 +40,11 @@ class Match(ali.MatchingPage):
             condition = group.a.adata.get("matchmaker_condition", False)
 
             if condition == "1x4":
-                group2 = group
+                group2 = group  # noqa: F841
 
             elif condition == "2x2":
                 mm = exp.plugings.mm["small"]
-                group2 = mm.match_groupwise()
+                group2 = mm.match_groupwise()  # noqa: F841
 
             elif group.me.role == "a":
                 condition = random.choose(["1x4", "2x2"])
