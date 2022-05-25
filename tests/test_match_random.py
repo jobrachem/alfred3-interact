@@ -21,7 +21,7 @@ class TestSequential:
 
         mm = MatchMaker(spec1, spec2, exp=exp)
 
-        random.seed(123)
+        random.seed(1234)
         group = mm.match_random()
 
         assert group.data.spec_name == "test1"
@@ -32,7 +32,7 @@ class TestSequential:
 
         mm = MatchMaker(spec1, spec2, exp=exp)
 
-        random.seed(1234)
+        random.seed(123)
         group = mm.match_random()
 
         assert group.data.spec_name == "test2"
@@ -216,7 +216,7 @@ class TestParallel:
         mm2 = MatchMaker(spec, exp=exp2)
         mm3 = MatchMaker(spec, exp=exp3)
 
-        random.seed(112347)
+        random.seed(112342)
         with pytest.raises(NoMatch):
             mm1.match_random(wait=2)
 
