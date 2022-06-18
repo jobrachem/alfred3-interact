@@ -191,31 +191,6 @@ class GroupSlot:
 
         return exp.db_main.find(q, projection=projection)
 
-    # def contains_incomplete_group(self, exp) -> bool:
-    #     # case 1: at least one existing member is pending
-    #     # case 2: no existing member is pending (either finished or aborted)
-
-    #     counts_pending = self._npending_members(exp)
-    #     counts_finished = self._nfinished_members(exp)
-
-    #     data = self.get_data(exp)
-
-    #     finished = []
-    #     incomplete = []
-
-    #     for group_data in data:
-    #         cursor = self._finished_members(exp, group_data, ["exp_finished"])
-    #         gid = group_data["group_id"]
-
-    #         nroles = len(group_data["roles"])
-    #         nfinished = sum([session["exp_finished"] for session in cursor])
-    #         nfilled = counts_pending[gid] + counts_finished[gid]
-
-    #         finished.append(nfinished == nroles)
-    #         incomplete.append(nfilled < nroles)
-
-    #     return not any(finished) and any(incomplete)
-
     def _nfinished_members(self, exp):
         data = self.get_data(exp)
 
@@ -353,7 +328,7 @@ class ParallelGroupQuota(SessionQuota):
             if any(group_ids):
                 raise ValueError(
                     "Tried to initialize a quota for a parallel spec with data for a"
-                    " sequential spec quota. This can occur, if you use the samename"
+                    " sequential spec quota. This can occur, if you use the same name"
                     " for different specs. Please make sure that all names are unique."
                 )
             else:
