@@ -311,6 +311,21 @@ class MatchMaker:
         quotas = [spec.quota for spec in self.groupspecs]
         self.quota = MetaQuota(*quotas)
 
+        self.exp.append_plugin_data_query(self._plugin_data_query)
+
+    @property
+    def _plugin_data_query(self):
+        f = {}
+        f = {"exp_id": self.exp.exp_id, "type": "quota_data"}
+
+        q = {}
+        q["title"] = "MatchMaker Quota Data"
+        q["type"] = "quota_data"
+        q["query"] = {"filter": f}
+        q["encrypted"] = False
+
+        return q
+
     @property
     def active(self) -> bool:
         """
