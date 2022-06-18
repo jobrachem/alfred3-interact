@@ -2,17 +2,17 @@
 Specialized pages for interactive experiments.
 """
 
-import time
 import operator
+import time
 from abc import abstractmethod
 
 import alfred3 as al
 from alfred3 import admin
-from alfred3.element.misc import RepeatedCallback
 from alfred3._helper import inherit_kwargs
+from alfred3.element.misc import RepeatedCallback
 
 from ._util import NoMatch
-from .element import ViewMembers, ToggleMatchMakerActivation
+from .element import ToggleMatchMakerActivation, ViewMembers
 
 
 @inherit_kwargs
@@ -86,7 +86,9 @@ class MatchMakerActivation(admin.OperatorPage):
         super().added_to_experiment(exp)
 
     def on_exp_access(self):
-        self += al.Text(f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center")
+        self += al.Text(
+            f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center"
+        )
         self += ToggleMatchMakerActivation(match_maker=self.match_maker, align="center")
 
 
@@ -155,23 +157,28 @@ class MatchMakerMonitoring(admin.SpectatorPage):
         super().added_to_experiment(exp)
 
     def on_exp_access(self):
-        self += al.Text(f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center")
+        self += al.Text(
+            f"Matchmaker ID: {self.match_maker.matchmaker_id}", align="center"
+        )
         self += ViewMembers(match_maker=self.match_maker, name="view_mm")
         self += al.VerticalSpace("30px")
         self += al.Text(
-            "Note: The MatchMaker Admin displays only sessions for which the matchmaking process has been started.",
+            "Note: The MatchMaker Admin displays only sessions for which the"
+            " matchmaking process has been started.",
             font_size="small",
             width="full",
         )
 
-        self += al.Style(code=f"#view_mm {{font-size: 85%;}}")
+        self += al.Style(code="#view_mm {{font-size: 85%;}}")
 
         # datatables javascript package
         # self += al.Style(url="//cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css")
         self += al.Style(
             url="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"
         )
-        self += al.JavaScript(url="//cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js")
+        self += al.JavaScript(
+            url="//cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"
+        )
         self += al.JavaScript(
             url="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"
         )
@@ -204,7 +211,9 @@ class DefaultWaitingExceptionPage(al.Page):
         self += al.VerticalSpace("50px")
         self += al.Html(al.icon("user-clock", size="80pt"), align="center")
         self += al.VerticalSpace("100px")
-        self += al.Text("Sorry, the experiment was aborted while waiting.", align="center")
+        self += al.Text(
+            "Sorry, the experiment was aborted while waiting.", align="center"
+        )
 
 
 @inherit_kwargs
@@ -530,12 +539,12 @@ class MatchTestPage(al.Page):
     Args:
         {kwargs}
 
-    The page expects a group object to be locatod at 
-    ``self.exp.plugins.group`` when it is first shown. 
+    The page expects a group object to be locatod at
+    ``self.exp.plugins.group`` when it is first shown.
     It displays some information about the group, as well as a group chat.
 
     Examples:
-        An example experiment with two specs with three roles each, 
+        An example experiment with two specs with three roles each,
         random matching and a test page::
 
             import alfred3 as al
@@ -557,17 +566,17 @@ class MatchTestPage(al.Page):
                     group = self.exp.plugins.mm.match_random()
                     self.exp.plugins.group = group
                     return True
-            
+
             exp += ali.MatchTestPage(name="test")
 
-    
+
     """
+
     title = "MatchMaking Test Page"
 
     def on_first_show(self):
         group = self.exp.plugins.group
         role = group.me.role
-                
 
         self += al.Text("## This session")
         self += al.Text(f"Successfully matched to role: {role}")
@@ -587,11 +596,13 @@ class MatchTestPage(al.Page):
 
         self += al.Text("## Group Specs")
         for m in group.members():
-            self += al.Text(f"Spec of member with role '{m.role}': {m.mm.group.spec_name}")
-        
+            self += al.Text(
+                f"Spec of member with role '{m.role}': {m.mm.group.spec_name}"
+            )
+
         self += al.VerticalSpace("15pt")
         self += al.Hline()
         self += al.VerticalSpace("15pt")
-        
+
         self += al.Text("## Group Chat")
         self += group.chat()

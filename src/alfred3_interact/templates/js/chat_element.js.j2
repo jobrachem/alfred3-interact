@@ -29,7 +29,7 @@ var update_display = function(data) {
     var msg_display = $( "#{{ name }}-display" );
 
     data.forEach(function(msg) {
-        
+
         var msg_time = prettyDate(msg.timestamp*1000);
 
         if (msg.nickname == "{{ own_nickname }}") {
@@ -57,11 +57,11 @@ var update_display = function(data) {
         var html = `<div class='msg p-2 mt-2 card shadow-sm' style='width: {{ msg_width }}; ${s}; position: relative; ${border_color}' id='${msg.timestamp}'>
 
         <span style='${nick_color}; font-size: 65%'>${nick}</span>
-        
+
         <div style='font-size: 85%;'>
         ${msg.msg}
         </div>
-        
+
         <span style='font-size:  60% ; position: absolute; bottom: 0; right: 0;' class='text-muted p-1'>${msg_time}</span>
         </div>`;
 

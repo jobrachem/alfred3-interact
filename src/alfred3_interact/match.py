@@ -1,26 +1,23 @@
-import time
-import json
 import copy
-import typing as t
+import json
 import random
-from traceback import format_exception
+import time
+import typing as t
 from dataclasses import asdict, dataclass, field
+from traceback import format_exception
 
-from pymongo.collection import ReturnDocument
-from packaging import version
+from alfred3 import __version__ as alfred_version
 from alfred3.alfredlog import QueuedLoggingInterface
 from alfred3.exceptions import AllSlotsFull
-from alfred3 import __version__ as alfred_version
+from packaging import version
+from pymongo.collection import ReturnDocument
 
 from alfred3_interact.group import GroupManager
 
-from .quota import MetaQuota
-from .member import GroupMember
-from .member import MemberManager
+from ._util import MatchingError, NoMatch, saving_method
 from .group import Group
-from ._util import saving_method
-from ._util import MatchingError
-from ._util import NoMatch
+from .member import GroupMember, MemberManager
+from .quota import MetaQuota
 
 ALFRED_VERSION = version.parse(alfred_version)
 
@@ -115,7 +112,7 @@ class MatchMakerIO:
             matchmaker_id=self.mm.matchmaker_id,
             active=self.mm._active,
             type=self.mm._DATA_TYPE,
-            ping_timeout=self.mm.ping_timeout
+            ping_timeout=self.mm.ping_timeout,
         )
 
         data = self.db.find_one_and_update(
@@ -134,7 +131,7 @@ class MatchMakerIO:
         returns the corresponding data.
         """
         if self.path.exists() and self.path.is_file():
-            with open(self.path, "r", encoding="utf-8") as f:
+            with open(self.path, encoding="utf-8") as f:
                 return MatchMakerData(**json.load(f))
         else:
             data = MatchMakerData(
@@ -180,11 +177,8 @@ class MatchMakerIO:
 
             tb = "".join(format_exception(exc_type, exc_value, traceback))
             self.mm.exp.log.error(
-                (
-                    f"There was an error in a locked MatchMaker operation."
-                    f"I deactivated the responsible member {self.mm.member} and released the lock.\n"
-                    f"{tb}"
-                )
+                "There was an error in a locked MatchMaker operation.I deactivated the"
+                f" responsible member {self.mm.member} and released the lock.\n{tb}"
             )
         self.release()
         self.mm._data = self.load()
@@ -196,53 +190,53 @@ class MatchMaker:
 
     Args:
         *groupspecs: Variable number of group specifications. Each spec
-            defines one blueprint for a group. Currently, 
-            :class:`.ParallelSpec`, :class:`.SequentialSpec`, and 
+            defines one blueprint for a group. Currently,
+            :class:`.ParallelSpec`, :class:`.SequentialSpec`, and
             :class:`.IndividualSpec` are supported.
         exp (alfred3.ExperimentSession): Associated experiment session.
         name (str): An identifier for the matchmaker. Must be unique
             within one experiment. Can (and must) be set to a custom value, if
-            you wish to use multiple matchmakers in a single experiment. 
-            Defaults to 'matchmaker'. 
+            you wish to use multiple matchmakers in a single experiment.
+            Defaults to 'matchmaker'.
         inactive_page (alfred3.Page): Page to be displayed to participants
             if the matchmaker is inactive. If *None* (default) a default
             page will be used.
         full_page (alfred3.Page): Page to be displayed to participants
-            if all specs have reached their quota of groups. If *None* 
+            if all specs have reached their quota of groups. If *None*
             (default) a default page will be used.
         raise_exception_if_full (bool): As an alternative to using a
-            *full_page*, you can let the MatchMaker raise the 
-            :class:`.AllSlotsFull` exception if all specs have reached 
+            *full_page*, you can let the MatchMaker raise the
+            :class:`.AllSlotsFull` exception if all specs have reached
             their quota of groups. Defaults to *False*.
         respect_version (bool): If True, the MatchMaker will only match
             sessions that run on the same experiment version into the
             same group. This setting makes sure that there's no strange
             behavior if you make changes to an ongoing experiment.
             Defaults to True.
-        ping_timeout (float, int): When matching parallel groups 
+        ping_timeout (float, int): When matching parallel groups
             (i.e. groups based on :class:`.ParallelSpec`), only active
             sessions are included in the matchmaking process. Sessions
-            therefore send a signal of activity to the server on a 
-            regular schedule. The argument *ping_timeout* determines the 
-            number of seconds of inactivity before a session is 
+            therefore send a signal of activity to the server on a
+            regular schedule. The argument *ping_timeout* determines the
+            number of seconds of inactivity before a session is
             considered to be inactive. Defaults to 15 seconds.
-    
+
     The workhorse methods of the MatchMaker are :meth:`.match_random`,
-    :meth:`.match_chain`, and :meth:`.match_to`. Call one of these 
+    :meth:`.match_chain`, and :meth:`.match_to`. Call one of these
     methods in the :meth:`.WaitingPage.wait_for` hook to start the
     matchmaking process.
 
-    To initialize the MatchMaker, you must first create a group 
-    specification, which is a sort of blueprint for building a group. 
-    The spec defines the size of the group, the roles that can be 
+    To initialize the MatchMaker, you must first create a group
+    specification, which is a sort of blueprint for building a group.
+    The spec defines the size of the group, the roles that can be
     assigned to participants, and the number of groups that should be
     created based on that spec. If you supply multiple specs, you
     can randomize group creation with :meth:`.match_random` or create
     an order of priority with :meth:`.match_chain`.
-    
+
     See Also:
 
-        See :class:`.SequentialSpec` and :class:`.ParallelSpec` for more 
+        See :class:`.SequentialSpec` and :class:`.ParallelSpec` for more
         information on specs.
 
     Examples:
@@ -257,7 +251,7 @@ class MatchMaker:
             def setup(exp):
                 spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
                 exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-            
+
             @exp.member
             class Match(ali.WaitingPage):
 
@@ -265,18 +259,19 @@ class MatchMaker:
                     group = self.exp.plugins.mm.match_to("spec1")
                     self.exp.plugins.group = group
                     return True
-            
+
             @exp.member
             class Success(al.Page):
 
                 def on_first_show(self):
                     group = self.exp.plugins.group
                     role = group.me.role
-                    
+
                     self += al.Text(f"Successfully matched to role: {role}")
 
 
     """
+
     _DATA_TYPE = "match_maker_data"
 
     def __init__(
@@ -288,7 +283,7 @@ class MatchMaker:
         full_page=None,
         raise_exception_if_full: bool = False,
         respect_version: bool = True,
-        ping_timeout: t.Union[float, int] = 15
+        ping_timeout: t.Union[float, int] = 15,
     ):
         # init values
         self.exp = exp
@@ -316,6 +311,21 @@ class MatchMaker:
         quotas = [spec.quota for spec in self.groupspecs]
         self.quota = MetaQuota(*quotas)
 
+        self.exp.append_plugin_data_query(self._plugin_data_query)
+
+    @property
+    def _plugin_data_query(self):
+        f = {}
+        f = {"exp_id": self.exp.exp_id, "type": "quota_data"}
+
+        q = {}
+        q["title"] = "MatchMaker Quota Data"
+        q["type"] = "quota_data"
+        q["query"] = {"filter": f}
+        q["encrypted"] = False
+
+        return q
+
     @property
     def active(self) -> bool:
         """
@@ -324,7 +334,6 @@ class MatchMaker:
         d = self.io.load()
         self._active = d.active
         return self._active
-    
 
     @property
     def _match_start(self) -> float:
@@ -341,7 +350,7 @@ class MatchMaker:
     def waiting_members(self) -> t.List[GroupMember]:
         """
         list: List of experiment sessions currently active and waiting
-        to be matched. The sessions are represented by their 
+        to be matched. The sessions are represented by their
         :class:`.GroupMember` objects.
         """
         members = list(self.member_manager.waiting(self.ping_timeout))
@@ -360,12 +369,12 @@ class MatchMaker:
             NoMatch: If a single matching effort was unsuccesful. This
                 exception gets handled by :class:`.WaitingPage` and is
                 part of a normal matching process.
-        
+
         Returns:
             Group: The group object.
-        
+
         Examples:
-            
+
             Matching based on a single spec::
 
                 import alfred3 as al
@@ -377,7 +386,7 @@ class MatchMaker:
                 def setup(exp):
                     spec = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
                     exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
-                
+
                 @exp.member
                 class Match(ali.WaitingPage):
 
@@ -385,27 +394,26 @@ class MatchMaker:
                         group = self.exp.plugins.mm.match()
                         self.exp.plugins.group = group
                         return True
-                
+
                 @exp.member
                 class Success(al.Page):
 
                     def on_first_show(self):
                         group = self.exp.plugins.group
                         role = group.me.role
-                        
+
                         self += al.Text(f"Successfully matched to role: {role}")
 
         """
         if len(self.groupspecs) > 1:
             msg = (
-                "Cannot use the method 'MatchMaker.match()', if there is more than one spec. "
-                f"You have {len(self.groupspecs)} specs."
+                "Cannot use the method 'MatchMaker.match()', if there is more than one"
+                f" spec. You have {len(self.groupspecs)} specs."
             )
             raise ValueError(msg)
-        
+
         name = self.groupspecs[0].name
         return self.match_to(name)
-
 
     def match_random(self, wait: int = None, nmin: int = None):
         """
@@ -415,8 +423,8 @@ class MatchMaker:
             wait (int): Number of seconds to wait before actually starting
                 a matching effort. Defaults to None, which means
                 that there is no waiting time.
-            nmin (int): Minimum number of waiting participants that must 
-                be active before actually starting a matching effort. 
+            nmin (int): Minimum number of waiting participants that must
+                be active before actually starting a matching effort.
                 If there are *nmin* participants waiting, matching will
                 start even if the waiting time specified in *wait* is
                 not over yet. Thus, *nmin* can be used to cut the waiting
@@ -424,31 +432,31 @@ class MatchMaker:
                 time alone determines when matching will start.
                 **Note**: The parameter *nmin* will only take effect, if
                 *wait* is not *None*.
-        
+
         This is the right method, if you wish to randomize participants
-        into groups of different sizes. 
+        into groups of different sizes.
 
         .. important::
             :meth:`.match_random` matches randomly among all *feasible*
             specs at the time of matching. A spec is feasible if there
             are enough participants waiting for a group based on that
-            spec. 
+            spec.
 
-            For instance, let's say you have an :class:`.IndividualSpec` 
-            and a :class:`.ParallelSpec` with two roles, forming a dyad. 
+            For instance, let's say you have an :class:`.IndividualSpec`
+            and a :class:`.ParallelSpec` with two roles, forming a dyad.
             Four participants
             are scheduled for a session. Participant 1 logs in one minute
-            early, Participant 2 is on time, Participant 3 logs in 30 
+            early, Participant 2 is on time, Participant 3 logs in 30
             seconds late, and Participant 4 logs in 2 minutes late. All of
             them will be matched immediately to the :class:`.IndividualSpec`,
             because this spec is always feasible. The :class:`.ParallelSpec`
             on the other hand requires at least two participants to be
             waiting simultaneously.
-            
+
             This behavior can be adjusted through the arguments *wait*
             and *nmin*. In this example case, you may, for instance,
             specify ``nmin=3`` and ``wait=2*60`` to ensure that there
-            is some time for participants to register. Participants 1, 
+            is some time for participants to register. Participants 1,
             2, and 3 will be matched to a random spec once Participant 3
             logs in, because *nmin* has been reached. Participant 4 will
             wait for two minutes before being assigned to the individual
@@ -459,27 +467,27 @@ class MatchMaker:
 
             The method :meth:`.match_chain` may be an even more suitable
             option.
-        
+
         .. note::
             Randomization into groups of different sizes can be a little
-            tricky because large groups may have an unequal (lower) 
+            tricky because large groups may have an unequal (lower)
             chance of being filled at the same rate as smaller groups
-            due to participant dropout. We provide the arguments *wait* 
+            due to participant dropout. We provide the arguments *wait*
             and *nmin* to improve the feasibility of such designs. However,
             the method :meth:`.match_chain` may be an even more suitable
             option.
-        
+
         Raises:
             NoMatch: If a single matching effort was unsuccesful. This
                 exception gets handled by :class:`.WaitingPage` and is
                 part of a normal matching process.
-        
+
         Returns:
             Group: The group object.
-        
+
         See Also:
             :meth:`.match_chain`
-        
+
         Examples:
             ::
 
@@ -493,7 +501,7 @@ class MatchMaker:
                     spec1 = ali.SequentialSpec("a", "b", nslots=10, name="spec1")
                     spec2 = ali.SequentialSpec("a", "b", nslots=10, name="spec2")
                     exp.plugins.mm = ali.MatchMaker(spec1, spec2, exp=exp)
-                
+
                 @exp.member
                 class Match(ali.WaitingPage):
 
@@ -502,7 +510,7 @@ class MatchMaker:
                         self.exp.plugins.group = group
                         self.exp.condition = group.data.spec_name
                         return True
-                
+
                 @exp.member
                 class Success(al.Page):
 
@@ -510,7 +518,7 @@ class MatchMaker:
                         group = self.exp.plugins.group
                         role = group.me.role
                         cond = self.exp.condition
-                        
+
                         self += al.Text(f"Successfully matched to role '{role}' in condition '{cond}'")
 
         """
@@ -539,48 +547,47 @@ class MatchMaker:
 
         raise NoMatch
 
-
     def match_chain(self, include_previous: bool = True, **spectimes) -> Group:
         """
         Offers prioritized matchmaking based on multiple specs.
 
-        Imagine that you have two :class:`.ParallelSpec` group specifications. 
-        Spec 1 requires five participants to be active, while Spec 2 only 
+        Imagine that you have two :class:`.ParallelSpec` group specifications.
+        Spec 1 requires five participants to be active, while Spec 2 only
         requires two.
         You may wish to first try matching based on Spec 1 for some time
         and move on to Spec 2 only when it becomes incresingly clear that
         there are not enough participants present to fill the bigger spec.
         This is what this method is for. You specify a schedule of time
         boxes that are reserved for specific specs.
-        
+
         Args:
-            include_previous (bool): If *True*, earlier specs will still be 
+            include_previous (bool): If *True*, earlier specs will still be
                 available for matching in later time boxes. If there are
                 enough participants waiting for two specs, the MatchMaker
                 selects a random spec for matching. Defaults to *True*.
             **spectimes: Specifications of spec timeboxes. Specified by
-                ``specname=time``, where *time* is the length of the spec's 
+                ``specname=time``, where *time* is the length of the spec's
                 time box in seconds and
-                *specname* is the spec's name. 
-                For the last spec, the value for ``time`` is irrelevant, 
-                as it will be included until the MatchMaking process 
-                times out. It should be set to *None*. You can select 
+                *specname* is the spec's name.
+                For the last spec, the value for ``time`` is irrelevant,
+                as it will be included until the MatchMaking process
+                times out. It should be set to *None*. You can select
                 any number of specs, but only specs that are available to
                 the MatchMaker.
-        
+
         Raises:
             NoMatch: If a single matching effort was unsuccesful. This
                 exception gets handled by :class:`.WaitingPage` and is
                 part of a normal matching process.
-        
+
         Returns:
             Group: The group object.
-        
+
         Examples:
 
             In this example, the MatchMaker will try to form a group
-            based on ``spec2`` for the first three minutes of the 
-            matchmaking process. Once the first active participant 
+            based on ``spec2`` for the first three minutes of the
+            matchmaking process. Once the first active participant
             has waited for more than three minutes without a successfull
             match, ``spec1`` will be included::
 
@@ -594,16 +601,16 @@ class MatchMaker:
                     spec1 = ali.ParallelSpec("a", "b", nslots=10, name="spec1")
                     spec2 = ali.ParallelSpec("a", "b", "c", nslots=10, name="spec2")
                     exp.plugins.mm = ali.MatchMaker(spec1, spec2, exp=exp)
-                
+
                 @exp.member
                 class Match(ali.WaitingPage):
 
                     def wait_for(self):
-                        group = self.exp.plugins.mm.match_chain(spec2=3*60, spec2=None)
+                        group = self.exp.plugins.mm.match_chain(spec2=3*60, spec1=None)
                         self.exp.plugins.group = group
                         self.exp.condition = group.data.spec_name
                         return True
-                
+
                 @exp.member
                 class Success(al.Page):
 
@@ -611,7 +618,7 @@ class MatchMaker:
                         group = self.exp.plugins.group
                         role = group.me.role
                         cond = self.exp.condition
-                        
+
                         self += al.Text(f"Successfully matched to role '{role}' in condition '{cond}'")
 
 
@@ -628,7 +635,9 @@ class MatchMaker:
 
         # remove full specs
         feasible_specs = [spec.name for spec in self.groupspecs if not spec.full(self)]
-        spectimes = {spec: time for spec, time in spectimes.items() if spec in feasible_specs}
+        spectimes = {
+            spec: time for spec, time in spectimes.items() if spec in feasible_specs
+        }
 
         # spec selection setup
         specs = []
@@ -641,12 +650,12 @@ class MatchMaker:
         for i, spec in enumerate(candidate_specs):
             delay = delays[i] + previous_delay
             ready = passed_time >= delay
-            
+
             try:
                 next_delay = delays[i + 1] + delay
                 next_spec_ready = passed_time >= next_delay
                 over = not include_previous and next_spec_ready
-            except IndexError: # for last spec
+            except IndexError:  # for last spec
                 over = False
 
             if ready and not over:
@@ -673,7 +682,7 @@ class MatchMaker:
             NoMatch: If a single matching effort was unsuccesful. This
                 exception gets handled by :class:`.WaitingPage` and is
                 part of a normal matching process.
-        
+
         Returns:
             Group: If matching was successful.
         """
@@ -688,7 +697,7 @@ class MatchMaker:
                 )
                 raise MatchingError(msg)
             return group
-            
+
         self.member.io.ping()
 
         return self._match_to(name=name)
@@ -710,8 +719,9 @@ class MatchMaker:
             try:
                 spec.quota.count(self.group, raise_exception=True)
             except AllSlotsFull:
+                self.group.deactivate()
                 self._full()
-        
+
         if not self.group:
             return
 
@@ -722,7 +732,7 @@ class MatchMaker:
         """
         Toggles MatchMaker activation.
 
-        An inactive MatchMaker will not conduct any matching. 
+        An inactive MatchMaker will not conduct any matching.
         Sessions that call a matching method will be aborted.
 
         Returns:
@@ -734,21 +744,21 @@ class MatchMaker:
         self._data = data
 
         return "active" if data.active else "inactive"
-    
+
     def check_quota(self) -> bool:
         """
-        Verifies that the MatchMaker has available slots for new 
+        Verifies that the MatchMaker has available slots for new
         groups. Aborts the experiment if there are no available slots
         left.
 
         Raises:
-            AllSlotsFull: If the MatchMaker was initialized with 
+            AllSlotsFull: If the MatchMaker was initialized with
                 ``raise_exception_if_full = True`` (default is *False*)
                 and the MatchMaker has no available slots.
         """
         if self.exp.admin_mode:
             return True
-        
+
         if self.quota.full:
             self._full()
             return False
@@ -796,7 +806,7 @@ class MatchMaker:
                 except NoMatch:
                     no_match = True
 
-        if no_match: # only reached if *no* spec lead to successful match
+        if no_match:  # only reached if *no* spec lead to successful match
             raise NoMatch
 
         self._full()
@@ -819,10 +829,10 @@ class MatchMaker:
         )
 
     def _validate_specs(self, specs):
-        names = set([spec.name for spec in specs])
+        names = {spec.name for spec in specs}
         if len(names) < len(specs):
             raise ValueError("Group specs must have unique names.")
-        
+
         for spec in specs:
             spec._init_quota(self.exp)
 
@@ -836,7 +846,6 @@ class MatchMaker:
         member = GroupMember(self)
         member.io.save()
         return member
-
 
     def _update_additional_data(self):
         prefix = "interact"

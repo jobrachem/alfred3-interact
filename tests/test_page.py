@@ -1,14 +1,12 @@
-import time
-import pytest
 import threading
+import time
 
-from flask import request, Blueprint
+import pytest
+from alfred3.testutil import clear_db, forward, get_app
+from flask import Blueprint, request
 from selenium import webdriver
-import alfred3_interact as ali
-from alfred3.testutil import get_app
-from alfred3.testutil import clear_db
-from alfred3.testutil import forward
 
+import alfred3_interact as ali
 
 testing = Blueprint("test", __name__)
 
@@ -55,6 +53,7 @@ def admin_client(tmp_path):
     clear_db()
 
 
+@pytest.mark.skip("Should be run manually")
 class TestWaitingPage:
     def test_waiting_page(self, exp):
         class Wait(ali.WaitingPage):
@@ -105,13 +104,14 @@ class TestWaitingPage:
     #     assert "Sorry, waiting took too long" in driver.page_source
 
 
+@pytest.mark.skip("Should be run manually")
 class TestAdminPage:
     def test_monitoring(self, admin_client):
         rv = admin_client.get("/start?admin=true", follow_redirects=True)
         rv = forward(admin_client, data={"pw": "1"})
         assert b"MatchMaker Monitoring" in rv.data
-        assert not b"Bitte geben Sie etwas ein." in rv.data
-        assert not b"Weiter" in rv.data
+        assert b"Bitte geben Sie etwas ein." not in rv.data
+        assert b"Weiter" not in rv.data
 
         rv = forward(admin_client)
         assert b"There's nothing here" in rv.data

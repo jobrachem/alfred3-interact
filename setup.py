@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 # Parse version from _version.py in package directory
@@ -26,10 +26,19 @@ setuptools.setup(
         ]
     },
     package_dir={"": "src"},
-    install_requires=[
-        "alfred3>=2.0",
-        "bleach>=3.2.1"
-    ],
+    install_requires=["alfred3>=2.0", "bleach>=3.2.1", "packaging"],
+    extras_require={
+        "dev": [
+            "pytest",
+            "pre-commit",
+            "black",
+            "flake8",
+            "python-dotenv",
+            "mongomock",
+            "bs4",
+            "selenium",
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

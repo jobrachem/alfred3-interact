@@ -1,7 +1,9 @@
 import alfred3 as al
+
 import alfred3_interact as ali
 
 exp = al.Experiment()
+
 
 @exp.setup
 def setup(exp):
@@ -11,9 +13,9 @@ def setup(exp):
 
     exp.plugins.mm = {"large": mm1, "small": mm2}
 
+
 @exp.member
 class Match(ali.MatchingPage):
-
     def wait_for(self):
 
         if self.passed_time < 2 * 60:
@@ -27,9 +29,9 @@ class Match(ali.MatchingPage):
         self.exp.condition = mm.matchmaker_id
         return True
 
+
 @exp.member
 class Success(al.Page):
-    
     def on_first_show(self):
         role = self.exp.plugins.group.me.role
         self += al.Text(f"Matched to role: \t{role}")

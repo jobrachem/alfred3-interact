@@ -2,16 +2,16 @@
 Interfaces for defining groups.
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import asdict
+import random
 import re
 import typing as t
-import random
+from abc import ABC, abstractmethod
+from dataclasses import asdict
 
-from .quota import ParallelGroupQuota, SequentialGroupQuota
-from .group import Group, GroupManager, GroupType, BusyGroup
+from ._util import MatchingError, NoMatch, saving_method
+from .group import BusyGroup, Group, GroupManager, GroupType
 from .member import GroupMember
-from ._util import saving_method, NoMatch, MatchingError
+from .quota import ParallelGroupQuota, SequentialGroupQuota
 
 
 class SequentialMatchMaker:
@@ -26,9 +26,9 @@ class SequentialMatchMaker:
         self.group_manager = GroupManager(self.mm, self.group_type, spec_name)
 
         self.data = {
-            "roles": self.roles, 
+            "roles": self.roles,
             "group_type": self.group_type,
-            "spec_name": spec_name
+            "spec_name": spec_name,
         }
 
     @property
@@ -37,7 +37,9 @@ class SequentialMatchMaker:
 
     def match(self) -> Group:
         if self.ongoing_sessions_ok and saving_method(self.mm.exp) == "local":
-            raise ValueError("ongoing_sessions_ok=True is not supported in local experiments.")
+            raise ValueError(
+                "ongoing_sessions_ok=True is not supported in local experiments."
+            )
 
         if self.mm.member.matched:
             group = self.group_manager.find_one(self.mm.member.group_id)
@@ -54,7 +56,7 @@ class SequentialMatchMaker:
         return group
 
     def start_group(self) -> Group:
-        
+
         with Group(self.mm, **self.data) as group:
             self.log.info(f"Starting new group: {group}.")
 
@@ -65,12 +67,16 @@ class SequentialMatchMaker:
 
             self.mm.member.io.save()
             group.io.save()
-            self.log.info(f"Session matched to role '{self.mm.member.data.role}' in {group}.")
+            self.log.info(
+                f"Session matched to role '{self.mm.member.data.role}' in {group}."
+            )
             return group
 
     def match_next_group(self) -> Group:
         with self.group_manager.next(self.ongoing_sessions_ok) as group:
-            self.log.info(f"Starting stepwise match of session to existing group: {group}.")
+            self.log.info(
+                f"Starting stepwise match of session to existing group: {group}."
+            )
 
             group += self.mm.member
             role = group.roles.next()
@@ -79,14 +85,18 @@ class SequentialMatchMaker:
             self.mm.member.io.save()
             group.io.save()
 
-            self.log.info(f"Session matched to role '{self.mm.member.data.role}' in {group}.")
+            self.log.info(
+                f"Session matched to role '{self.mm.member.data.role}' in {group}."
+            )
             return group
 
 
 class ParallelMatchMaker:
     group_type = GroupType.PARALLEL
 
-    def __init__(self, *roles, matchmaker, spec_name: str, shuffle_waiting_members: bool = True):
+    def __init__(
+        self, *roles, matchmaker, spec_name: str, shuffle_waiting_members: bool = True
+    ):
         self.roles = roles
         self.mm = matchmaker
 
@@ -94,36 +104,36 @@ class ParallelMatchMaker:
         self.log = self.mm.log
 
         self.data = {
-            "roles": self.roles, 
+            "roles": self.roles,
             "group_type": self.group_type,
-            "spec_name": spec_name
+            "spec_name": spec_name,
         }
 
         self.shuffle_waiting_members = shuffle_waiting_members
 
-
     def match(self) -> Group:
         if saving_method(self.mm.exp) == "local":
-            raise MatchingError("Cannot match with parallel specs in local experiments.")
+            raise MatchingError(
+                "Cannot match with parallel specs in local experiments."
+            )
 
         with self.mm.io as data:
 
             if data is None:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
-            else:    
+            else:
                 existing_group = self.get_group()
                 if existing_group:
                     return existing_group
 
                 waiting_members = self.mm.waiting_members
                 enough_members_waiting = len(waiting_members) >= len(self.roles)
-                
+
                 if enough_members_waiting:
                     group = self.start_group(data, waiting_members)
                     return group
-        
-        raise NoMatch # if match is not successful    
 
+        raise NoMatch  # if match is not successful
 
     def start_group(self, data, waiting_members: t.List[GroupMember]) -> Group:
 
@@ -164,7 +174,6 @@ class ParallelMatchMaker:
 
 
 class Spec(ABC):
-    
     @abstractmethod
     def _match(self):
         pass
@@ -198,7 +207,7 @@ class ParallelSpec(Spec):
             for more details.
         shuffle_waiting_members (bool): If *True*, the list of waiting
             members will be shuffled before starting a new group. If
-            *False*, members who have been waiting longest are 
+            *False*, members who have been waiting longest are
             prioritized.
 
     See Also:
@@ -207,7 +216,7 @@ class ParallelSpec(Spec):
     """
 
     group_type = GroupType.PARALLEL
-    pattern = re.compile(r"^\d|\s")
+    pattern = re.compile(r"^\d|\s|\.")
     _QUOTA_TYPE = ParallelGroupQuota
 
     def __init__(
@@ -218,10 +227,8 @@ class ParallelSpec(Spec):
         respect_version: bool = True,
         inclusive: bool = False,
         count: bool = True,
-        shuffle_waiting_members: bool = True
+        shuffle_waiting_members: bool = True,
     ):
-
-
 
         if len(roles) != len(set(roles)):
             raise ValueError("All roles in a group must be unique.")
@@ -237,11 +244,15 @@ class ParallelSpec(Spec):
         self.ongoing_sessions_ok = False
 
         self._shuffle_waiting_members = shuffle_waiting_members
-    
+
     def _init_quota(self, exp):
         if self.count:
             self._quota = self._QUOTA_TYPE(
-                nslots=self.nslots, exp=exp, respect_version=self.respect_version, inclusive=self.inclusive, name=f"{self.name}_quota"
+                nslots=self.nslots,
+                exp=exp,
+                respect_version=self.respect_version,
+                inclusive=self.inclusive,
+                name=f"{self.name}_quota",
             )
 
     @property
@@ -252,13 +263,13 @@ class ParallelSpec(Spec):
         depending on the type of spec.
         """
         return self._quota
-    
+
     def _match(self, match_maker):
         mm = ParallelMatchMaker(
             *self.roles,
             matchmaker=match_maker,
             spec_name=self.name,
-            shuffle_waiting_members=self._shuffle_waiting_members
+            shuffle_waiting_members=self._shuffle_waiting_members,
         )
 
         group = mm.match()
@@ -269,17 +280,18 @@ class ParallelSpec(Spec):
 
             if self.pattern.search(role):
                 raise ValueError(
-                    f"Error in role '{role}': Roles cannot start with numbers \
-                    and must not contain spaces."
+                    f"Error in role '{role}': Roles cannot start with numbers          "
+                    "           and must not contain spaces."
                 )
 
         return roles
-    
+
     def __repr__(self):
         return f"{type(self).__name__}(roles={self.roles}, name='{self.name}')"
 
     def full(self, match_maker):
         return self.quota.full
+
 
 class SequentialSpec(ParallelSpec):
     """
@@ -329,7 +341,7 @@ class SequentialSpec(ParallelSpec):
         respect_version: bool = True,
         inclusive: bool = False,
         ongoing_sessions_ok: bool = False,
-        count: bool = True
+        count: bool = True,
     ):
         super().__init__(
             *roles,
@@ -337,10 +349,10 @@ class SequentialSpec(ParallelSpec):
             name=name,
             respect_version=respect_version,
             inclusive=inclusive,
-            count=count
+            count=count,
         )
         self.ongoing_sessions_ok = ongoing_sessions_ok
-    
+
     def _match(self, match_maker):
         mm = SequentialMatchMaker(
             *self.roles,
@@ -361,7 +373,7 @@ class SequentialSpec(ParallelSpec):
         )
 
         return mm.any_group_takes_members
-    
+
     def full(self, match_maker) -> bool:
         any_group_takes_members = self._any_group_takes_members(match_maker)
         quota_full = self.quota.full
@@ -399,8 +411,12 @@ class IndividualSpec(SequentialSpec):
     """
 
     def __init__(
-        self, nslots: int, name: str, respect_version: bool = True, inclusive: bool = False,
-        count: bool = True
+        self,
+        nslots: int,
+        name: str,
+        respect_version: bool = True,
+        inclusive: bool = False,
+        count: bool = True,
     ):
         self.roles = self._validate_roles(["individual"])
         self.name = name

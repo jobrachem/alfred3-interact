@@ -5,12 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## alfred3_interact v0.2.2 (Released 14.02.2022)
+## alfred3_interact v0.2.3 (Released 2022-06-18)
+
+### Fixed v0.2.3
+
+- Fixed #28, #29, #27, #16
+
+### Changed v0.2.3
+
+- Set up continuous integration
+
+## alfred3_interact v0.2.2 (Released 2022-02-14)
 
 ### Added v0.2.2
 
 - Added the parameter `shuffle_waiting_members` to `ParallelSpec`. If *True*,
-  groups will be composed after shuffling the list of waiting members. 
+  groups will be composed after shuffling the list of waiting members.
   If *False*, members who have been waiting for a longer time have a
   higher priority (although their prioritization is not entirely deterministic).
 
@@ -24,38 +34,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed v0.2.1
 
-- Fixed an issue that lead to problems with role assignment in parallel 
+- Fixed an issue that lead to problems with role assignment in parallel
   groups.
 
 ## alfred3_interact v0.2.0 (Released 2021-10-14)
 
 ### Changed v0.2.0
 
-- We refactored the matchmaking system to make it more robust, more 
-  powerful, and easier to use. 
-  
-  - You can now *randomize* and *chain* group 
-    creation through `alfred3_interact.MatchMaker.match_random` and 
+- We refactored the matchmaking system to make it more robust, more
+  powerful, and easier to use.
+
+  - You can now *randomize* and *chain* group
+    creation through `alfred3_interact.MatchMaker.match_random` and
     `alfred3_interact.MatchMaker.match_chain`. Both of these methods enable
-    you to take the special challenges of interactive experiments into 
-    account. *Chaining* group creation is handy, for example when you want 
+    you to take the special challenges of interactive experiments into
+    account. *Chaining* group creation is handy, for example when you want
     to create groups of different sizes. Larger groups are harder to realize,
-    and thus you may wish to prioritize them: When possible, create a 
+    and thus you may wish to prioritize them: When possible, create a
     large group. Only when large group creation fails, create the smaller
     groups. Please refer to the documentation for more details.
-  
+
   - Matchmaking now requires the definition of "Group specs". These specs
     currently come in three different flavours: `alfred3_interact.ParallelSpec`
     for parallel (synchronous) groups, `alfred3_interact.SequentialSpec` for sequential
     (asynchronous) groups, and `alfred3_interact.IndividualSpec` for
     "groups" of size one. The latter allow you to include individual-sized
     conditions in group experiments via `match_random` and `match_chain`.
-    You can use group specs to control the maximum number of groups that 
+    You can use group specs to control the maximum number of groups that
     should be created based on a specific spec via their parameter `nslots`.
-  
-- We changed the admin facilities to use the new admin mode introduced 
+
+- We changed the admin facilities to use the new admin mode introduced
   in alfred3 v2.2.0. You can now add `alfred3_interact.MatchMakerActivation`
-  and `alfred3_interact.MatchMakerMonitoring` to your experiment 
+  and `alfred3_interact.MatchMakerMonitoring` to your experiment
   individually.
 
 ## alfred3_interact v0.1.9 (Released 2021-06-17)
@@ -67,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New method `MatchMaker.check_activation` allows you to check whether
   the MatchMaker is activated at any time in an experiment. This
   can be useful, if tha actual matching takes place at some later point
-  in an experiment: In this case, it is sensible to only allow 
+  in an experiment: In this case, it is sensible to only allow
   participants to progress, if they will actually be matched.
 
 #### Chat
@@ -119,7 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed v0.1.4
 
-- Version v0.1.3 introduced a bug on the `MatchingPage`: The page did not 
+- Version v0.1.3 introduced a bug on the `MatchingPage`: The page did not
   correctly hide its navigation buttons. This update fixes the bug.
 
 ## alfred3-interact v0.1.3 (Released 2021-05-18)

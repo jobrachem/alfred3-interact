@@ -1,7 +1,7 @@
 
 var render_table = function() {
     var table = $('#{{ name }}').DataTable(
-        {"ajax": "{{ render_url }}", 
+        {"ajax": "{{ render_url }}",
         "scrollX": true,
         "order": [[ 4, "desc" ]],
         "columns": [
@@ -10,18 +10,18 @@ var render_table = function() {
             {% endfor %}
         ]}
     );
-    
+
     return table
 };
 
 $(document).ready(function() {
     var table = render_table();
-    
+
     // reload periodically
     //setInterval(function() {
     //    table.ajax.reload();
     //}, {{ refresh_interval }}*1000);
-    
+
     // reload on click
     $("#{{ name }}-refresh").click(function() {
         table.ajax.reload();
