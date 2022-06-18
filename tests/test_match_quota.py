@@ -215,6 +215,40 @@ class TestQuotaSequential:
 
         assert group3.me.role == "a"
         assert not exp3.aborted
+    
+    def test_session_timeout_without_abort(self, exp_factory):
+        """
+        Here, the expired session is never aborted explicitly, only implicitly.
+        """
+        exp1 = exp_factory(sid="s1", timeout=1)
+        exp1.start()
+        spec = SequentialSpec("a", "b", nslots=1, name="test")
+        mm1 = MatchMaker(spec, exp=exp1)
+        group1 = mm1.match_to("test")
+        
+        assert group1.me.role == "a"
+        assert group1.mm.quota.nopen == 0
+        assert group1.mm.quota.npending == 1
+
+        time.sleep(1)
+        assert exp1.session_expired
+        assert not exp1.aborted
+
+        exp2 = exp_factory(sid="s2")
+        exp2.start()
+        spec = SequentialSpec("a", "b", nslots=1, name="test")
+        mm2 = MatchMaker(spec, exp=exp2)
+        group2 = mm2.match_to("test")
+
+        assert group2.me.role == "a"
+        assert not exp2.aborted
+
+        exp3 = exp_factory(sid="s3")
+        exp3.start()
+        spec = SequentialSpec("a", "b", nslots=1, name="test")
+        mm3 = MatchMaker(spec, exp=exp3)
+        group3 = mm3.match_to("test")
+        assert exp3.aborted
 
 
 class TestQuotaSequentialLocal:
@@ -259,6 +293,7 @@ class TestQuotaSequentialLocal:
         assert group3.me.role == "a"
         assert not exp3.aborted
         assert group3.group_id == group1.group_id
+    
 
 
 class TestQuotaParallel:
