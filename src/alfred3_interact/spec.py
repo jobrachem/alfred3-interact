@@ -216,7 +216,7 @@ class ParallelSpec(Spec):
     """
 
     group_type = GroupType.PARALLEL
-    pattern = re.compile(r"^\d|\s")
+    pattern = re.compile(r"^\d|\s|\.")
     _QUOTA_TYPE = ParallelGroupQuota
 
     def __init__(
