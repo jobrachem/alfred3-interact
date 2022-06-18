@@ -606,7 +606,7 @@ class MatchMaker:
                 class Match(ali.WaitingPage):
 
                     def wait_for(self):
-                        group = self.exp.plugins.mm.match_chain(spec2=3*60, spec2=None)
+                        group = self.exp.plugins.mm.match_chain(spec2=3*60, spec1=None)
                         self.exp.plugins.group = group
                         self.exp.condition = group.data.spec_name
                         return True
