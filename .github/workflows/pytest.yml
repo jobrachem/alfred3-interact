@@ -33,7 +33,7 @@ jobs:
         pip list
 
     - name: Run pytest
-      run: pytest --cov=alfred3_interact tests/test_chat.py
+      run: pytest --cov=alfred3_interact tests/
 
     - name: coverage.py badge
       uses: tj-actions/coverage-badge-py@v1.8
