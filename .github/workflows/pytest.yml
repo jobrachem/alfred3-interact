@@ -33,7 +33,7 @@ jobs:
         pip list
 
     - name: Run pytest
-      run: pytest --cov=alfred3_interact tests/
+      run: pytest --cov=alfred3_interact tests/test_chat.py
 
     - name: coverage.py badge
       uses: tj-actions/coverage-badge-py@v1.8
@@ -46,6 +46,7 @@ jobs:
 
     - name: Commit files
       if: steps.changed_files.outputs.files_changed == 'true'
+      github_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -56,5 +57,5 @@ jobs:
       if: steps.changed_files.outputs.files_changed == 'true'
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.token }}
+        github_token: ${{ secrets.GITHUB_TOKENn }}
         branch: ${{ github.ref }}
