@@ -51,8 +51,6 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git add coverage.svg
         git commit -m "Updated coverage.svg"
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push changes
       if: steps.changed_files.outputs.files_changed == 'true'
