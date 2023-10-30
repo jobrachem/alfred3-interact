@@ -1,6 +1,6 @@
-WaitingPage.minimum\_display\_time
+MatchMakerActivation.footer\_text
 ======================================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoproperty:: WaitingPage.minimum_display_time
+.. autoproperty:: MatchMakerActivation.footer_text

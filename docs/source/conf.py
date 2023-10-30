@@ -86,14 +86,14 @@ pygments_style = "sphinx"
 
 # Monkey patch for issue #2044 (None by by default for instance attributes? #2044)
 # Should be resolved in next release of sphinx
-from sphinx.ext.autodoc import ClassLevelDocumenter, InstanceAttributeDocumenter
+# from sphinx.ext.autodoc import ClassLevelDocumenter, InstanceAttributeDocumenter
 
 
-def iad_add_directive_header(self, sig):
-    ClassLevelDocumenter.add_directive_header(self, sig)
+# def iad_add_directive_header(self, sig):
+#     ClassLevelDocumenter.add_directive_header(self, sig)
 
 
-InstanceAttributeDocumenter.add_directive_header = iad_add_directive_header
+# InstanceAttributeDocumenter.add_directive_header = iad_add_directive_header
 
 autodoc_default_options = {"member-order": "bysource", "inherited-members": False}
 

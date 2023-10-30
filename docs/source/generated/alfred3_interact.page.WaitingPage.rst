@@ -110,6 +110,7 @@
          ~WaitingPage.expired
          ~WaitingPage.filled_input_elements
          ~WaitingPage.fixed_width
+         ~WaitingPage.footer_text
          ~WaitingPage.has_been_shown
          ~WaitingPage.header_color
          ~WaitingPage.input_elements
@@ -141,3 +142,4 @@
          ~WaitingPage.wait_sleep_time
          ~WaitingPage.wait_timeout
          ~WaitingPage.wait_timeout_page
+         ~WaitingPage.waiting_start

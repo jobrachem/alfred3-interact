@@ -103,6 +103,7 @@
          ~MatchMakerActivation.experiment
          ~MatchMakerActivation.filled_input_elements
          ~MatchMakerActivation.fixed_width
+         ~MatchMakerActivation.footer_text
          ~MatchMakerActivation.has_been_shown
          ~MatchMakerActivation.header_color
          ~MatchMakerActivation.input_elements

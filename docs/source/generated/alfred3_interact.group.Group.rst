@@ -27,6 +27,9 @@
       ~Group.chat
 
 
+      ~Group.deactivate
+
+
       ~Group.members
 
 

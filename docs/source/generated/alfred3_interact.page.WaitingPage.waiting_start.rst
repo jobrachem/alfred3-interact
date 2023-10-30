@@ -1,6 +1,6 @@
-WaitingPage.unlinked\_data
+WaitingPage.waiting\_start
 ===============================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoproperty:: WaitingPage.unlinked_data
+.. autoattribute:: WaitingPage.waiting_start

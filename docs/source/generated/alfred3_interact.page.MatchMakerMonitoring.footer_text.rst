@@ -1,6 +1,6 @@
-WaitingPage.prefix\_element\_names
+MatchMakerMonitoring.footer\_text
 ======================================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoattribute:: WaitingPage.prefix_element_names
+.. autoproperty:: MatchMakerMonitoring.footer_text

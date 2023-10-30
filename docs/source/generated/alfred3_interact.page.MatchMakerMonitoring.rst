@@ -103,6 +103,7 @@
          ~MatchMakerMonitoring.experiment
          ~MatchMakerMonitoring.filled_input_elements
          ~MatchMakerMonitoring.fixed_width
+         ~MatchMakerMonitoring.footer_text
          ~MatchMakerMonitoring.has_been_shown
          ~MatchMakerMonitoring.header_color
          ~MatchMakerMonitoring.input_elements

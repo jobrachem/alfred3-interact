@@ -1,6 +1,6 @@
-WaitingPage.fixed\_width
+WaitingPage.footer\_text
 =============================================
 
 .. currentmodule:: alfred3_interact.page
 
-.. autoproperty:: WaitingPage.fixed_width
+.. autoproperty:: WaitingPage.footer_text
