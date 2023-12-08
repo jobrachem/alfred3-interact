@@ -51,12 +51,31 @@ class GroupMemberIO(MemberHelper):
         return q
 
     def load(self):
-        if self.saving_method == "mongo":
-            data = self._load_mongo()
-        elif self.saving_method == "local":
-            data = self._load_local()
-        data = data["members"][self.sid]
-        self.member.data = GroupMemberData(**data)
+        start = time.time()
+        end = start + 15
+        current = start
+        while current <= end:
+            try:
+                if self.saving_method == "mongo":
+                    data = self._load_mongo()
+                elif self.saving_method == "local":
+                    data = self._load_local()
+
+                data = data["members"][self.sid]
+                self.member.data = GroupMemberData(**data)
+
+                return
+
+            except KeyError:
+                time.sleep(1)
+                current = time.time()
+                msg = "Error while loading."
+                if current <= end:
+                    msg += " Trying again."
+                else:
+                    msg += " Timeout reached. Aborting."
+
+                self.exp.log.exception(msg)
 
     def _load_local(self) -> dict:
         with open(self.path, encoding="utf-8") as f:
