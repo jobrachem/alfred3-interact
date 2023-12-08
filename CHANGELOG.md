@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## alfred3_interact v0.2.4 (Released 2023-12-08)
+
+### Fixed v0.2.4
+
+- There seems to be a race condition in `MatchMaker._init_member()`. Sometimes,
+  apparently a member has already been created, but the session ID is not available
+  in the database yet. We added a hotfix to try and make this problem less severe.
+  Now, `GroupMemberIO.load` will try to load the member data repeatedly, with
+  a one-second sleep in between tries for 15 seconds before aborting. In most cases,
+  this should give the database enough time to catch up.
+
 ## alfred3_interact v0.2.3 (Released 2022-06-18)
 
 ### Fixed v0.2.3
