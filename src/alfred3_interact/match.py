@@ -180,6 +180,11 @@ class MatchMakerIO:
             return_document=ReturnDocument.AFTER,
         )
 
+        self.mm.exp.log.debug(
+            f"Loaded MatchMakerData. They have type {type(data)}. They look like this:"
+            f" {data}. Are they None? {data is None}."
+        )
+
         if data is not None:
             self.mm.exp.log.debug(
                 f"Found non-busy MatchMaker dataset. Timestamp: {time.time()}"
