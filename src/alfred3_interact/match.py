@@ -14,7 +14,7 @@ from pymongo.collection import ReturnDocument
 
 from alfred3_interact.group import GroupManager
 
-from ._util import MatchingError, NoMatch, saving_method
+from ._util import MatchingError, MatchMakerBusy, NoMatch, saving_method
 from .group import Group
 from .member import GroupMember, MemberManager
 from .quota import MetaQuota
@@ -93,9 +93,19 @@ class MatchMakerIO:
         Happens only in groupwise matching, so there is only a mongoDB
         version of this one.
         """
+        self.mm.busy = False
+        if saving_method(self.mm.exp) == "mongo":
+            return self._release_mongo()
+        elif saving_method(self.mm.exp) == "local":
+            raise MatchingError(
+                "Tried to release MatchMakerData with local saving. Releasing is only"
+                " expected for database saving."
+            )
+
+    def _release_mongo(self):
         q = copy.copy(self.query)
         q["busy"] = self.mm.exp.session_id
-        self.db.find_one_and_update(filter=q, update={"$set": {"busy": "false"}})
+        return self.db.find_one_and_update(filter=q, update={"$set": {"busy": "false"}})
 
     def _save_mongo(self, data: MatchMakerData):
         self.db.find_one_and_replace(self.query, asdict(data))
@@ -148,8 +158,8 @@ class MatchMakerIO:
 
     def _load_markbusy_local(self):
         data = self._load_local()
-        if not data.busy:
-            data.busy = True
+        if data.busy == "false":
+            data.busy = self.mm.exp.session_id
             self._save_local(data)
             return data
         else:
@@ -199,9 +209,16 @@ class MatchMakerIO:
         self.mm.exp.log.debug(
             f"Releasing MatchMakerData lock. Timestamp: {time.time()}"
         )
-        self.release()
-        self.mm.exp.log.debug(f"MatchMakerData lock released. Timestamp: {time.time()}")
 
+        data = self.release()
+
+        if not data:
+            self.mm.exp.log.debug(
+                f"MatchMaker seems to be busy. MatchMakerIO.release() returned {data}"
+            )
+            raise MatchMakerBusy
+
+        self.mm.exp.log.debug(f"MatchMakerData lock released. Timestamp: {time.time()}")
         self.mm._data = self.load()
 
 
