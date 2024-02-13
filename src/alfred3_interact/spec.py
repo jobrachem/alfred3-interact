@@ -122,6 +122,12 @@ class ParallelMatchMaker:
             if data is None:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
             else:
+                from pprint import pprint
+
+                self.log.debug(
+                    "ParallelMatchMaker.match(): We are conducting groupwise matching."
+                    f" MatchMakerData looks like this: {pprint(asdict(data))}"
+                )
                 existing_group = self.get_group()
 
                 if existing_group:
@@ -167,8 +173,14 @@ class ParallelMatchMaker:
             return group
 
     def get_group(self) -> Group:
+        self.mm.exp.log.debug("ParallelMatchMaker.get_group() called.")
         member = self.mm.member
+        self.mm.exp.log.debug("ParallelMatchMaker.get_group(): Loading member.")
         member.io.load()
+        self.mm.exp.log.debug(
+            f"ParallelMatchMaker.get_group(): Member loaded. Member data: {member.data}"
+        )
+
         if member.status.matched:
             group = self.group_manager.find_one(member.data.group_id)
             self.mm.exp.log.debug(

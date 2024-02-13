@@ -62,6 +62,7 @@ class GroupMemberIO(MemberHelper):
                     data = self._load_local()
 
                 data = data["members"][self.sid]
+
                 self.member.data = GroupMemberData(**data)
                 return
 
