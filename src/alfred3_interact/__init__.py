@@ -1,4 +1,5 @@
 from ._util import NoMatch
+from ._version import __version__
 from .element import Chat, ToggleMatchMakerActivation, ViewMembers
 from .match import MatchMaker
 from .page import (
