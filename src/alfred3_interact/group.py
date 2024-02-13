@@ -241,7 +241,7 @@ class GroupIO(GroupHelper):
 
     def _load_markbusy_local(self):
         data = self._load_local()
-        if not data["busy"]:
+        if data["busy"] == "false":
             data["busy"] = self.exp.session_id
             self._save_local(data)
             return data
