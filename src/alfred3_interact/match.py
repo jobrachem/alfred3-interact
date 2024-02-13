@@ -916,7 +916,7 @@ class MatchMaker:
 
             return self.member
 
-        with self.mm.io as data:
+        with self.io as data:
 
             if data is None:
                 self.exp.log.debug(
