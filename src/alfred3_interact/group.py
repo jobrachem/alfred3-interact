@@ -36,7 +36,7 @@ class GroupData:
     members: list = field(default_factory=list)
     timestamp: float = field(default_factory=time.time)
     active: bool = True
-    busy: bool = False
+    busy: str = "false"
     shared_data: dict = field(default_factory=dict)
     type: str = "match_group"
 
@@ -229,10 +229,10 @@ class GroupIO(GroupHelper):
 
     def _load_markbusy_mongo(self) -> dict:
         q = self.query
-        q["busy"] = False
+        q["busy"] = "false"
         data = self.db.find_one_and_update(
-            q,
-            {"$set": {"busy": True}},
+            filter=q,
+            update={"$set": {"busy": self.exp.session_id}},
             return_document=ReturnDocument.AFTER,
             projection={"_id": False},
         )
@@ -242,7 +242,7 @@ class GroupIO(GroupHelper):
     def _load_markbusy_local(self):
         data = self._load_local()
         if not data["busy"]:
-            data["busy"] = True
+            data["busy"] = self.exp.session_id
             self._save_local(data)
             return data
         else:
@@ -250,19 +250,26 @@ class GroupIO(GroupHelper):
 
     def release(self):
         if self.saving_method == "mongo":
-            self._release_mongo()
+            data = self._release_mongo()
         elif self.saving_method == "local":
-            self._release_local()
+            data = self._release_local()
 
         self.group.data.busy = False
+        return data
 
     def _release_mongo(self):
-        self.db.find_one_and_update(self.query, {"$set": {"busy": False}})
+        data = self.db.find_one_and_update(
+            filter=self.query,
+            update={"$set": {"busy": "false"}},
+            return_document=ReturnDocument.AFTER,
+        )
+        return data
 
     def _release_local(self):
         data = self._load_local()
-        data["busy"] = False
+        data["busy"] = "false"
         self._save_local(data)
+        return data
 
 
 class GroupRoles(GroupHelper):
@@ -751,7 +758,12 @@ class Group:
             self.data.active = False
             self.io.save()
 
-        self.io.release()
+        data = self.io.release()
+
+        if not data:
+            self.exp.log.debug(
+                f"{self} seems to be busy. GroupIO.release() returned {data}"
+            )
 
 
 class GroupManager:
