@@ -105,7 +105,11 @@ class MatchMakerIO:
     def _release_mongo(self):
         q = copy.copy(self.query)
         q["busy"] = self.mm.exp.session_id
-        return self.db.find_one_and_update(filter=q, update={"$set": {"busy": "false"}})
+        return self.db.find_one_and_update(
+            filter=q,
+            update={"$set": {"busy": "false"}},
+            return_document=ReturnDocument.AFTER,
+        )
 
     def _save_mongo(self, data: MatchMakerData):
         self.db.find_one_and_replace(self.query, asdict(data))
