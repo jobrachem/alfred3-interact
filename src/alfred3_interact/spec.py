@@ -119,40 +119,16 @@ class ParallelMatchMaker:
 
         with self.mm.io as data:
 
-            self.log.debug(
-                f"ParallelMatchMaker.match(): MatchMaker data have type {type(data)}."
-                f" They look like this: {data}. Are they None? {data is None}."
-            )
-
             if data is None:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
             else:
-                from pprint import pprint
-
-                self.log.debug(
-                    "ParallelMatchMaker.match(): We are conducting groupwise matching."
-                    f" MatchMakerData looks like this: {pprint(asdict(data))}"
-                )
                 existing_group = self.get_group()
 
-                self.log.debug(
-                    f"ParallelMatchMaker.get_group() returned {existing_group}."
-                )
-
                 if existing_group:
-                    self.log.debug(f"Returning {existing_group}.")
                     return existing_group
 
-                self.log.debug(
-                    "Checking if there are enough members for starting a group."
-                )
                 waiting_members = self.mm.waiting_members
                 enough_members_waiting = len(waiting_members) >= len(self.roles)
-                self.log.debug(
-                    "Checking if there are enough members for starting a group."
-                    f" Result: {enough_members_waiting}. The waiting members are"
-                    f" {waiting_members}."
-                )
 
                 if enough_members_waiting:
                     group = self.start_group(data, waiting_members)
@@ -187,35 +163,17 @@ class ParallelMatchMaker:
             group.io.save()
             self.mm.io.save(data=data)
 
-            self.log.info(f"Group {group} filled. Returning group")
+            self.log.info(f"{group} filled. Returning group")
             return group
 
     def get_group(self) -> Group:
-        self.mm.exp.log.debug("ParallelMatchMaker.get_group() called.")
         member = self.mm.member
-        self.mm.exp.log.debug("ParallelMatchMaker.get_group(): Loading member.")
         member.io.load()
-        self.mm.exp.log.debug(
-            f"ParallelMatchMaker.get_group(): Member loaded. Member data: {member.data}"
-        )
 
         if member.status.matched:
-            self.log.debug(
-                f"{member} appears to be matched. Group ID: {member.data.group_id}."
-            )
             group = self.group_manager.find_one(member.data.group_id)
 
-            self.log.debug(f"We found the following group: {group}.")
-
-            self.mm.exp.log.debug(
-                f"We are in ParallelMatchMaker.get_group(). The query returned {group}."
-                " Returning."
-            )
             return group
-
-        self.mm.exp.log.debug(
-            "We are in ParallelMatchMaker.get_group(). Found NO group. Returning."
-        )
 
 
 class Spec(ABC):

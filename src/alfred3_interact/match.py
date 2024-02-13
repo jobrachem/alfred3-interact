@@ -90,17 +90,12 @@ class MatchMakerIO:
     def release(self) -> MatchMakerData:
         """
         Releases MatchMakerData from a 'busy' state.
-        Happens only in groupwise matching, so there is only a mongoDB
-        version of this one.
         """
         self.mm.busy = False
         if saving_method(self.mm.exp) == "mongo":
             return self._release_mongo()
         elif saving_method(self.mm.exp) == "local":
-            raise MatchingError(
-                "Tried to release MatchMakerData with local saving. Releasing is only"
-                " expected for database saving."
-            )
+            return self._release_local()
 
     def _release_mongo(self):
         q = copy.copy(self.query)
@@ -110,6 +105,12 @@ class MatchMakerIO:
             update={"$set": {"busy": "false"}},
             return_document=ReturnDocument.AFTER,
         )
+
+    def _release_local(self):
+        data = self._load_local()
+        data.busy = "false"
+        self._save_local(data)
+        return data
 
     def _save_mongo(self, data: MatchMakerData):
         self.db.find_one_and_replace(self.query, asdict(data))
@@ -180,27 +181,12 @@ class MatchMakerIO:
             return_document=ReturnDocument.AFTER,
         )
 
-        self.mm.exp.log.debug(
-            f"Loaded MatchMakerData. They have type {type(data)}. They look like this:"
-            f" {data}. Are they None? {data is None}."
-        )
-
         if data is not None:
-            self.mm.exp.log.debug(
-                f"Found non-busy MatchMaker dataset. Timestamp: {time.time()}"
-            )
             return MatchMakerData(**data)
         else:
-            self.mm.exp.log.debug(
-                f"Did NOT find non-busy MatchMaker dataset. Timestamp: {time.time()}"
-            )
             return None
 
     def __enter__(self):
-        self.mm.exp.log.debug(
-            "Entering MatchMakerIO Trying to load MatchMakerData. Timestamp:"
-            f" {time.time()}"
-        )
         return self.load_markbusy()
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -214,10 +200,6 @@ class MatchMakerIO:
                 "There was an error in a locked MatchMaker operation. I deactivated the"
                 f" responsible member {self.mm.member} and released the lock.\n{tb}"
             )
-
-        self.mm.exp.log.debug(
-            f"Releasing MatchMakerData lock. Timestamp: {time.time()}"
-        )
 
         data = self.release()
 
@@ -572,14 +554,7 @@ class MatchMaker:
         self.member = self._init_member()
 
         if self.member.matched:
-            self.exp.log.debug(
-                "Member is matched. Retrieving group. This call is logged BEFORE."
-            )
             group = self._get_group(self.member)
-            self.exp.log.debug(
-                f"Member is matched. Returning group {group}. This call is logged"
-                " AFTER."
-            )
             return group
 
         self.member.io.ping()
@@ -598,14 +573,7 @@ class MatchMaker:
 
         if enough_members or waited_enough:
             random.shuffle(self.groupspecs)
-            self.exp.log.debug(
-                "Member is not matched. Calling _match_quota. This call is logged"
-                " BEFORE."
-            )
             group = self._match_quota(self.groupspecs)
-            self.exp.log.debug(
-                f"Match completed. Returning group {group}. This call is logged AFTER."
-            )
             return group
 
         raise NoMatch
@@ -903,16 +871,9 @@ class MatchMaker:
         return specs
 
     def _init_member(self) -> GroupMember:
-        self.exp.log.debug("MatchMaker._init_member() called.")
 
         if self.member:
-            self.exp.log.debug("MatchMaker._init_member(): Loading member.")
-
             self.member.io.load()
-
-            self.exp.log.debug(
-                "MatchMaker._init_member(): Member loaded. Returning member."
-            )
 
             return self.member
 
@@ -920,13 +881,10 @@ class MatchMaker:
 
             if data is not None:
                 member = GroupMember(self)
-                self.exp.log.debug("MatchMaker._init_member(): Saving Member data.")
                 member.io.save()
-                self.exp.log.debug("MatchMaker._init_member(): Member data saved.")
 
                 return member
 
-        self.exp.log.debug("Trying to init a member, but the MatchMaker is busy.")
         raise MatchMakerBusy
 
     def _update_additional_data(self):
