@@ -163,22 +163,17 @@ class ParallelMatchMaker:
             group.io.save()
             self.mm.io.save(data=data)
 
-            self.log.info(f"Group {group} filled. Returning group")
+            self.log.info(f"{group} filled. Returning group")
             return group
 
     def get_group(self) -> Group:
         member = self.mm.member
         member.io.load()
+
         if member.status.matched:
             group = self.group_manager.find_one(member.data.group_id)
-            self.mm.exp.log.debug(
-                f"We are in ParallelMatchMaker.get_group(). Found group {group}."
-                " Returning."
-            )
+
             return group
-        self.mm.exp.log.debug(
-            "We are in ParallelMatchMaker.get_group(). Found NO group. Returning."
-        )
 
 
 class Spec(ABC):

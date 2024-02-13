@@ -11,7 +11,7 @@ from alfred3 import admin
 from alfred3._helper import inherit_kwargs
 from alfred3.element.misc import RepeatedCallback
 
-from ._util import NoMatch
+from ._util import MatchMakerBusy, NoMatch
 from .element import ToggleMatchMakerActivation, ViewMembers
 
 
@@ -467,7 +467,7 @@ class WaitingPage(al.NoNavigationPage):
         try:
             wait_status = self.wait_for()  # can return None
 
-        except NoMatch:
+        except (NoMatch, MatchMakerBusy):
             return False  # return False so that the repeated callback will try again
 
         except Exception:

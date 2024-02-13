@@ -13,17 +13,25 @@ def saving_method(exp) -> str:
         return None
 
 
-class MatchingTimeout(Exception):
+class AlfredInteractError(Exception):
     pass
 
 
-class MatchingError(Exception):
+class MatchingTimeout(AlfredInteractError):
     pass
 
 
-class BusyGroup(Exception):
+class MatchingError(AlfredInteractError):
     pass
 
 
-class NoMatch(Exception):
+class BusyGroup(AlfredInteractError):
+    pass
+
+
+class NoMatch(AlfredInteractError):
+    pass
+
+
+class MatchMakerBusy(AlfredInteractError):
     pass
