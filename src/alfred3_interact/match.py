@@ -14,7 +14,7 @@ from pymongo.collection import ReturnDocument
 
 from alfred3_interact.group import GroupManager
 
-from ._util import MatchingError, NoMatch, saving_method
+from ._util import MatchingError, MatchMakerBusy, NoMatch, saving_method
 from .group import Group
 from .member import GroupMember, MemberManager
 from .quota import MetaQuota
@@ -29,7 +29,7 @@ class MatchMakerData:
     matchmaker_id: str
     type: str
     members: dict = field(default_factory=dict)
-    busy: bool = False
+    busy: str = "false"
     active: bool = False
     ping_timeout: int = None
 
@@ -90,12 +90,27 @@ class MatchMakerIO:
     def release(self) -> MatchMakerData:
         """
         Releases MatchMakerData from a 'busy' state.
-        Happens only in groupwise matching, so there is only a mongoDB
-        version of this one.
         """
+        self.mm.busy = False
+        if saving_method(self.mm.exp) == "mongo":
+            return self._release_mongo()
+        elif saving_method(self.mm.exp) == "local":
+            return self._release_local()
+
+    def _release_mongo(self):
         q = copy.copy(self.query)
-        q["busy"] = True
-        self.db.find_one_and_update(q, {"$set": {"busy": False}})
+        q["busy"] = self.mm.exp.session_id
+        return self.db.find_one_and_update(
+            filter=q,
+            update={"$set": {"busy": "false"}},
+            return_document=ReturnDocument.AFTER,
+        )
+
+    def _release_local(self):
+        data = self._load_local()
+        data.busy = "false"
+        self._save_local(data)
+        return data
 
     def _save_mongo(self, data: MatchMakerData):
         self.db.find_one_and_replace(self.query, asdict(data))
@@ -148,8 +163,8 @@ class MatchMakerIO:
 
     def _load_markbusy_local(self):
         data = self._load_local()
-        if not data.busy:
-            data.busy = True
+        if data.busy == "false":
+            data.busy = self.mm.exp.session_id
             self._save_local(data)
             return data
         else:
@@ -157,27 +172,21 @@ class MatchMakerIO:
 
     def _load_markbusy_mongo(self):
         q = self.query
-        q["busy"] = False
-        data = self.db.find_one_and_update(q, {"$set": {"busy": True}})
+        q["busy"] = "false"
+
+        data = self.db.find_one_and_update(
+            filter=q,
+            update={"$set": {"busy": self.mm.exp.session_id}},
+            projection={"_id": False},
+            return_document=ReturnDocument.AFTER,
+        )
 
         if data is not None:
-            self.mm.exp.log.debug(
-                f"Found non-busy MatchMaker dataset. Timestamp: {time.time()}"
-            )
-            data.pop("_id", None)
-            data["busy"] = True
             return MatchMakerData(**data)
         else:
-            self.mm.exp.log.debug(
-                f"Did NOT find non-busy MatchMaker dataset. Timestamp: {time.time()}"
-            )
             return None
 
     def __enter__(self):
-        self.mm.exp.log.debug(
-            "Entering MatchMakerIO Trying to load MatchMakerData. Timestamp:"
-            f" {time.time()}"
-        )
         return self.load_markbusy()
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -192,12 +201,15 @@ class MatchMakerIO:
                 f" responsible member {self.mm.member} and released the lock.\n{tb}"
             )
 
-        self.mm.exp.log.debug(
-            f"Releasing MatchMakerData lock. Timestamp: {time.time()}"
-        )
-        self.release()
-        self.mm.exp.log.debug(f"MatchMakerData lock released. Timestamp: {time.time()}")
+        data = self.release()
 
+        if not data:
+            self.mm.exp.log.debug(
+                f"MatchMaker seems to be busy. MatchMakerIO.release() returned {data}"
+            )
+            raise MatchMakerBusy
+
+        self.mm.exp.log.debug(f"MatchMakerData lock released. Timestamp: {time.time()}")
         self.mm._data = self.load()
 
 
@@ -542,14 +554,7 @@ class MatchMaker:
         self.member = self._init_member()
 
         if self.member.matched:
-            self.exp.log.debug(
-                "Member is matched. Retrieving group. This call is logged BEFORE."
-            )
             group = self._get_group(self.member)
-            self.exp.log.debug(
-                f"Member is matched. Returning group {group}. This call is logged"
-                " AFTER."
-            )
             return group
 
         self.member.io.ping()
@@ -568,14 +573,7 @@ class MatchMaker:
 
         if enough_members or waited_enough:
             random.shuffle(self.groupspecs)
-            self.exp.log.debug(
-                "Member is not matched. Calling _match_quota. This call is logged"
-                " BEFORE."
-            )
             group = self._match_quota(self.groupspecs)
-            self.exp.log.debug(
-                f"Match completed. Returning group {group}. This call is logged AFTER."
-            )
             return group
 
         raise NoMatch
@@ -873,13 +871,21 @@ class MatchMaker:
         return specs
 
     def _init_member(self) -> GroupMember:
+
         if self.member:
             self.member.io.load()
+
             return self.member
 
-        member = GroupMember(self)
-        member.io.save()
-        return member
+        with self.io as data:
+
+            if data is not None:
+                member = GroupMember(self)
+                member.io.save()
+
+                return member
+
+        raise MatchMakerBusy
 
     def _update_additional_data(self):
         prefix = "interact"
@@ -887,4 +893,5 @@ class MatchMaker:
             prefix = "_" + prefix
         self.exp.adata[prefix] = {}
         self.exp.adata[prefix]["groupid"] = self.group.data.group_id
+        self.exp.adata[prefix]["spec_name"] = self.group.data.spec_name
         self.exp.adata[prefix]["role"] = self.member.data.role

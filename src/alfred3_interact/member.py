@@ -10,6 +10,7 @@ from typing import Iterator, List
 
 from alfred3.data_manager import DataManager as dm
 from alfred3.quota import SessionGroup
+from pymongo.collection import ReturnDocument
 
 from ._util import saving_method
 
@@ -62,6 +63,7 @@ class GroupMemberIO(MemberHelper):
                     data = self._load_local()
 
                 data = data["members"][self.sid]
+
                 self.member.data = GroupMemberData(**data)
                 return
 
@@ -102,7 +104,15 @@ class GroupMemberIO(MemberHelper):
 
     def _save_mongo(self):
         data = {"members": {self.sid: asdict(self.member.data)}}
-        self.db.find_one_and_update(self.query, [{"$set": data}])
+
+        from pprint import pprint
+
+        data_before = self.db.find_one(self.query)
+        self.exp.log.debug(f"MEBER DATA BEFORE: {pprint(data_before)}")
+        data_after = self.db.find_one_and_update(
+            self.query, [{"$set": data}], return_document=ReturnDocument.AFTER
+        )
+        self.exp.log.debug(f"MEBER DATA AFTER: {pprint(data_after)}")
 
     def ping(self):
         if saving_method(self.exp) == "local":
