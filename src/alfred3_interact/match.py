@@ -29,7 +29,7 @@ class MatchMakerData:
     matchmaker_id: str
     type: str
     members: dict = field(default_factory=dict)
-    busy: bool = False
+    busy: str = "false"
     active: bool = False
     ping_timeout: int = None
 
@@ -94,8 +94,8 @@ class MatchMakerIO:
         version of this one.
         """
         q = copy.copy(self.query)
-        q["busy"] = True
-        self.db.find_one_and_update(q, {"$set": {"busy": False}})
+        q["busy"] = self.mm.exp.session_id
+        self.db.find_one_and_update(filter=q, update={"$set": {"busy": "false"}})
 
     def _save_mongo(self, data: MatchMakerData):
         self.db.find_one_and_replace(self.query, asdict(data))
@@ -157,15 +157,19 @@ class MatchMakerIO:
 
     def _load_markbusy_mongo(self):
         q = self.query
-        q["busy"] = False
-        data = self.db.find_one_and_update(q, {"$set": {"busy": True}})
+        q["busy"] = "false"
+
+        data = self.db.find_one_and_update(
+            filter=q,
+            update={"$set": {"busy": self.mm.exp.session_id}},
+            projection={"_id": False},
+            return_document=ReturnDocument.AFTER,
+        )
 
         if data is not None:
             self.mm.exp.log.debug(
                 f"Found non-busy MatchMaker dataset. Timestamp: {time.time()}"
             )
-            data.pop("_id", None)
-            data["busy"] = True
             return MatchMakerData(**data)
         else:
             self.mm.exp.log.debug(
