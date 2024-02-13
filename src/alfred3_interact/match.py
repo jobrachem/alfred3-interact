@@ -904,19 +904,32 @@ class MatchMaker:
 
     def _init_member(self) -> GroupMember:
         self.exp.log.debug("MatchMaker._init_member() called.")
+
         if self.member:
             self.exp.log.debug("MatchMaker._init_member(): Loading member.")
+
             self.member.io.load()
+
             self.exp.log.debug(
                 "MatchMaker._init_member(): Member loaded. Returning member."
             )
+
             return self.member
 
-        member = GroupMember(self)
-        self.exp.log.debug("MatchMaker._init_member(): Saving Member data.")
-        member.io.save()
-        self.exp.log.debug("MatchMaker._init_member(): Member data saved.")
-        return member
+        with self.mm.io as data:
+
+            if data is None:
+                self.exp.log.debug(
+                    "Trying to init a member, but the MatchMaker is busy."
+                )
+                raise MatchMakerBusy
+
+            member = GroupMember(self)
+            self.exp.log.debug("MatchMaker._init_member(): Saving Member data.")
+            member.io.save()
+            self.exp.log.debug("MatchMaker._init_member(): Member data saved.")
+
+            return member
 
     def _update_additional_data(self):
         prefix = "interact"
