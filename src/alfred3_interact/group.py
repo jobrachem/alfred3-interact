@@ -746,7 +746,7 @@ class Group:
             tb = "".join(format_exception(exc_type, exc_value, tb))
             self.exp.log.error(
                 f"There was an error when operating on {self}: {exc_value}."
-                "The group was deactivated.\n{tb}"
+                f"The group was deactivated.\n{tb}"
             )
             self.data.active = False
             self.io.save()

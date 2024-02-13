@@ -123,6 +123,7 @@ class ParallelMatchMaker:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
             else:
                 existing_group = self.get_group()
+
                 if existing_group:
                     return existing_group
 
@@ -170,7 +171,14 @@ class ParallelMatchMaker:
         member.io.load()
         if member.status.matched:
             group = self.group_manager.find_one(member.data.group_id)
+            self.mm.exp.log.debug(
+                f"We are in ParallelMatchMaker.get_group(). Found group {group}."
+                " Returning."
+            )
             return group
+        self.mm.exp.log.debug(
+            "We are in ParallelMatchMaker.get_group(). Found NO group. Returning."
+        )
 
 
 class Spec(ABC):

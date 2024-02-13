@@ -448,7 +448,7 @@ class WaitingPage(al.NoNavigationPage):
         """
         pass
 
-    def _wait_for(self):
+    def _wait_for(self) -> bool | None:
         """
         This method gets called repeatedly via ajax callback from the
         waiting page client-side. If it returns *True*, the experiment will move
@@ -465,7 +465,7 @@ class WaitingPage(al.NoNavigationPage):
             return True
 
         try:
-            wait_status = self.wait_for()
+            wait_status = self.wait_for()  # can return None
 
         except NoMatch:
             return False  # return False so that the repeated callback will try again

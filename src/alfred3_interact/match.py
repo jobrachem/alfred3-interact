@@ -159,14 +159,25 @@ class MatchMakerIO:
         q = self.query
         q["busy"] = False
         data = self.db.find_one_and_update(q, {"$set": {"busy": True}})
+
         if data is not None:
+            self.mm.exp.log.debug(
+                f"Found non-busy MatchMaker dataset. Timestamp: {time.time()}"
+            )
             data.pop("_id", None)
             data["busy"] = True
             return MatchMakerData(**data)
         else:
+            self.mm.exp.log.debug(
+                f"Did NOT find non-busy MatchMaker dataset. Timestamp: {time.time()}"
+            )
             return None
 
     def __enter__(self):
+        self.mm.exp.log.debug(
+            "Entering MatchMakerIO Trying to load MatchMakerData. Timestamp:"
+            f" {time.time()}"
+        )
         return self.load_markbusy()
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -177,10 +188,16 @@ class MatchMakerIO:
 
             tb = "".join(format_exception(exc_type, exc_value, traceback))
             self.mm.exp.log.error(
-                "There was an error in a locked MatchMaker operation.I deactivated the"
+                "There was an error in a locked MatchMaker operation. I deactivated the"
                 f" responsible member {self.mm.member} and released the lock.\n{tb}"
             )
+
+        self.mm.exp.log.debug(
+            f"Releasing MatchMakerData lock. Timestamp: {time.time()}"
+        )
         self.release()
+        self.mm.exp.log.debug(f"MatchMakerData lock released. Timestamp: {time.time()}")
+
         self.mm._data = self.load()
 
 
@@ -525,7 +542,15 @@ class MatchMaker:
         self.member = self._init_member()
 
         if self.member.matched:
-            return self._get_group(self.member)
+            self.exp.log.debug(
+                "Member is matched. Retrieving group. This call is logged BEFORE."
+            )
+            group = self._get_group(self.member)
+            self.exp.log.debug(
+                f"Member is matched. Returning group {group}. This call is logged"
+                " AFTER."
+            )
+            return group
 
         self.member.io.ping()
 
@@ -543,7 +568,15 @@ class MatchMaker:
 
         if enough_members or waited_enough:
             random.shuffle(self.groupspecs)
-            return self._match_quota(self.groupspecs)
+            self.exp.log.debug(
+                "Member is not matched. Calling _match_quota. This call is logged"
+                " BEFORE."
+            )
+            group = self._match_quota(self.groupspecs)
+            self.exp.log.debug(
+                f"Match completed. Returning group {group}. This call is logged AFTER."
+            )
+            return group
 
         raise NoMatch
 
@@ -715,6 +748,7 @@ class MatchMaker:
             return
 
         self.group = spec._match(self)
+
         if spec.count:
             try:
                 spec.quota.count(self.group, raise_exception=True)
@@ -806,7 +840,7 @@ class MatchMaker:
                 except NoMatch:
                     no_match = True
 
-        if no_match:  # only reached if *no* spec lead to successful match
+        if no_match:  # only reached if *no* spec leads to successful match
             raise NoMatch
 
         self._full()

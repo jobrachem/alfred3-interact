@@ -63,7 +63,6 @@ class GroupMemberIO(MemberHelper):
 
                 data = data["members"][self.sid]
                 self.member.data = GroupMemberData(**data)
-
                 return
 
             except KeyError:
