@@ -448,7 +448,7 @@ class WaitingPage(al.NoNavigationPage):
         """
         pass
 
-    def _wait_for(self) -> bool | None:
+    def _wait_for(self) -> bool:
         """
         This method gets called repeatedly via ajax callback from the
         waiting page client-side. If it returns *True*, the experiment will move
