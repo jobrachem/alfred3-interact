@@ -893,4 +893,5 @@ class MatchMaker:
             prefix = "_" + prefix
         self.exp.adata[prefix] = {}
         self.exp.adata[prefix]["groupid"] = self.group.data.group_id
+        self.exp.adata[prefix]["spec_name"] = self.group.data.spec_name
         self.exp.adata[prefix]["role"] = self.member.data.role
