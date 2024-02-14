@@ -37,6 +37,7 @@ setuptools.setup(
             "mongomock",
             "bs4",
             "selenium",
+            "pytest-cov",
         ]
     },
     classifiers=[
