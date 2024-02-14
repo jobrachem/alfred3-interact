@@ -36,10 +36,10 @@ jobs:
       run: pytest --cov=alfred3_interact tests/
 
     - name: coverage.py badge
-      uses: tj-actions/coverage-badge-py@v1.8
+      uses: tj-actions/coverage-badge-py@v2
 
     - name: Verify Changed files
-      uses: tj-actions/verify-changed-files@v9
+      uses: tj-actions/verify-changed-files@v18
       id: changed_files
       with:
         files: coverage.svg
