@@ -388,12 +388,12 @@ class WaitingPage(al.NoNavigationPage):
 
         if wait_timeout_page is not None:
             self.wait_timeout_page = wait_timeout_page
-        else:
+        elif self.wait_timeout_page is None:
             self.wait_timeout_page = DefaultWaitingTimeoutPage()
 
         if wait_exception_page is not None:
             self.wait_exception_page = wait_exception_page
-        else:
+        elif self.wait_exception_page is None:
             self.wait_exception_page = DefaultWaitingExceptionPage()
 
         self += RepeatedCallback(
