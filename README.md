@@ -1,6 +1,6 @@
 # alfred3-interact: Interactive web-experiments in alfred3
 
-![GitHub](https://img.shields.io/github/license/jobrachem/alfred3-interact) [![DOI](https://zenodo.org/badge/340368707.svg)](https://zenodo.org/badge/latestdoi/340368707) [![Run tests](https://github.com/jobrachem/alfred3-interact/actions/workflows/pytest.yml/badge.svg)](https://github.com/jobrachem/alfred3-interact/actions/workflows/pytest.yml) [![pre-commit](https://github.com/jobrachem/alfred3-interact/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/jobrachem/alfred3-interact/actions/workflows/pre-commit.yml)
+![GitHub](https://img.shields.io/github/license/jobrachem/alfred3-interact) [![DOI](https://zenodo.org/badge/340368707.svg)](https://zenodo.org/badge/latestdoi/340368707) [![pre-commit](https://github.com/jobrachem/alfred3-interact/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/jobrachem/alfred3-interact/actions/workflows/pre-commit.yml) [![Run tests](https://github.com/jobrachem/alfred3-interact/actions/workflows/pytest.yml/badge.svg)](https://github.com/jobrachem/alfred3-interact/actions/workflows/pytest.yml) [![pytest-coverage](coverage.svg)](https://github.com/jobrachem/alfred3-interact/actions/workflows/pytest.yml)
 
 Alfred3-interact is a plugin for [alfred3](https://github.com/ctreffe/alfred).
 It allows for the creation of interactive web experiments, predominantly
