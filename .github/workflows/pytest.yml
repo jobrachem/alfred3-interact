@@ -35,7 +35,7 @@ jobs:
       run: uv sync --locked --group dev
 
     - name: Run pytest
-      run: uv pytest --cov=alfred3_interact tests/
+      run: uv run pytest --cov=alfred3_interact tests/
 
     - name: coverage.py badge
       uses: tj-actions/coverage-badge-py@v2
