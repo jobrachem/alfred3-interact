@@ -14,9 +14,10 @@ authors = [
   { name = "Christian Treffenstädt" }
 ]
 dependencies = [
-  "alfred3>=3.0.1",
+  "alfred3 @ git+https://github.com/ctreffe/alfred.git@master",
   "bleach>=3.2.1",
-  "packaging"
+  "mongomock>4.2",
+  "packaging",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -32,10 +33,9 @@ dev = [
   "black",
   "flake8",
   "python-dotenv",
-  "mongomock",
   "bs4",
   "selenium",
-  "pytest-cov"
+  "pytest-cov",
 ]
 
 [project.urls]
@@ -47,3 +47,6 @@ path = "src/alfred3_interact/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/alfred3_interact"]
+
+[tool.hatch.metadata]
+allow-direct-references=true
