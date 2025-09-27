@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "alfred3"
-version = "2.6.1"
+version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach" },
@@ -14,14 +14,15 @@ dependencies = [
     { name = "emoji" },
     { name = "flask" },
     { name = "jinja2" },
+    { name = "mongomock" },
     { name = "pymongo" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "thesmuggler" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/6f/7f1865437d64924848c97880e575cee8679b2706eff0a99d0eb3190e648a/alfred3-2.6.1.tar.gz", hash = "sha256:fcc38517a7940ad248da0dc3d5842a70b98e65517c635be03670158660830585", size = 913895, upload-time = "2024-10-22T07:50:23.511Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/49/d074285104cd6febe5aedbc4243a4ce16df72389e22b17229e2e6111c4f7/alfred3-3.0.0.tar.gz", hash = "sha256:295a2255d51154b215778d5199f9b92cdffc8311c651108ac3c38cd920b457ac", size = 787595, upload-time = "2025-09-27T19:39:14.116Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/fa/7d79cd2ed486d4f56dceeda95b160e3d2c5a018df08074e447c8e4491ae2/alfred3-2.6.1-py3-none-any.whl", hash = "sha256:23784d79038f6bdcf13cf644e0ef654043b3534c00b18ba58e32cb10ff6e1f91", size = 934086, upload-time = "2024-10-22T07:50:21.267Z" },
+    { url = "https://files.pythonhosted.org/packages/26/02/ba31c0f58bcd65081b6187159fae4d98ed73f7ed5ab7394296bf7ae8e85c/alfred3-3.0.0-py3-none-any.whl", hash = "sha256:749d635ff97452c2a8b226cef5d5c691f4d97f5176616cf7d25d77cc646c4c9a", size = 849311, upload-time = "2025-09-27T19:39:12.756Z" },
 ]
 
 [[package]]
@@ -48,7 +49,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alfred3", specifier = ">=2.0" },
+    { name = "alfred3", specifier = ">=3.0" },
     { name = "bleach", specifier = ">=3.2.1" },
     { name = "packaging" },
 ]
@@ -553,16 +554,15 @@ wheels = [
 
 [[package]]
 name = "mongomock"
-version = "4.3.0"
+version = "4.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
-    { name = "pytz" },
     { name = "sentinels" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/a4/4a560a9f2a0bec43d5f63104f55bc48666d619ca74825c8ae156b08547cf/mongomock-4.3.0.tar.gz", hash = "sha256:32667b79066fabc12d4f17f16a8fd7361b5f4435208b3ba32c226e52212a8c30", size = 135862, upload-time = "2024-11-16T11:23:25.957Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/bf/3739cf74935f0fda26ea97dcb700f5bb1247100c9478914198c594500e43/mongomock-4.1.2.tar.gz", hash = "sha256:f06cd62afb8ae3ef63ba31349abd220a657ef0dd4f0243a29587c5213f931b7d", size = 133271, upload-time = "2022-07-07T16:01:27.269Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/4d/8bea712978e3aff017a2ab50f262c620e9239cc36f348aae45e48d6a4786/mongomock-4.3.0-py2.py3-none-any.whl", hash = "sha256:5ef86bd12fc8806c6e7af32f21266c61b6c4ba96096f85129852d1c4fec1327e", size = 64891, upload-time = "2024-11-16T11:23:24.748Z" },
+    { url = "https://files.pythonhosted.org/packages/41/01/6561c17d130954c5a1813f6006278bf321f56ef7e782313e4f2338a86a3b/mongomock-4.1.2-py2.py3-none-any.whl", hash = "sha256:08a24938a05c80c69b6b8b19a09888d38d8c6e7328547f94d46cadb7f47209f2", size = 60018, upload-time = "2022-07-07T16:01:25.023Z" },
 ]
 
 [[package]]
@@ -769,15 +769,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/30/5f/e959a442435e24f6fb5a01aec6c657079ceaca1b3baf18561c3728d681da/pytokens-0.1.10.tar.gz", hash = "sha256:c9a4bfa0be1d26aebce03e6884ba454e842f186a59ea43a6d3b25af58223c044", size = 12171, upload-time = "2025-02-19T14:51:22.001Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/e5/63bed382f6a7a5ba70e7e132b8b7b8abbcf4888ffa6be4877698dcfbed7d/pytokens-0.1.10-py3-none-any.whl", hash = "sha256:db7b72284e480e69fb085d9f251f66b3d2df8b7166059261258ff35f50fb711b", size = 12046, upload-time = "2025-02-19T14:51:18.694Z" },
-]
-
-[[package]]
-name = "pytz"
-version = "2025.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f8/bf/abbd3cdfb8fbc7fb3d4d38d320f2441b1e7cbe29be4f23797b4a2b5d8aac/pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3", size = 320884, upload-time = "2025-03-25T02:25:00.538Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/c4/34e93fe5f5429d7570ec1fa436f1986fb1f00c3e0f43a589fe2bbcd22c3f/pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00", size = 509225, upload-time = "2025-03-25T02:24:58.468Z" },
 ]
 
 [[package]]
