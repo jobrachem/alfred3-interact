@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "alfred3"
-version = "3.0.0"
+version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach" },
@@ -20,9 +20,9 @@ dependencies = [
     { name = "requests" },
     { name = "thesmuggler" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/49/d074285104cd6febe5aedbc4243a4ce16df72389e22b17229e2e6111c4f7/alfred3-3.0.0.tar.gz", hash = "sha256:295a2255d51154b215778d5199f9b92cdffc8311c651108ac3c38cd920b457ac", size = 787595, upload-time = "2025-09-27T19:39:14.116Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/da/862927302e858a3abc11a36fb20ec9a35cf7bccd5954db5d6b9459fba82e/alfred3-3.0.1.tar.gz", hash = "sha256:2e622b7e72d07f5f98a87172d91f2db486e9d65c2d67ffcb9cefc2b3b0dcf7fd", size = 14780425, upload-time = "2025-09-27T20:02:47.454Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/02/ba31c0f58bcd65081b6187159fae4d98ed73f7ed5ab7394296bf7ae8e85c/alfred3-3.0.0-py3-none-any.whl", hash = "sha256:749d635ff97452c2a8b226cef5d5c691f4d97f5176616cf7d25d77cc646c4c9a", size = 849311, upload-time = "2025-09-27T19:39:12.756Z" },
+    { url = "https://files.pythonhosted.org/packages/23/1a/a7f806e134277c70b3b7334669482398d06fb782430592eb0fa92669ca5a/alfred3-3.0.1-py3-none-any.whl", hash = "sha256:92fa5daf117d9a5214f1351ff77ed166a2b82f32c7d925eff264f0c2ce333f13", size = 1017563, upload-time = "2025-09-27T20:02:45.891Z" },
 ]
 
 [[package]]
@@ -49,7 +49,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alfred3", specifier = ">=3.0" },
+    { name = "alfred3", specifier = ">=3.0.1" },
     { name = "bleach", specifier = ">=3.2.1" },
     { name = "packaging" },
 ]
