@@ -2,7 +2,7 @@ name: pytest
 
 on:
   push:
-    branches: [main]
+    branches: [main,develop]
   pull_request:
     branches: [main]
 
@@ -11,29 +11,31 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        mongodb-version: ['4.4']
+        mongodb-version: ['7.0']
+        python-version: ["3.13"]
 
     steps:
     - name: Git checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@1.7.0
+      uses: supercharge/mongodb-github-action@1.12.0
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Install uv and set the python version
+      uses: astral-sh/setup-uv@v5
       with:
-          python-version: "3.7"
+        python-version: ${{ matrix.python-version }}
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
 
-    - name: Install alfred3_interact
-      run: |
-        pip install .[dev]
-        pip list
+
+    - name: Install Package
+      run: uv sync --locked --group dev
 
     - name: Run pytest
-      run: pytest --cov=alfred3_interact tests/
+      run: uv pytest --cov=alfred3_interact tests/
 
     - name: coverage.py badge
       uses: tj-actions/coverage-badge-py@v2
