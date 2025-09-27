@@ -56,7 +56,6 @@ class SequentialMatchMaker:
         return group
 
     def start_group(self) -> Group:
-
         with Group(self.mm, **self.data) as group:
             self.log.info(f"Starting new group: {group}.")
 
@@ -118,7 +117,6 @@ class ParallelMatchMaker:
             )
 
         with self.mm.io as data:
-
             if data is None:
                 self.log.debug("No groupwise match conducted. MatchMaker is busy.")
             else:
@@ -137,7 +135,6 @@ class ParallelMatchMaker:
         raise NoMatch  # if match is not successful
 
     def start_group(self, data, waiting_members: t.List[GroupMember]) -> Group:
-
         with Group(self.mm, **self.data) as group:
             self.log.info(f"Starting new group {group}.")
 
@@ -232,7 +229,6 @@ class ParallelSpec(Spec):
         count: bool = True,
         shuffle_waiting_members: bool = True,
     ):
-
         if len(roles) != len(set(roles)):
             raise ValueError("All roles in a group must be unique.")
 
@@ -280,7 +276,6 @@ class ParallelSpec(Spec):
 
     def _validate_roles(self, roles):
         for role in roles:
-
             if self.pattern.search(role):
                 raise ValueError(
                     f"Error in role '{role}': Roles cannot start with numbers          "

@@ -98,7 +98,6 @@ class TestGroupMemberAccess:
 
 class TestTakesMembers:
     def test_new_group(self, exp_factory):
-
         exp = exp_factory()
         spec = SequentialSpec(
             "a", "b", nslots=2, name="test", ongoing_sessions_ok=False
@@ -181,7 +180,6 @@ class TestTakesMembers:
 
 class TestTakesMembersLocal:
     def test_new_group(self, lexp_factory):
-
         exp = lexp_factory()
         spec = SequentialSpec(
             "a", "b", nslots=2, name="test", ongoing_sessions_ok=False

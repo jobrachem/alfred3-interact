@@ -1,6 +1,7 @@
 """
 Functionality related to groups.
 """
+
 import json
 import random
 import time
@@ -105,7 +106,6 @@ class SharedGroupData(UserDict):
         return time.strftime(format, time.localtime(self.data["__last_access"]))
 
     def _validate(self, key, value):
-
         if isinstance(value, self._ACCEPTED):
             return True
 
@@ -202,7 +202,6 @@ class GroupIO(GroupHelper):
             json.dump(data, f, indent=4)
 
     def load(self) -> GroupData:
-
         if self.saving_method == "mongo":
             data = self._load_mongo()
         elif self.saving_method == "local":
@@ -711,7 +710,7 @@ class Group:
         return self.groupmember_manager.get_member_by_role(role=key)
 
     def __eq__(self, other):
-        return (type(self) == type(other)) and (
+        return (type(self) is type(other)) and (
             self.data.group_id == other.data.group_id
         )
 

@@ -1,15 +1,23 @@
-from ._util import NoMatch
-from ._version import __version__
-from .element import Chat, ToggleMatchMakerActivation, ViewMembers
-from .match import MatchMaker
-from .page import (
-    MatchingPage,
-    MatchMakerActivation,
-    MatchMakerMonitoring,
-    MatchTestPage,
-    WaitingPage,
+from ._util import NoMatch as NoMatch
+from ._version import __version__ as __version__
+from .element import (
+    Chat as Chat,
+    ToggleMatchMakerActivation as ToggleMatchMakerActivation,
+    ViewMembers as ViewMembers,
 )
-from .spec import IndividualSpec, ParallelSpec, SequentialSpec
+from .match import MatchMaker as MatchMaker
+from .page import (
+    MatchingPage as MatchingPage,
+    MatchMakerActivation as MatchMakerActivation,
+    MatchMakerMonitoring as MatchMakerMonitoring,
+    MatchTestPage as MatchTestPage,
+    WaitingPage as WaitingPage,
+)
+from .spec import (
+    IndividualSpec as IndividualSpec,
+    ParallelSpec as ParallelSpec,
+    SequentialSpec as SequentialSpec,
+)
 
 # from .randomizer import GroupRandomizer
 

@@ -137,7 +137,6 @@ class TestQuotaSequential:
         assert group1 == group3
 
     def test_finished(self, exp_factory):
-
         exp1 = exp_factory()
         group1 = get_group(exp1, nslots=2)
         exp1._start()
@@ -154,7 +153,6 @@ class TestQuotaSequential:
         assert group1.mm.quota.npending == 0
 
     def test_pending(self, exp_factory):
-
         exp1 = exp_factory()
         group1 = get_group(exp1, nslots=2)
         exp1._start()
@@ -169,7 +167,6 @@ class TestQuotaSequential:
         assert group1.mm.quota.npending == 1
 
     def test_abort(self, exp_factory):
-
         exp1 = exp_factory()
         group1 = get_group(exp1, nslots=1)
         exp1.abort("test")

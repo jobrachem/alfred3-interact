@@ -277,7 +277,6 @@ class GroupSlotManager:
         return self._oldest_slot(slots, exp)
 
     def _sparsest_slots(self, slots, exp) -> List[Slot]:
-
         npending = [slot.npending(exp) for slot in slots]
         n = min(npending)
         minimal_pending = [slot for slot in slots if slot.npending(exp) == n]

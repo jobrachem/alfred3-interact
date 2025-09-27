@@ -36,7 +36,6 @@ def get_group_groupwise(exp_factory: callable, roles: list = None, nslots: int =
 
 
 def get_multiple_groups(*mm, specname: str = "test"):
-
     try:
         mm[0].match_to(specname)
     except NoMatch:

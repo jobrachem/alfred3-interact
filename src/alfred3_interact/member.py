@@ -286,7 +286,6 @@ class GroupMember:
     """
 
     def __init__(self, matchmaker, **data):
-
         self.mm = matchmaker
         self.exp = self.mm.exp
 
@@ -425,7 +424,7 @@ class GroupMember:
         return repr
 
     def __eq__(self, other) -> bool:
-        class_equal = type(self) == type(other)
+        class_equal = type(self) is type(other)
         session_id_equal = self.data.session_id == other.data.session_id
 
         return class_equal and session_id_equal

@@ -120,7 +120,6 @@ class MatchMakerIO:
             json.dump(asdict(data), f, sort_keys=True, indent=4)
 
     def _load_mongo(self):
-
         insert = MatchMakerData(
             exp_id=self.mm.exp.exp_id,
             exp_version=self.mm.exp_version,
@@ -871,14 +870,12 @@ class MatchMaker:
         return specs
 
     def _init_member(self) -> GroupMember:
-
         if self.member:
             self.member.io.load()
 
             return self.member
 
         with self.io as data:
-
             if data is not None:
                 member = GroupMember(self)
                 member.io.save()

@@ -149,7 +149,6 @@ class TestChainMatch:
             mm3.match_chain(test2=3, test1=0, include_previous=False)
 
     def test_roles(self, exp_factory):
-
         exp1 = exp_factory("__exp1")
         exp2 = exp_factory("__exp2")
         exp3 = exp_factory("__exp3")

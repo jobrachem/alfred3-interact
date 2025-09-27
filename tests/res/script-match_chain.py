@@ -7,7 +7,6 @@ exp = al.Experiment()
 
 @exp.setup
 def setup(exp):
-
     mm1 = ali.MatchMaker("a", "b", "c", "d", exp=exp, admin_pw="test", id="large_match")
     mm2 = ali.MatchMaker("a", "b", exp=exp, admin_pw="test", id="small_match")
 
@@ -17,7 +16,6 @@ def setup(exp):
 @exp.member
 class Match(ali.MatchingPage):
     def wait_for(self):
-
         if self.passed_time < 2 * 60:
             mm = exp.plugins.mm["large"]
         else:

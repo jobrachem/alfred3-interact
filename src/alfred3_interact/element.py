@@ -274,7 +274,6 @@ class ViewMembers(Element):
             return last_page[:17] + "..."
 
     def render_table_body(self):
-
         members = self.match_maker.member_manager.members()
         tbody = []
         for m in members:
@@ -335,9 +334,9 @@ class ToggleMatchMakerActivation(Element):
     def template_data(self):
         d = super().template_data
         if self.match_maker.active:
-            d[
-                "text"
-            ] = '<i class="fas fa-circle-notch fa-spin mr-2"></i>MatchMaker is ACTIVE'
+            d["text"] = (
+                '<i class="fas fa-circle-notch fa-spin mr-2"></i>MatchMaker is ACTIVE'
+            )
             d["button_style"] = "btn-success"
         else:
             d["text"] = '<i class="fas fa-circle-notch mr-2"></i>MatchMaker is INACTIVE'
