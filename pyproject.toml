@@ -14,9 +14,8 @@ authors = [
   { name = "Christian Treffenstädt" }
 ]
 dependencies = [
-  "alfred3 @ git+https://github.com/ctreffe/alfred.git@master",
+  "alfred3>=3.0.2",
   "bleach>=3.2.1",
-  "mongomock>4.2",
   "packaging",
 ]
 classifiers = [
@@ -29,6 +28,7 @@ classifiers = [
 [dependency-groups]
 dev = [
   "pytest",
+  "mongomock",
   "pre-commit",
   "black",
   "flake8",

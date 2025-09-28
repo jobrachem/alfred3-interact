@@ -5,7 +5,7 @@ requires-python = ">=3.13"
 [[package]]
 name = "alfred3"
 version = "3.0.2"
-source = { git = "https://github.com/ctreffe/alfred.git?rev=master#8e97baf2cc493961884239503023cc968843a0f6" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach" },
     { name = "click" },
@@ -20,6 +20,10 @@ dependencies = [
     { name = "requests" },
     { name = "thesmuggler" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/d2/f2/ea6850fd0bdf568e2d36f820eca5fb6cf42488144f056de13c7e053671c9/alfred3-3.0.2.tar.gz", hash = "sha256:c70c1191ba5b150b15dd53debd8fec319313fa68e467ecf529039e6a297b7d4c", size = 14780410, upload-time = "2025-09-28T08:18:21.436Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f5/de/196a3ebfe86c2f4a6b0f3e22bfd6831b680bb1cb45c003e43a66ed88f1e0/alfred3-3.0.2-py3-none-any.whl", hash = "sha256:defd4a0b0ff3baa60a0d0d1787230261638ce772db1d770a396a5834b6500c00", size = 1017561, upload-time = "2025-09-28T08:18:19.977Z" },
+]
 
 [[package]]
 name = "alfred3-interact"
@@ -27,7 +31,6 @@ source = { editable = "." }
 dependencies = [
     { name = "alfred3" },
     { name = "bleach" },
-    { name = "mongomock" },
     { name = "packaging" },
 ]
 
@@ -36,6 +39,7 @@ dev = [
     { name = "black" },
     { name = "bs4" },
     { name = "flake8" },
+    { name = "mongomock" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -45,9 +49,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alfred3", git = "https://github.com/ctreffe/alfred.git?rev=master" },
+    { name = "alfred3", specifier = ">=3.0.2" },
     { name = "bleach", specifier = ">=3.2.1" },
-    { name = "mongomock", specifier = ">4.2" },
     { name = "packaging" },
 ]
 
@@ -56,6 +59,7 @@ dev = [
     { name = "black" },
     { name = "bs4" },
     { name = "flake8" },
+    { name = "mongomock" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
