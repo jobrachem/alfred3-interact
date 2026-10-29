@@ -3,7 +3,6 @@ Specialized elements for interactive experiments.
 """
 
 import time
-from typing import Union
 
 from alfred3 import icon
 from alfred3._helper import inherit_kwargs
@@ -136,7 +135,7 @@ class Chat(Element):
     def __init__(
         self,
         chat_id: str,
-        nickname: str = None,
+        nickname: str | None = None,
         room: str = "",
         placeholder: str = "Press enter to send your message, shift+enter for a linebreak",
         disabled: bool = False,
@@ -144,13 +143,13 @@ class Chat(Element):
         button_text: str = icon("paper-plane"),
         msg_width: str = "70%",
         height: str = "350px",
-        colors: dict = None,
+        colors: dict | None = None,
         color_target: str = "nickname",
         you_label: str = " (you)",
         button_style: str = "btn-dark",
         background_color: str = "WhiteSmoke",
         allow_resize: bool = True,
-        refresh_interval: Union[int, float] = 1,
+        refresh_interval: float = 1,
         **kwargs,
     ):
         super().__init__(**kwargs)

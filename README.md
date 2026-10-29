@@ -37,15 +37,15 @@ import alfred3_interact as ali
 
 exp = al.Experiment()
 
+
 @exp.setup
 def setup(exp):
-    spec = ali.SequentialSpec("role1", "role2", nslots = 10, name="mygroup")
+    spec = ali.SequentialSpec("role1", "role2", nslots=10, name="mygroup")
     exp.plugins.mm = ali.MatchMaker(spec, exp=exp)
 
 
 @exp.member
 class Match(ali.WaitingPage):
-
     def wait_for(self):
         group = self.exp.plugins.mm.match()
         self.exp.plugins.group = group
@@ -61,6 +61,7 @@ class Success(al.Page):
 
         txt = f"You have successfully matched to role: {group.me.role}"
         self += al.Text(txt, align="center")
+
 
 if __name__ == "__main__":
     exp.run()

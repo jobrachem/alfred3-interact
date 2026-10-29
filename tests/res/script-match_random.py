@@ -40,7 +40,7 @@ class Match(ali.MatchingPage):
             condition = group.a.adata.get("matchmaker_condition", False)
 
             if condition == "1x4":
-                group2 = group  # noqa: F841
+                group2 = group
 
             elif condition == "2x2":
                 mm = exp.plugings.mm["small"]

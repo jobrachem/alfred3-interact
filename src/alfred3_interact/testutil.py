@@ -2,7 +2,7 @@ from . import MatchMaker, NoMatch, ParallelSpec, SequentialSpec
 
 
 def get_group(
-    exp, roles: list = None, ongoing_sessions_ok: bool = False, nslots: int = 5
+    exp, roles: list | None = None, ongoing_sessions_ok: bool = False, nslots: int = 5
 ):
     roles = ["a", "b"] if roles is None else roles
     spec = SequentialSpec(
@@ -13,7 +13,9 @@ def get_group(
     return group
 
 
-def get_group_groupwise(exp_factory: callable, roles: list = None, nslots: int = 5):
+def get_group_groupwise(
+    exp_factory: callable, roles: list | None = None, nslots: int = 5
+):
     roles = roles if roles is not None else ["a", "b"]
     exp1 = exp_factory()
     exp2 = exp_factory()

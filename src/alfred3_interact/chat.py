@@ -33,7 +33,7 @@ class ChatManager:
     """
 
     # colors from https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
-    DEFAULT_COLORS = [
+    DEFAULT_COLORS = (
         "#1f78b4",
         "#33a02c",
         "#e31a1c",
@@ -45,15 +45,15 @@ class ChatManager:
         "#fb9a99",
         "#fdbf6f",
         "#cab2d6",
-    ]
+    )
 
     def __init__(
         self,
         exp,
         chat_id: str,
-        nickname: str = None,
+        nickname: str | None = None,
         room: str = "",
-        colors: dict = None,
+        colors: dict | None = None,
         encrypt: bool = True,
         ignore_aborted_sessions: bool = True,
     ):
@@ -193,7 +193,7 @@ class ChatManager:
 
             return tuple(out_messages)
         else:
-            return tuple()
+            return ()
 
     def get_all_messages(self) -> tuple:
         """
@@ -216,7 +216,7 @@ class ChatManager:
 
             return tuple(out_messages)
         else:
-            return tuple()
+            return ()
 
     def _update_session_status(self):
         """

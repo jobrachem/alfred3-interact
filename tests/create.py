@@ -26,7 +26,7 @@ import click
 )
 def testexp(name):
     """Create a test experiment."""
-    timestamp = datetime.today().strftime("%Y%m%d%H%M")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M")
     dirname = timestamp + "-" + name
 
     path = Path.cwd() / "exp" / dirname
@@ -38,7 +38,7 @@ def testexp(name):
         [
             "alfred3",
             "template",
-            f"--path={str(path)}",
+            f"--path={path!s}",
         ],
         check=True,
     )
