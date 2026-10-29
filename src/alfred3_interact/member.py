@@ -103,14 +103,18 @@ class GroupMemberIO(MemberHelper):
             json.dump(mm, f, sort_keys=True, indent=4)
 
     def _save_mongo(self):
-        data = {"members": {self.sid: asdict(self.member.data)}}
+        member = asdict(self.member.data)
+        ping = member.pop("ping")
+        data = {f"members.{self.sid}.{key}": value for key, value in member.items()}
 
         from pprint import pprint
 
         data_before = self.db.find_one(self.query)
         self.exp.log.debug(f"MEBER DATA BEFORE: {pprint(data_before)}")
         data_after = self.db.find_one_and_update(
-            self.query, [{"$set": data}], return_document=ReturnDocument.AFTER
+            self.query,
+            {"$set": data, "$max": {f"members.{self.sid}.ping": ping}},
+            return_document=ReturnDocument.AFTER,
         )
         self.exp.log.debug(f"MEBER DATA AFTER: {pprint(data_after)}")
 
@@ -118,8 +122,8 @@ class GroupMemberIO(MemberHelper):
         if saving_method(self.exp) == "local":
             return
         now = time.time()
-        data = {"members": {self.sid: {"ping": now}}}
-        self.db.find_one_and_update(self.query, [{"$set": data}])
+        data = {f"members.{self.sid}.ping": now}
+        self.db.find_one_and_update(self.query, {"$max": data})
         self.member.data.ping = now
 
 
