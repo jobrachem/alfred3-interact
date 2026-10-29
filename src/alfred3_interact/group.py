@@ -6,11 +6,11 @@ import json
 import random
 import time
 from collections import UserDict
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from itertools import chain
 from pathlib import Path
 from traceback import format_exception
-from typing import Iterator, List
 from uuid import uuid4
 
 from pymongo.collection import ReturnDocument
@@ -406,7 +406,7 @@ class GroupMemberManager(GroupHelper):
         if not sessions:
             return
         for member in self.manager.find(sessions):
-            if not member.data.session_id == self.exp.session_id:
+            if member.data.session_id != self.exp.session_id:
                 yield member
 
     def finished_other_members(self) -> Iterator[GroupMember]:
@@ -414,7 +414,7 @@ class GroupMemberManager(GroupHelper):
         if not sessions:
             return
         for member in self.manager.find(sessions):
-            if not member.data.session_id == self.exp.session_id:
+            if member.data.session_id != self.exp.session_id:
                 yield member
 
     @property
@@ -766,7 +766,9 @@ class Group:
 
 
 class GroupManager:
-    def __init__(self, matchmaker, group_type: str = None, spec_name: str = None):
+    def __init__(
+        self, matchmaker, group_type: str | None = None, spec_name: str | None = None
+    ):
         self.mm = matchmaker
         self.exp = self.mm.exp
         self.db = self.exp.db_misc
@@ -805,10 +807,7 @@ class GroupManager:
 
     def _local_groups(self) -> Iterator[dict]:
         for fpath in self.path.iterdir():
-            if fpath.is_dir():
-                continue
-
-            elif not fpath.name.startswith("group"):
+            if fpath.is_dir() or not fpath.name.startswith("group"):
                 continue
 
             else:
@@ -855,7 +854,7 @@ class GroupManager:
 
         return self.db.find(q)
 
-    def find(self, groups: List[str]) -> Iterator[Group]:
+    def find(self, groups: list[str]) -> Iterator[Group]:
         if self.saving_method == "mongo":
             data = self._find_mongo(groups)
         elif self.saving_method == "local":
@@ -864,12 +863,12 @@ class GroupManager:
         for gdata in data:
             return Group(self.mm, **gdata)
 
-    def _find_mongo(self, groups: List[str]) -> Iterator[dict]:
+    def _find_mongo(self, groups: list[str]) -> Iterator[dict]:
         q = self.query
         q["group_id"] = {"$in": groups}
         return self.db.find(q)
 
-    def _find_local(self, groups: List[str]) -> Iterator[dict]:
+    def _find_local(self, groups: list[str]) -> Iterator[dict]:
         for data in self._local_groups():
             if data["group_id"] in groups:
                 yield data

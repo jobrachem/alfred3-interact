@@ -18,7 +18,7 @@ def exp(tmp_path):
 
 @pytest.fixture
 def exp_factory(tmp_path):
-    def expf(sid: str = None, timeout=None):
+    def expf(sid: str | None = None, timeout=None):
         script = "tests/res/script-hello_world.py"
         secrets = "tests/res/secrets-default.conf"
         exp = get_exp_session(
@@ -41,7 +41,7 @@ def lexp(tmp_path):
 
 @pytest.fixture
 def lexp_factory(tmp_path):
-    def lexp(sid: str = None, timeout=None):
+    def lexp(sid: str | None = None, timeout=None):
         script = "tests/res/script-hello_world.py"
         exp = get_exp_session(
             tmp_path, script_path=script, secrets_path=None, sid=sid, timeout=timeout

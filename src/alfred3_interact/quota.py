@@ -1,12 +1,11 @@
 import json
 import time
 import typing as t
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Iterator, List
 
 from alfred3._helper import inherit_kwargs
-from alfred3.data_manager import DataManager as dm
-from alfred3.data_manager import saving_method
+from alfred3.data_manager import DataManager as dm, saving_method
 from alfred3.quota import QuotaData, SessionQuota, Slot, SlotManager
 
 from .group import GroupType
@@ -15,7 +14,7 @@ from .group import GroupType
 @dataclass
 class GroupSlot:
     label: str
-    group_ids: List[str] = field(default_factory=list)
+    group_ids: list[str] = field(default_factory=list)
 
     def get_data(self, exp) -> dict:
         if saving_method(exp) == "local":
@@ -54,7 +53,7 @@ class GroupSlot:
         return max(oldest_saves)
 
     def _pending_members(
-        self, exp, group_data, projection: t.Union[dict, list] = None
+        self, exp, group_data, projection: dict | list | None = None
     ) -> t.Iterator[dict]:
         if saving_method(exp) == "local":
             return self._pending_members_local(exp, group_data)
@@ -75,7 +74,7 @@ class GroupSlot:
                 yield session_data
 
     def _pending_members_mongo(
-        self, exp, group_data, projection: t.Union[dict, list] = None
+        self, exp, group_data, projection: dict | list | None = None
     ) -> t.Iterator[dict]:
         earliest_start = time.time() - exp.session_timeout
 
@@ -164,7 +163,7 @@ class GroupSlot:
         return counts
 
     def _finished_members(
-        self, exp, group_data: dict, projection: t.Union[dict, list]
+        self, exp, group_data: dict, projection: dict | list
     ) -> t.Iterator[dict]:
         if saving_method(exp) == "local":
             return self._finished_members_local(exp, group_data)
@@ -181,7 +180,7 @@ class GroupSlot:
                 yield session_data
 
     def _finished_members_mongo(
-        self, exp, group_data: dict, projection: t.Union[dict, list]
+        self, exp, group_data: dict, projection: dict | list
     ) -> t.Iterator[dict]:
         q = {
             "type": dm.EXP_DATA,
@@ -223,7 +222,7 @@ class GroupSlot:
     def open(self) -> bool:
         return not self.group_ids
 
-    def __contains__(self, group_ids: List[str]) -> bool:
+    def __contains__(self, group_ids: list[str]) -> bool:
         if self.group_ids is None:
             return False
         group_in_slot = [gid in self.group_ids for gid in group_ids]
@@ -232,7 +231,7 @@ class GroupSlot:
 
 @dataclass
 class GroupSlotManager:
-    slots: List[dict]
+    slots: list[dict]
 
     def __post_init__(self):
         self.slots = [GroupSlot(**slot_data) for slot_data in self.slots]
@@ -246,7 +245,7 @@ class GroupSlotManager:
     # def incomplete_slots(self, exp) -> Iterator[Slot]:
     #     return (slot for slot in self.slots if slot.contains_incomplete_group(exp))
 
-    def find_slot(self, group_ids: List[str]) -> Slot:
+    def find_slot(self, group_ids: list[str]) -> Slot:
         for slot in self.slots:
             if group_ids in slot:
                 return slot
@@ -276,7 +275,7 @@ class GroupSlotManager:
 
         return self._oldest_slot(slots, exp)
 
-    def _sparsest_slots(self, slots, exp) -> List[Slot]:
+    def _sparsest_slots(self, slots, exp) -> list[Slot]:
         npending = [slot.npending(exp) for slot in slots]
         n = min(npending)
         minimal_pending = [slot for slot in slots if slot.npending(exp) == n]
@@ -322,7 +321,7 @@ class ParallelGroupQuota(SessionQuota):
     def _slot_manager(self, data: QuotaData):
         try:
             return SlotManager(data.slots)
-        except TypeError as e:
+        except TypeError:
             group_ids = [slot.get("group_ids", False) for slot in data.slots]
             if any(group_ids):
                 raise ValueError(
@@ -331,7 +330,7 @@ class ParallelGroupQuota(SessionQuota):
                     " for different specs. Please make sure that all names are unique."
                 )
             else:
-                raise e
+                raise
 
 
 @inherit_kwargs(exclude=["session_ids"])
@@ -356,7 +355,7 @@ class SequentialGroupQuota(ParallelGroupQuota):
     def _slot_manager(self, data: QuotaData):
         try:
             return GroupSlotManager(data.slots)
-        except TypeError as e:
+        except TypeError:
             session_groups = [slot.get("session_groups", False) for slot in data.slots]
             if any(session_groups):
                 raise ValueError(
@@ -365,7 +364,7 @@ class SequentialGroupQuota(ParallelGroupQuota):
                     " different specs. Please make sure that all names are unique."
                 )
             else:
-                raise e
+                raise
 
     @property
     def full(self) -> bool:
@@ -385,13 +384,10 @@ class SequentialGroupQuota(ParallelGroupQuota):
             if npending == 0:
                 return True
 
-            # pending is > 0, inclusive quota will allow new groups to be formed
-            if self.inclusive:
-                return False
-
+            # pending is > 0, inclusive quota will allow new groups to be formed.
             # Exclusive quota with pending slots and all groups in
             # those slots are complete. Thus, the quota is full
-            return True
+            return not self.inclusive
 
 
 class MetaQuota:
@@ -454,7 +450,7 @@ class MetaQuota:
         sessions in case of group quotas) associated with this slot has
         finished the experiment.
         """
-        return all([quota.allfinished for quota in self.quotas])
+        return all(quota.allfinished for quota in self.quotas)
 
     @property
     def full(self) -> bool:
@@ -464,4 +460,4 @@ class MetaQuota:
         A quota is full, if there are no slots available to assign to
         sessions or groups.
         """
-        return all([quota.full for quota in self.quotas])
+        return all(quota.full for quota in self.quotas)

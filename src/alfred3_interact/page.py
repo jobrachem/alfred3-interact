@@ -368,9 +368,9 @@ class WaitingPage(al.NoNavigationPage):
     def __init__(
         self,
         *args,
-        wait_msg: str = None,
-        wait_timeout: int = None,
-        wait_sleep_time: int = None,
+        wait_msg: str | None = None,
+        wait_timeout: int | None = None,
+        wait_sleep_time: int | None = None,
         wait_timeout_page: al.Page = None,
         wait_exception_page: al.Page = None,
         **kwargs,
@@ -446,7 +446,6 @@ class WaitingPage(al.NoNavigationPage):
         It will be repeatedly called internally with the time between
         two calls defined by :attr:`.wait_sleep_time`.
         """
-        pass
 
     def _wait_for(self) -> bool:
         """

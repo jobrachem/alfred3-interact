@@ -2,7 +2,6 @@ import copy
 import json
 import random
 import time
-import typing as t
 from dataclasses import asdict, dataclass, field
 from traceback import format_exception
 
@@ -311,7 +310,7 @@ class MatchMaker:
         full_page=None,
         raise_exception_if_full: bool = False,
         respect_version: bool = True,
-        ping_timeout: t.Union[float, int] = 15,
+        ping_timeout: float = 15,
     ):
         # init values
         self.exp = exp
@@ -375,14 +374,14 @@ class MatchMaker:
         return self._match_start_save
 
     @property
-    def waiting_members(self) -> t.List[GroupMember]:
+    def waiting_members(self) -> list[GroupMember]:
         """
         list: List of experiment sessions currently active and waiting
         to be matched. The sessions are represented by their
         :class:`.GroupMember` objects.
         """
         members = list(self.member_manager.waiting(self.ping_timeout))
-        members = [m for m in members if not m.data.session_id == self.exp.session_id]
+        members = [m for m in members if m.data.session_id != self.exp.session_id]
         if not self.member.matched:
             members = [self.member] + members
         return members
@@ -443,7 +442,7 @@ class MatchMaker:
         name = self.groupspecs[0].name
         return self.match_to(name)
 
-    def match_random(self, wait: int = None, nmin: int = None):
+    def match_random(self, wait: int | None = None, nmin: int | None = None):
         """
         Conducts a match to a random feasible group specification.
 

@@ -50,3 +50,9 @@ packages = ["src/alfred3_interact"]
 
 [tool.hatch.metadata]
 allow-direct-references=true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"docs/source/conf.py" = ["S102"]  # exec() reads the version

@@ -4,7 +4,6 @@ Interfaces for defining groups.
 
 import random
 import re
-import typing as t
 from abc import ABC, abstractmethod
 from dataclasses import asdict
 
@@ -134,7 +133,7 @@ class ParallelMatchMaker:
 
         raise NoMatch  # if match is not successful
 
-    def start_group(self, data, waiting_members: t.List[GroupMember]) -> Group:
+    def start_group(self, data, waiting_members: list[GroupMember]) -> Group:
         with Group(self.mm, **self.data) as group:
             self.log.info(f"Starting new group {group}.")
 
@@ -148,7 +147,7 @@ class ParallelMatchMaker:
 
             group.roles.shuffle()
 
-            while not len(group.data.members) == len(group.data.roles):
+            while len(group.data.members) != len(group.data.roles):
                 member = next(candidates)
                 group += member
 

@@ -5,8 +5,8 @@ Functionality related to group members.
 import datetime
 import json
 import time
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
-from typing import Iterator, List
 
 from alfred3.data_manager import DataManager as dm
 from alfred3.quota import SessionGroup
@@ -456,7 +456,7 @@ class MemberManager:
         q["exp_version"] = self.mm.exp_version
         return q
 
-    def query_active_sessions(self, sessions: List[str] = None) -> dict:
+    def query_active_sessions(self, sessions: list[str] | None = None) -> dict:
         q = self.query_exp
         q["exp_finished"] = False
         q["exp_aborted"] = False
@@ -466,7 +466,7 @@ class MemberManager:
 
         return q
 
-    def query_finished_sessions(self, sessions: List[str] = None) -> dict:
+    def query_finished_sessions(self, sessions: list[str] | None = None) -> dict:
         q = self.query_exp
         q["exp_finished"] = True
         q["exp_aborted"] = False
@@ -476,25 +476,29 @@ class MemberManager:
 
         return q
 
-    def find_finished_sessions(self, sessions: List[str] = None) -> Iterator[str]:
+    def find_finished_sessions(
+        self, sessions: list[str] | None = None
+    ) -> Iterator[str]:
         if self.method == "local":
             return self._find_finished_sessions_local(sessions)
         elif self.method == "mongo":
             return self._find_finished_sessions_mongo(sessions)
 
-    def find_active_sessions(self, sessions: List[str] = None) -> Iterator[str]:
+    def find_active_sessions(self, sessions: list[str] | None = None) -> Iterator[str]:
         if self.method == "local":
             return self._find_active_sessions_local(sessions)
         elif self.method == "mongo":
             return self._find_active_sessions_mongo(sessions)
 
-    def _find_active_sessions_local(self, sessions: List[str] = None) -> Iterator[str]:
+    def _find_active_sessions_local(
+        self, sessions: list[str] | None = None
+    ) -> Iterator[str]:
         for member in self.members():
             if member.status.active:
                 yield member.data.session_id
 
     def _find_finished_sessions_mongo(
-        self, sessions: List[str] = None
+        self, sessions: list[str] | None = None
     ) -> Iterator[str]:
         q = self.query_finished_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
@@ -503,7 +507,9 @@ class MemberManager:
             if status.finished(self.exp):
                 yield sessiondata["exp_session_id"]
 
-    def _find_active_sessions_mongo(self, sessions: List[str] = None) -> Iterator[str]:
+    def _find_active_sessions_mongo(
+        self, sessions: list[str] | None = None
+    ) -> Iterator[str]:
         q = self.query_active_sessions(sessions)
         cursor = self.exp.db_main.find(q, projection=["exp_session_id"])
         for sessiondata in cursor:
@@ -511,7 +517,7 @@ class MemberManager:
             if status.pending(self.exp):
                 yield sessiondata["exp_session_id"]
 
-    def _find_finished_sessions_local(self, sessions: List[str]) -> Iterator[str]:
+    def _find_finished_sessions_local(self, sessions: list[str]) -> Iterator[str]:
         for m in self.members():
             if m.status.finished and m.data.session_id in sessions:
                 yield m.data.session_id
@@ -569,20 +575,20 @@ class MemberManager:
             if m.status.matched:
                 yield m
 
-    def find(self, sessions: List[str]) -> Iterator[GroupMember]:
+    def find(self, sessions: list[str]) -> Iterator[GroupMember]:
         if self.method == "local":
             return self._find_local(sessions)
 
         elif self.method == "mongo":
             return self._find_mongo(sessions)
 
-    def _find_local(self, sessions: List[str]) -> Iterator[GroupMember]:
+    def _find_local(self, sessions: list[str]) -> Iterator[GroupMember]:
         data = self.mm.io.load().members.values()
         for mdata in data:
             if mdata["session_id"] in sessions:
                 yield GroupMember(matchmaker=self.mm, **mdata)
 
-    def _find_mongo(self, sessions: List[str]) -> Iterator[GroupMember]:
+    def _find_mongo(self, sessions: list[str]) -> Iterator[GroupMember]:
         q = self.query_mm
         p = {f"members.{sid}": True for sid in sessions}
         p.update({"_id": False})
