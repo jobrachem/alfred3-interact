@@ -64,10 +64,29 @@ class SharedGroupData(UserDict):
 
         self.data["__group_id"] = self.group.data.group_id
 
-    def _push_remote(self):
+    def _push_remote(self, changes: dict, remove=None):
+        shared = {"$ifNull": ["$shared_data", {}]}
+        if remove is not None:
+            shared = {
+                "$arrayToObject": {
+                    "$filter": {
+                        "input": {"$objectToArray": shared},
+                        "as": "item",
+                        "cond": {"$ne": ["$$item.k", {"$literal": remove}]},
+                    }
+                }
+            }
         doc = self._db.find_one_and_update(
             filter={"group_id": self.group.data.group_id},
-            update={"$set": {"shared_data": self.data}},
+            update=[
+                {
+                    "$set": {
+                        "shared_data": {
+                            "$mergeObjects": [shared, {"$literal": changes}]
+                        }
+                    }
+                }
+            ],
             projection={"shared_data": True, "_id": False},
             return_document=ReturnDocument.AFTER,
         )
@@ -90,12 +109,13 @@ class SharedGroupData(UserDict):
         if saving_method(self.group.exp) == "mongo":
             self._fetch_remote()
 
-        self.data["__last_access"] = time.time()
-        self._push()
+        now = time.time()
+        self.data["__last_access"] = now
+        self._push({"__last_access": now})
 
-    def _push(self):
+    def _push(self, changes: dict, remove=None):
         if saving_method(self.group.exp) == "mongo":
-            self._push_remote()
+            self._push_remote(changes, remove=remove)
         elif saving_method(self.group.exp) == "local":
             self._push_local()
 
@@ -129,15 +149,17 @@ class SharedGroupData(UserDict):
     def __setitem__(self, key, item):
         self._fetch()
         super().__setitem__(key, item)
-        self.data["__last_change"] = time.time()
-        self._push()
+        now = time.time()
+        self.data["__last_change"] = now
+        self._push({key: item, "__last_change": now})
         self._validate(key, item)
 
     def __delitem__(self, key):
         self._fetch()
         super().__delitem__(key)
-        self.data["__last_change"] = time.time()
-        self._push()
+        now = time.time()
+        self.data["__last_change"] = now
+        self._push({"__last_change": now}, remove=key)
 
 
 class GroupHelper:
@@ -195,6 +217,9 @@ class GroupIO(GroupHelper):
             self._save_local(asdict(self.data))
 
     def _save_mongo(self, data: dict):
+        # Shared values have their own atomic writes; this snapshot may be old.
+        data.pop("shared_data", None)
+        data.pop("busy", None)
         self.db.find_one_and_update(self.query, {"$set": data}, upsert=True)
 
     def _save_local(self, data: dict):
@@ -253,12 +278,15 @@ class GroupIO(GroupHelper):
         elif self.saving_method == "local":
             data = self._release_local()
 
-        self.group.data.busy = False
+        if data is not None:
+            self.group.data.busy = "false"
         return data
 
     def _release_mongo(self):
+        query = self.query
+        query["busy"] = self.exp.session_id
         data = self.db.find_one_and_update(
-            filter=self.query,
+            filter=query,
             update={"$set": {"busy": "false"}},
             return_document=ReturnDocument.AFTER,
         )
@@ -266,6 +294,8 @@ class GroupIO(GroupHelper):
 
     def _release_local(self):
         data = self._load_local()
+        if data["busy"] != self.exp.session_id:
+            return None
         data["busy"] = "false"
         self._save_local(data)
         return data
