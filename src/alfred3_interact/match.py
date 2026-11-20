@@ -112,7 +112,57 @@ class MatchMakerIO:
         return data
 
     def _save_mongo(self, data: MatchMakerData):
-        self.db.find_one_and_replace(self.query, asdict(data))
+        current = asdict(data)
+        previous = getattr(data, "_mongo_snapshot", {})
+        changes, heartbeats, removed = {}, {}, {}
+        for key, value in current.items():
+            if key not in ("members", "busy") and (
+                key not in previous or previous[key] != value
+            ):
+                changes[key] = value
+
+        old_members = previous.get("members", {})
+        for sid, member in current["members"].items():
+            old_member = old_members.get(sid, {})
+            for key, value in member.items():
+                if key in old_member and old_member[key] == value:
+                    continue
+                path = f"members.{sid}.{key}"
+                if key == "ping":
+                    heartbeats[path] = value
+                else:
+                    changes[path] = value
+        for sid in old_members.keys() - current["members"].keys():
+            removed[f"members.{sid}"] = ""
+
+        update = {"$set": changes, "$max": heartbeats, "$unset": removed}
+        update = {operator: values for operator, values in update.items() if values}
+        if update:
+            self.db.find_one_and_update(self.query, update)
+        data._mongo_snapshot = current
+
+    @staticmethod
+    def _remember_mongo(data: dict) -> MatchMakerData:
+        data.pop("_id", None)
+        loaded = MatchMakerData(**data)
+        loaded._mongo_snapshot = asdict(loaded)
+        return loaded
+
+    def toggle_activation(self) -> MatchMakerData:
+        if saving_method(self.mm.exp) == "mongo":
+            data = self.db.find_one_and_update(
+                self.query,
+                [{"$set": {"active": {"$not": ["$active"]}}}],
+                return_document=ReturnDocument.AFTER,
+            )
+            if data is None:
+                raise MatchingError("MatchMaker data no longer exists.")
+            return self._remember_mongo(data)
+
+        data = self._load_local()
+        data.active = not data.active
+        self._save_local(data)
+        return data
 
     def _save_local(self, data: MatchMakerData):
         with open(self.path, "w", encoding="utf-8") as f:
@@ -134,8 +184,7 @@ class MatchMakerIO:
             upsert=True,
             return_document=ReturnDocument.AFTER,
         )
-        data.pop("_id", None)
-        return MatchMakerData(**data)
+        return self._remember_mongo(data)
 
     def _load_local(self) -> MatchMakerData:
         """
@@ -180,7 +229,7 @@ class MatchMakerIO:
         )
 
         if data is not None:
-            return MatchMakerData(**data)
+            return self._remember_mongo(data)
         else:
             return None
 
@@ -768,9 +817,7 @@ class MatchMaker:
         Returns:
             str: Returns the new status (active/inactive).
         """
-        data = self.io.load()
-        data.active = not data.active
-        self.io.save(data=data)
+        data = self.io.toggle_activation()
         self._data = data
 
         return "active" if data.active else "inactive"
